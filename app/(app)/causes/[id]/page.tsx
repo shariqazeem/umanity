@@ -179,7 +179,7 @@ export default function CausePage() {
       {/* Mobile give bar */}
       <div className="lg:hidden fixed left-0 right-0 z-40 glass border-t border-black/[0.06] px-5 py-2.5 flex items-center gap-3" style={{ bottom: 'calc(60px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] text-[#6e6e73] num">{fmtSol(held, 2)} SOL held in escrow</p>
+          <p className="text-[12px] text-[#6e6e73] num">{detail ? `${fmtSol(held, 2)} SOL` : '…'} held in escrow</p>
           <p className="text-[12.5px] font-semibold truncate">{cause.impact}</p>
         </div>
         <Btn tone="accent" size="lg" icon="heart" onClick={() => openGive({ causeId: cause.id })}>
