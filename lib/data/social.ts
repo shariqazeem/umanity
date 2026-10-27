@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import { getDb, newId, posts, likes, comments, follows, users, notifications, type Post, type User } from '@/lib/db'
 import { findUser, findUsersByAddresses, toPublicUser } from './users'
 
-export type PostType = 'manual' | 'donation' | 'milestone' | 'joined' | 'impact_dare' | 'dare_accepted' | 'intent' | 'proof' | 'vote'
+export type PostType = 'manual' | 'donation' | 'milestone' | 'joined' | 'impact_dare' | 'dare_accepted' | 'intent' | 'proof' | 'vote' | 'field_update'
 
 export interface FeedPost {
   id: string

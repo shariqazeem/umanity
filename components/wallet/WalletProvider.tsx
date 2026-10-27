@@ -2,25 +2,18 @@
 
 import { FC, ReactNode, useMemo } from 'react'
 import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react'
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
-import { clusterApiUrl } from '@solana/web3.js'
+import { SOLANA_RPC } from '@/lib/solana/constants'
 
 import '@solana/wallet-adapter-react-ui/styles.css'
 
+/** Wallet Standard auto-detects Phantom, Solflare, Backpack and friends; the RPC follows NEXT_PUBLIC_SOLANA_NETWORK. */
 export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const network = WalletAdapterNetwork.Devnet
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
-
-  // Empty array - wallets are auto-detected via Wallet Standard
   const wallets = useMemo(() => [], [])
-
   return (
-    <ConnectionProvider endpoint={endpoint}>
+    <ConnectionProvider endpoint={SOLANA_RPC} config={{ commitment: 'confirmed' }}>
       <SolanaWalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          {children}
-        </WalletModalProvider>
+        <WalletModalProvider>{children}</WalletModalProvider>
       </SolanaWalletProvider>
     </ConnectionProvider>
   )

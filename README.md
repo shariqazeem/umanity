@@ -1,149 +1,160 @@
-# Umanity — giving is the content
+# Umanity — give to real people, watch it reach them
 
-**The social impact network on Solana.** Donations are escrowed in on-chain vaults, released only when the community votes that a milestone was delivered, audited by an AI Impact Oracle that anyone (or any agent) pays per request over x402, and fundable from 31+ chains through NEAR Intents. Two of the six causes are delivered in person by the Umanity team with receipts, photos and geotags posted as proof.
+Umanity is a giving app on Solana for people who want to see where the money went. A gift waits in an on-chain escrow vault. The Umanity field team buys what is needed, delivers it in person in Pakistan, and posts the photos and receipts. An AI Impact Oracle audits the proof, the donors of that cause vote, and only then does the vault release the money. Anyone can give from any of 37 chains, dare a friend to match them, and carry a Living Guardian pass that grows with their giving.
 
-- Live app: https://umanity-solana.vercel.app
-- Programs (Solana devnet): `umanity_donations` [`9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1`](https://solscan.io/account/9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1?cluster=devnet) · `umanity_tips` [`DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau`](https://solscan.io/account/DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau?cluster=devnet)
+- Repository: https://github.com/shariqazeem/umanity (the 3.0 rebuild; 2.0 won the Solana Graveyard track at the Tapestry hackathon and a Superteam bounty as [umanity-social](https://github.com/shariqazeem/umanity-social))
+- Programs on Solana devnet, mainnet deployment in progress: `umanity_donations` [`9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1`](https://solscan.io/account/9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1?cluster=devnet) · `umanity_tips` [`DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau`](https://solscan.io/account/DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau?cluster=devnet)
 - Built by a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
-- Hackathons: Encode x Solana 2026 (Aurora Intents, Best Consumer App, Best Use of x402), NEAR Hackathon 2026 (Real-World Money, Agent Economy, Social Money, Open Innovation), MultiHopper Build & Route Challenge
+- Hackathons: Encode x Solana 2026 (Aurora Intents, Best Consumer App, Best Use of x402), NEAR "Build Beyond Boundaries" 2026 (Real-World Money, Social Money, Agent Economy), MultiHopper Build & Route Challenge
 
 ---
 
 ## The problem
 
-Crypto charity failed twice: donation pages were one-way sinks with no proof of delivery, and "charity tokens" were speculation with no accountability. Donors cannot see where money went, 85% of them hold assets on other chains, and whales will not dox their main wallet on a public feed.
+Crypto charity failed twice. Donation pages were black holes: you sent money and got a thank-you email. Charity tokens were casinos: speculation with a cause stapled on. Meanwhile the people who would give hold their money on a dozen chains, and the organisations that could use it cannot prove, cheaply and publicly, that the money arrived.
 
-## What Umanity does
+Umanity's answer is to make the delivery the product. The gift is escrowed on-chain, the delivery is photographed and receipted, the proof is audited, and the donors themselves release the money. Every step leaves a record anyone can check.
 
-| Piece | How it works | Where it lives on-chain |
+## What you can do
+
+| Screen | What happens |
+|---|---|
+| **Home** (`/home`) | A greeting, your streak and Guardian tier, a "Give today" strip of the six causes with progress toward the next delivery, and a stream of gifts, deliveries ("You helped fund this"), dares and release votes. |
+| **Causes** (`/causes`, `/causes/[id]`) | Six causes with photography, what a gift buys ("$8 is a school kit"), the story, the delivery log with photos and receipts, the oracle verdict, the donor vote, the supporters, and the vault with every milestone and release. |
+| **Give** (any screen) | USD-first presets labelled with what they buy, a Solana wallet or any other chain (USDC on Base, ETH, BTC, TON, NEAR and 200+ assets through NEAR Intents), anonymous giving, an optional private route. The server verifies the transaction on-chain before it counts. |
+| **Profile** (`/profile`, `/u/[name]`) | The Living Guardian pass (Seed → Sprout → Bloom → Guardian → Sovereign), founding-giver status, your impact portfolio, streak, gifts, certificates, dares and posts. |
+| **Transparency** (`/transparency`) | The public ledger: every vault's balance, every release with its transaction, every delivery, the fees that fund the Field Fund, the programs and wallets. |
+| **Field team console** (`/admin`) | Where the team posts a delivery: cause, what was bought and for whom, amount in SOL and PKR, location, photos and receipts (hashed on upload), the milestone it fulfils, and whether to open the release vote. Donors of that cause are notified. Signed with the team's wallet. |
+| **Blinks** (`/blinks`) | One Solana Action per cause and per dare, so a gift can happen inside a post on X. |
+
+## How the money moves
+
+```
+you give  ──►  cause vault PDA (escrow)  ──►  delivery + proof posted  ──►  Impact Oracle audit (x402)
+                                                   │                               │
+                                                   ▼                               ▼
+                                     donors of the cause vote ◄──── attestation hash on-chain
+                                                   │
+                                   approved ──►  release_milestone_funds  ──►  field team wallet ──► receipts
+```
+
+| Piece | How it works | On-chain |
 |---|---|---|
-| **Escrowed causes** | Every donation goes to a cause's vault PDA, never a personal wallet. A `DonationRecord` PDA is created per gift. | `initialize_pool`, `donate`, `one_tap_donate` |
-| **Milestone governance** | Each cause has a campaign with up to 5 milestones. When a milestone threshold is crossed a fund-release vote opens. Your voting power = impact points (1 SOL given = 1,000). A passed vote lets the authority call `release_milestone_funds`; the SOL moves from the vault PDA to the campaign recipient. Rejected = funds stay locked. | `create_campaign`, `init_milestone`, `approve_milestone`, `release_milestone_funds`, `claim_refund` |
-| **AI Impact Oracle (x402)** | The charity or field team uploads delivery evidence. Anyone pays $0.01 USDC over HTTP 402 to run the audit; the verdict, confidence and per-check results come back and the attestation hash is written to the Milestone account. | `attest_milestone` |
-| **Staked Impact Dares** | Lock SOL in a dare vault challenging someone to give. Friends boost the pot (in-app or straight from X via a Blink). Completed or expired, the pot ends in the cause's vault; 1.5% protocol fee enforced on-chain. | `create_dare`, `boost_dare`, `settle_dare` |
-| **Give from any chain** | NEAR Intents (via Aurora Intents' 1Click API) quotes and routes ETH, Base USDC, BTC, TON, NEAR and 30+ other assets into the Umanity Solana vault with a 50 bps integrator fee. | mainnet settlement (see below) |
-| **Discreet route** | Whale/Zakat donations routed through MultiHopper's TRM-screened multi-hop rail, shown in the feed as "anonymous". | MultiHopper program (devnet keys) |
-| **Social layer** | Feed of donation stories with source-chain badges, likes, comments, follows, leaderboards, streaks and the evolving Living Guardian pass (Seed → Sprout → Bloom → Guardian → Sovereign). | off-chain index, every card links to its transaction |
-| **Blinks** | One Solana Action per cause and per dare: donate or boost from any X timeline. | `/api/actions/donate/[poolId]`, `/api/actions/dare/[dareId]` |
+| **Escrowed causes** | Each cause is a pool PDA with a system-owned vault PDA. A gift creates a `DonationRecord` PDA. Nobody can move the vault except through the program. | `initialize_pool`, `donate`, `one_tap_donate` |
+| **Campaigns and milestones** | Every cause has a campaign with a target and three milestones (percentages of what was raised). A release vote opens when the team posts a delivery for a milestone, or when the raise crosses its threshold. | `create_campaign`, `init_milestone` |
+| **Impact Oracle** | Delivery evidence (photos, receipts, hashes, location) is audited. The verdict, confidence and per-check results are returned and the attestation hash and confidence are written into the Milestone account. Rule-based by default; Anthropic or NEAR AI Cloud when keys are configured. | `attest_milestone` |
+| **Donor vote** | Voting power = impact points (1 SOL given = 1,000). A passed vote lets the authority approve and release; a rejected vote keeps the money in the vault. The team can close a vote early with a signed request; it cannot vote. | `approve_milestone`, `release_milestone_funds`, `claim_refund` |
+| **Dares** | Lock SOL to dare a friend to give. Friends boost the pot, in-app or from X. Completed or expired, the pot ends in the cause's vault with a 1.5% protocol fee enforced on-chain. | `create_dare`, `boost_dare`, `settle_dare` |
+| **Any chain in** | NEAR Intents (Aurora Intents when a Studio key is set) quotes and routes any supported asset into the Umanity Solana vault with one deposit address. 50 bps integrator fee. Mainnet settlement; see below. | settlement tx on Solana |
+| **Private route** | MultiHopper's TRM-screened multi-hop rail for donors who do not want their main wallet in a public feed. | MultiHopper program |
 
-Every number on screen is read from devnet or from transactions recorded after on-chain verification. There is no fake data. The seed script creates real devnet transactions.
+Every number on screen is read from the chain or from transactions the server re-verified. There is no seeded or placeholder data; a fresh deployment starts at zero.
 
 ---
 
 ## Try it in 5 minutes (do X → see Y)
 
-No wallet needed. Everything below runs on Solana devnet.
+The app runs on Solana devnet until the mainnet program deployment; the product is identical.
 
-1. Open the app → **see** the Feed with live dares (ticking countdowns), an open fund-release vote and donation stories, each with a Solscan link.
-2. Click **⚡ demo wallet** (top right) → **see** a green `DEMO` pill with a fresh address and `0.25 SOL`. A browser-side keypair was generated and funded by the Umanity treasury on devnet.
-3. Go to **Give & Bridge → Solana**, click the **0.01 SOL one-tap** card → **see** "0.05 SOL escrowed · +points · Bronze certificate" with a Solscan link, your balance drop, and the right-rail "Escrowed in vaults" number increase. (The server re-read the transaction from RPC before crediting you.)
-4. Go to **Feed** → **see** your donation as a post. Like it, comment on it, click "Share Blink on X".
-5. Go to **Causes** → **see** six vaults with the escrow bar (`locked / target · milestone n of 3`), the accepted-rails strip and three actions per cause.
-6. Go to **Govern** → **see** the open proposal "Release milestone 1: Local Orphanage Aid" with the AI Impact Oracle panel. Click **Evidence** → **see** receipts, a geotagged photo and a video. Vote **Approve & release escrow** → **see** your voting power counted.
-7. Click **Verify via x402 · $0.01** → with devnet USDC in your wallet **see** the oracle run, the verdict badge update and an `attestation sha256` line. Without USDC the toast explains what is missing. The same endpoint is callable by an agent: `npm run x402:agent -- <milestoneId>`.
-8. Go to **Feed → ⚡ Launch a staked dare**, dare `@sol_impact` for 0.05 SOL with a 24h timer → **see** the dare card with a live pot and a "Boost pot" button, and the SOL locked in a dare vault PDA on Solscan.
-9. Go to **Give & Bridge → Any chain**, pick Base / USDC / 10 → **see** a live NEAR Intents solver quote (amount out in SOL, time estimate, 50 bps integrator fee). Enter a refund address and click **Get deposit address** → **see** a one-time deposit address + QR and the status pill moving `Awaiting deposit → Swapping → Settled`. (Mainnet, real funds; see the note below.)
-10. Go to **Profile & Pass** → **see** your Living Guardian card, streak, certificates, on-chain receipts and copyable Blinks.
+1. Open the app, press **Sign in → Create a Umanity wallet** → **see** a self-custodial wallet created in your browser (on devnet it is topped up by the treasury), then pick a name.
+2. Press **Give**, choose a cause and **$5** → **see** "about 3 hot meals", the SOL amount, and your wallet marked Ready. Confirm → **see** "Thank you." with the on-chain link, points and a Bronze certificate. The server read the vault's balance change from RPC before crediting you.
+3. Go to **Home** → **see** your gift at the top of the stream with a **Match** button for others, your streak started, and the "Give today" progress move.
+4. Open the cause (`/causes/orphan-care`) → **see** the escrow numbers, what your gift buys, the vault with milestones ("opens at 6 SOL"), and the supporters wall with your name.
+5. Open **Transparency** → **see** the vault table, releases with transactions, deliveries and fees, all live.
+6. When the field team posts a delivery (the console at `/admin` is signed by the team wallet), every donor of that cause is notified and the card in Home shows **You helped fund this** with an **Approve release / Not yet** vote.
+7. Press **Audit this proof · $0.01** on a delivery → **see** an HTTP 402 paid with one cent of USDC from your wallet, the oracle verdict with per-check marks, and the attestation hash. (Devnet USDC: faucet.circle.com.)
+8. After the donors approve, the team presses **Release on-chain** → **see** the release transaction on the cause page, in the vault's milestone list and on Transparency.
+9. Press **Dare a friend** on Home → **see** a staked dare with a countdown that friends can boost from the app or from X.
+
+Verified on devnet on 27 Oct 2026 with this exact flow: gift [`5MD737…KGDb9`](https://solscan.io/tx/5MD737racDn3NMGuoGrCNzgVAPuPvwfvsJR6aQa2ZsReEHzt11hiejjJkb34kPBhm3ScoHM1ecR9ZcR7SqiKGDb9?cluster=devnet), x402 payment [`3cyBCC…xt6Te`](https://solscan.io/tx/3cyBCCJDQKtUwWUFHL3vPhfUur8xYMp2ywhPFk5pq28FVoJMZqHURKqhv44K6aNg597HgopT61qcXkh6JdYxt6Te?cluster=devnet), release from escrow after the vote [`5gq4rz…hfqw`](https://solscan.io/tx/5gq4rzTHE4zQjsU8n3gA5PG47rZseiCdMfZJzBcfSZfQfybJod9DzkUGfLodmkgoZCaj9yidLQvhDqLQzvfohfqw?cluster=devnet), on-chain attestation [`2KHdQu…MzwV`](https://solscan.io/tx/2KHdQugJ5d7gkGFgxYZZYnKN1TdvjUtDmFN15hV3PTCqxFsg8HX56emU3oTnby3oNrj7y6EVzpVhECWo2sLCMzwV?cluster=devnet).
 
 ---
 
-## How Solana powers it
+## Solana
 
-- Two Anchor programs (Rust, Anchor 0.31). `umanity_donations` v2 has 14 instructions: pools, PDA donation records (no throwaway signer, so Blinks and cross-chain execute-on-arrival can call it), campaigns, milestones with on-chain oracle attestations, escrow release via CPI transfers signed by the vault PDA, refunds, and staked dares.
-- Every client-reported donation is verified server-side by re-reading the transaction and the vault's balance delta from RPC; amounts are never trusted from the browser.
-- Solana Actions (Blinks) for every cause and every dare.
-- x402 payments settle as SPL USDC transfers on Solana through the facilitator.
-- The instant demo wallet is a real keypair signing real devnet transactions; nothing is simulated.
+`programs/risen-donations/src/lib.rs` is an Anchor 0.31 program with 14 instructions. PDAs: pool `["pool", causeId]`, vault `["vault", pool]`, campaign `["campaign", pool]`, milestone `["milestone", campaign, index]`, donation record `["donation", pool, donor, nonce]`, dare `["dare", creator, nonce]`, dare vault `["dare_vault", dare]`. Vault debits are CPI transfers signed by the vault PDA. The authority can only approve and release a milestone; it cannot withdraw a vault to itself.
 
-## Cross-chain: NEAR Intents / Aurora Intents
+The app never trusts an amount from the browser. `POST /api/donate/sync` re-reads the transaction and uses the vault's balance delta. If recording fails after the transaction confirmed, the browser keeps the request and replays it (`lib/client/pending-sync.ts`).
 
-`lib/intents/oneclick.ts` talks to the NEAR Intents 1Click API (the engine behind Aurora Intents). With `AURORA_API_KEY` set it routes through Aurora's Swap API so the integrator fee configured in Intents Studio applies; otherwise it uses 1Click directly with `appFees` (50 bps).
+Wallets: Wallet Standard (Phantom, Solflare, Backpack) or the Umanity wallet, a keypair created in the browser, backed up as a base58 secret and importable into any wallet.
 
-- `GET /api/intents/tokens` – 37 chains / 200+ assets grouped for the picker
-- `POST /api/intents/quote` – `dry: true` for free price previews, `dry: false` for a live quote with a one-time deposit address (tracked in the `intents` table)
-- `GET /api/intents/status?id=` – polls the solver; on `SUCCESS` the donation is credited to the chosen cause and posted to the feed with a source-chain badge; `REFUNDED`/`FAILED` are surfaced with the refund path
-- `POST /api/intents/deposit-submit` – optional tx-hash hint to speed up detection
+## Cross-chain: NEAR Intents and Aurora Intents
 
-**Important:** NEAR Intents has no testnet. Cross-chain donations settle on **Solana mainnet** into the Umanity cross-chain cause vault (`NEXT_PUBLIC_UMANITY_CROSSCHAIN_VAULT`) and are credited to the cause in the ledger. The escrow program runs on devnet during the hackathon; the v2 `donate` instruction is designed for Aurora Intents Connect "execute on arrival" (intermediary as signer, PDA record, no extra signers) and is wired up once the program is deployed to mainnet.
+`lib/intents/oneclick.ts` speaks the 1Click API; when `AURORA_API_KEY` is set it uses the Aurora Intents Swap API with the integrator fee configured in Aurora Studio. Dry quotes are free and keyless, so the Give sheet shows live solver pricing for every chain; a live quote returns a one-off deposit address, and `/api/intents/status` tracks it to the Solana settlement, which is recorded as a gift with a "from Base via NEAR Intents" badge. Intents have no testnet, so the cross-chain path settles on Solana mainnet into the Umanity vault wallet; execute-on-arrival into the program vault follows the mainnet deployment.
 
 ## x402 on Solana
 
-Paid endpoints (x402 v2, `PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE` headers, scheme `exact`, USDC):
+`lib/x402/server.ts` wraps route handlers with `@x402/core` + `@x402/svm` (exact scheme, USDC, facilitator `x402.org`). Paid endpoints: `POST /api/x402/verify-milestone` ($0.01) runs the Impact Oracle and writes the attestation on-chain; `POST /api/x402/sponsor-dare` ($0.05). The browser pays with the same wallet it gives from (`lib/client/x402.ts`); an agent can pay with `npm run x402:agent -- <milestoneId> <baseUrl>`. Receipts are at `/api/x402/receipts`.
 
-| Endpoint | Price | What you get |
+## MultiHopper
+
+`lib/multihopper/client.ts` implements estimate → create → prepare → confirm → status against the MultiHopper API. The Give sheet exposes it as "Private route" with the fee preview; execution needs a MultiHopper key on the deployment.
+
+## The Field Fund
+
+All six causes are delivered in person by the Umanity team: orphan care, street animal rescue, family food packs, medical help, clean water and emergency relief, defined in `lib/causes.ts` with the units a gift buys and the milestone plan. The team's console uploads photos and receipts (SHA-256 on upload), attaches them to a milestone, opens the vote and notifies donors. Fees (1.5% on dares, 50 bps on cross-chain routing, x402 audits, private routing share) go to the treasury that funds deliveries.
+
+## Revenue
+
+| Stream | Where | Rate |
 |---|---|---|
-| `POST /api/x402/verify-milestone {milestoneId}` | $0.01 | AI Impact Oracle audit: verdict, confidence, checks, attestation hash, on-chain attestation tx |
-| `POST /api/x402/sponsor-dare {targetHandle, poolId, text}` | $0.05 | A sponsored Impact Dare (for agents and brands that hold USDC, not SOL) |
-| `GET /api/x402/receipts` | free | Catalogue + recent settled receipts |
-
-Flow: unpaid request → `402` with requirements (network `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`, devnet USDC `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`, `payTo` treasury, facilitator fee payer) → client signs the USDC transfer → facilitator verifies → handler runs → settlement on Solana → `200` + `PAYMENT-RESPONSE` with the settlement signature.
-
-Failure handling: payment is settled only after the handler returns 2xx (handler errors cancel the verified payment, nothing is charged); settlement failures return the facilitator's `errorReason`; expired blockhashes and insufficient funds surface as `402` with a fresh challenge; every attempt is recorded in `x402_receipts` with `verified | settled | failed`.
-
-Verified on devnet during this build: settlement [`mavnKo4SF3TX9jQqwXuV9UVacPRtBSf2MzvYGehjphprvaFLyEoVuAdchsHi1E9ymUizGLYcbcepihnYzidaTom`](https://solscan.io/tx/mavnKo4SF3TX9jQqwXuV9UVacPRtBSf2MzvYGehjphprvaFLyEoVuAdchsHi1E9ymUizGLYcbcepihnYzidaTom?cluster=devnet) and the resulting on-chain attestation [`2KHdQugJ5d7gkGFgxYZZYnKN1TdvjUtDmFN15hV3PTCqxFsg8HX56emU3oTnby3oNrj7y6EVzpVhECWo2sLCMzwV`](https://solscan.io/tx/2KHdQugJ5d7gkGFgxYZZYnKN1TdvjUtDmFN15hV3PTCqxFsg8HX56emU3oTnby3oNrj7y6EVzpVhECWo2sLCMzwV?cluster=devnet).
-
-Agent example (`scripts/x402-agent.ts`): a Node keypair with devnet USDC and no SOL pays for an audit using `@x402/fetch` + `@x402/svm`.
-
-## MultiHopper (discreet route)
-
-`lib/multihopper/client.ts` implements estimate → create → prepare → confirm → status against the MultiHopper self-service API (devnet with an `mh_test_` key, mainnet with `mh_live_`). The Give & Bridge terminal shows the hop preview and the 0.50% routing fee (0.25% Umanity integrator share). Without a key the UI still previews fees and the route.
-
-## The Field Fund (real-world delivery)
-
-Orphanage Aid and Street Animal Rescue are "field" causes: the Umanity team buys supplies and delivers them in person. Evidence (receipts, geotagged photos, video, content hashes) is uploaded per milestone (`POST /api/milestones/[id]/evidence`), audited by the oracle, hashed on-chain, and the release is voted on. A share of protocol revenue (dare fees, cross-chain fees, oracle fees, routing fees) funds these deliveries.
+| Dare settlement fee | enforced in `settle_dare` | 1.5% of the pot |
+| Cross-chain integrator fee | Aurora Studio / 1Click `appFees` | 50 bps |
+| Paid oracle audits | x402 | $0.01 per audit, $0.05 per sponsored dare |
+| Private routing share | MultiHopper integrator share | 0.25% |
+| Gifts | none | 0% |
 
 ---
 
 ## Run it locally
 
 ```bash
-git clone https://github.com/shariqazeem/umanity-social && cd umanity-social
 npm install
-cp .env.example .env.local          # defaults work on devnet with an embedded database
-npm run dev                         # http://localhost:3000
+cp .env.example .env.local      # devnet defaults; signers default to ~/.config/solana/devnet.json
+npm run bootstrap               # creates the on-chain pools, campaigns and milestones (idempotent)
+npm run dev                     # http://localhost:3000
 ```
 
-Optional, to recreate the demo state on devnet with your own authority key (campaigns, donations, dares, evidence, a vote):
+Without `DATABASE_URL` the app uses an embedded PGlite database under `.data/` (one process at a time; stop the dev server before running scripts). Migrations in `drizzle/` apply on start.
+
+## Deploy
+
+**Ubuntu with Docker** (Postgres, app, Caddy with automatic HTTPS):
 
 ```bash
-npm run seed
+cp .env.example .env            # set the signers, DOMAIN and ADMIN_WALLETS; compose provides DATABASE_URL
+docker compose up -d --build
 ```
 
-Requirements: Node 22. For the seed and for governance releases the server needs the pool authority keypair (`UMANITY_AUTHORITY_KEYPAIR` or `~/.config/solana/devnet.json` in dev). No database setup is needed locally (PGlite); set `DATABASE_URL` for Postgres in production.
+**Vercel**: add a Postgres `DATABASE_URL` (Neon or Supabase), `UMANITY_AUTHORITY_KEYPAIR` and `UMANITY_TREASURY_KEYPAIR` as JSON arrays or base58, and an `S3_*` bucket for proof media (the local disk is ephemeral there).
 
-Programs:
-
-```bash
-anchor build && anchor upgrade target/deploy/umanity_donations.so --program-id 9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1 --provider.cluster devnet
-```
-
-Deploy: `docker compose up -d --build` (Postgres + app + Caddy with automatic HTTPS; set `DOMAIN` and the keys in `.env`), or Vercel with a Postgres `DATABASE_URL`.
+**Mainnet**: deploy the program with the same program keypair (`anchor deploy --provider.cluster mainnet`), set `NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta` and a production RPC, run `npm run bootstrap` (or press "Set up causes on-chain" in the field console), and point `X402_FACILITATOR_URL` at a mainnet facilitator.
 
 ## Repository map
 
 ```
-programs/risen-donations/src/lib.rs   Anchor program v2 (pools, PDA donations, campaigns, milestones, attestations, dares)
-programs/risen-tips/src/lib.rs        tipping program
-lib/db/schema.ts                      Drizzle schema (users, posts, follows, pools, donations, campaigns, milestones, proposals, votes, dares, intents, x402_receipts, ...)
-lib/data/*                            data access (users, social, donations, governance, dares, intents)
-lib/solana/*                          PDAs, instruction builders, chain readers/verifiers, authority ops, sync
-lib/intents/oneclick.ts               NEAR Intents / Aurora Intents client
-lib/x402/server.ts                    x402 resource server wrapper for Next.js routes
-lib/oracle/impact-oracle.ts           AI Impact Oracle (NEAR AI Cloud / Claude / rule-based fallback)
-lib/multihopper/client.ts             MultiHopper routing client
-app/api/*                             46 API routes
-components/*                          feed, causes, give & bridge, govern, profile, layout
-scripts/seed-devnet.ts                real devnet seed · scripts/x402-agent.ts  autonomous payer
-UMANITY_3_BLUEPRINT.md                product + engineering blueprint and the 12-day plan
+programs/risen-donations/src/lib.rs   Anchor program (14 instructions)
+lib/causes.ts                         the six causes: copy, units, images, milestone plan
+lib/solana/                           PDAs, instruction builders, chain verification, authority ops, bootstrap
+lib/db/schema.ts · drizzle/           Postgres schema and migrations
+lib/data/                             users, social, donations, governance, dares, field updates, causes, transparency
+lib/intents/ · lib/x402/ · lib/oracle/ · lib/multihopper/
+lib/admin-auth.ts · lib/storage.ts    signed field-team requests, proof media storage
+app/api/                              routes (donate/sync, causes, field/updates, governance/*, intents/*, x402/*, actions/*)
+app/(marketing)/page.tsx              landing
+app/(app)/                            home, causes, profile, transparency, how-it-works, admin, dares, blinks
+components/                           give sheet, auth, feed, causes, profile, admin, shared primitives
+scripts/bootstrap.ts · scripts/x402-agent.ts
 ```
 
 ## Honest status
 
-- Working today on devnet: escrow donations, PDA records, campaigns and milestone releases, dares, x402-paid oracle with on-chain attestation, Blinks, feed/social, demo wallet, leaderboards, streaks.
-- Working on mainnet: NEAR Intents quotes and deposit-address settlement into the Umanity vault (small real amounts).
-- Preview only until keys/deployments land: Aurora Intents Connect execute-on-arrival (needs the program on mainnet), MultiHopper live routing (needs a key), NEAR AI Cloud signed inference for the oracle (needs a key; rule-based audit runs otherwise and says so).
-- Not built on purpose: tokens, yield vaults and lotteries. Impact points are the unit until there is a real product reason to change that.
+- Program v2 and all app flows run on devnet; the mainnet program deployment is the next step (about 2.4 SOL of rent).
+- Cross-chain giving settles on mainnet today into the vault wallet; execute-on-arrival into the program vault needs the mainnet program.
+- The oracle is rule-based unless `ANTHROPIC_API_KEY` or `NEAR_AI_API_KEY` is set.
+- MultiHopper execution needs an API key; the preview and fee estimate work without one.
+- Proof media is stored on the server's disk by default; S3-compatible storage is wired behind env keys.
 
 ## Roadmap
 
-Mainnet program deployment with Intents Connect execute-on-arrival · NEAR AI Cloud TEE-signed oracle attestations · Metaplex Core soulbound Guardian pass · MultiHopper multi-send supplier payouts after each release · charity partner onboarding with their own evidence uploads · wallet-signature auth and rate limits for public launch.
+Mainnet launch with the first field deliveries, persistent cross-chain deposit addresses per cause, execute-on-arrival through Intents Connect, oracle attestations signed in a TEE (NEAR AI Cloud), Field Fund council for Guardian-tier donors, native mobile.

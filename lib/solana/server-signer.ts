@@ -91,7 +91,7 @@ export function getAuthorityProgram(): anchor.Program | null {
 }
 
 /** Send devnet SOL from the treasury to a fresh demo wallet. */
-export async function fundDemoWallet(to: string, sol = 0.25): Promise<{ signature: string; lamports: number }> {
+export async function fundFromTreasury(to: string, sol = 0.25): Promise<{ signature: string; lamports: number }> {
   const kp = getTreasuryKeypair()
   if (!kp) throw new Error('Treasury signer not configured')
   const conn = getConnection()

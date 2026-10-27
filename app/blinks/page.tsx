@@ -1,122 +1,80 @@
 'use client'
 
+/**
+ * Blinks: every cause is a Solana Action anyone can post on X or embed. The
+ * same endpoint powers wallets, Blink-aware clients and dial.to.
+ */
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-
-const POOLS = [
-  { id: 'palestine-red-crescent', name: 'Palestine Red Crescent Society', category: 'Healthcare', type: 'Verified Charity Trust' },
-  { id: 'turkish-red-crescent', name: 'Turkish Red Crescent (Kizilay)', category: 'Disaster Relief', type: 'Verified Charity Trust' },
-  { id: 'mercy-corps', name: 'Mercy Corps', category: 'Food & Water', type: 'Verified Charity Trust' },
-  { id: 'edhi-foundation', name: 'Edhi Foundation', category: 'Humanitarian', type: 'Verified Charity Trust' },
-  { id: 'orphanage-aid', name: 'Local Orphanage Aid', category: 'Children', type: 'Physical Delivery' },
-  { id: 'animal-rescue', name: 'Street Animal Rescue', category: 'Animal Welfare', type: 'Physical Delivery' },
-]
+import { CAUSES } from '@/lib/causes'
+import { Btn, Icon, Img, Pill } from '@/components/shared/ui'
+import { IS_MAINNET } from '@/lib/solana/constants'
 
 export default function BlinksPage() {
-  const [copiedId, setCopiedId] = useState<string | null>(null)
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-
-  const copyUrl = (poolId: string) => {
-    const actionUrl = `${baseUrl}/api/actions/donate/${poolId}`
-    const url = `https://dial.to/?action=solana-action:${encodeURIComponent(actionUrl)}&cluster=devnet`
-    navigator.clipboard.writeText(url)
-    setCopiedId(poolId)
-    setTimeout(() => setCopiedId(null), 2000)
+  const [copied, setCopied] = useState<string | null>(null)
+  const base = typeof window !== 'undefined' ? window.location.origin : ''
+  const actionUrl = (id: string) => `${base}/api/actions/donate/${id}`
+  const dialUrl = (id: string) => `https://dial.to/?action=solana-action:${encodeURIComponent(actionUrl(id))}${IS_MAINNET ? '' : '&cluster=devnet'}`
+  const copy = (id: string) => {
+    navigator.clipboard.writeText(dialUrl(id)).then(() => {
+      setCopied(id)
+      setTimeout(() => setCopied(null), 1500)
+    })
   }
 
   return (
-    <div className="min-h-screen page-bg">
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-black/[0.03]">
-        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/">
-            <Image src="/logo.png" alt="Umanity" width={32} height={32} className="rounded-full" />
+    <div className="min-h-[100dvh] bg-[#f5f5f7]">
+      <header className="sticky top-0 z-50 glass hairline-b">
+        <div className="container-app h-16 flex items-center gap-3">
+          <Link href="/home" className="flex items-center gap-2.5">
+            <Image src="/logo.png" alt="Umanity" width={34} height={34} className="rounded-full" />
+            <span className="text-[17px] font-bold tracking-[-0.02em]">Umanity</span>
           </Link>
-          <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Solana Blinks
-          </div>
+          <Pill tone="gray" className="ml-2">
+            Blinks
+          </Pill>
+          <Link href="/home" className="ml-auto btn btn-outline h-10 px-4.5 text-[13.5px]">
+            Open app
+          </Link>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-10 animate-fade-up">
-          <h1 className="text-4xl font-bold tracking-tight mb-3">Solana Blinks</h1>
-          <p className="text-gray-400 text-lg max-w-2xl">
-            Donate to any Umanity charity pool from any X feed, website, or app that supports Solana Actions. Copy a Blink URL and share it anywhere.
-          </p>
-          <p className="text-[12px] text-gray-300 mt-2">
-            Blinks use the Solana Actions API v2.1.3 — GET returns metadata, POST returns a partially-signed transaction.
-          </p>
+      <main className="container-app py-10">
+        <div className="max-w-[640px]">
+          <p className="eyebrow mb-4">Solana Actions</p>
+          <h1 className="font-display text-[40px] sm:text-[52px] leading-[1.02]">Give from inside a post.</h1>
+          <p className="text-[16px] text-[#6e6e73] mt-4 leading-relaxed">Each cause is a Blink: paste the link on X, in a group chat or on a website, and anyone with a Solana wallet can give without leaving the page. The gift lands in the same escrow vault as every other gift.</p>
         </div>
 
-        <div className="space-y-3 animate-stagger">
-          {POOLS.map((pool) => {
-            const actionUrl = `${baseUrl}/api/actions/donate/${pool.id}`
-            const blinkUrl = `https://dial.to/?action=solana-action:${encodeURIComponent(actionUrl)}&cluster=devnet`
-            const isCopied = copiedId === pool.id
-
-            return (
-              <div key={pool.id} className="card p-6 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900">{pool.name}</h3>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                        pool.type === 'Verified Charity Trust'
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/60'
-                          : 'bg-blue-50 text-blue-600 border border-blue-200/60'
-                      }`}>
-                        {pool.type}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mb-3">{pool.category}</p>
-
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 text-[11px] bg-gray-50 border border-black/[0.04] rounded-lg px-3 py-2 text-gray-500 truncate font-mono">
-                        {blinkUrl}
-                      </code>
-                      <a
-                        href={blinkUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-2 rounded-lg text-xs font-medium border border-black/[0.06] text-[#86868b] hover:text-[#1d1d1f] hover:border-black/[0.12] transition-all"
-                      >
-                        Try
-                      </a>
-                      <button
-                        onClick={() => copyUrl(pool.id)}
-                        className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                          isCopied
-                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                            : 'btn-primary'
-                        }`}
-                      >
-                        {isCopied ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 mt-4 pt-3 border-t border-black/[0.03] text-[11px] text-gray-300">
-                  <span>GET → Action metadata</span>
-                  <span className="text-gray-200">|</span>
-                  <span>POST → Partially-signed tx</span>
-                  <span className="text-gray-200">|</span>
-                  <span>Amounts: 0.01, 0.05, 0.1, 0.5 SOL</span>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
+          {CAUSES.map((c) => (
+            <div key={c.id} className="card overflow-hidden">
+              <div className="h-[150px] overflow-hidden">
+                <Img src={c.image} alt={c.imageAlt} />
+              </div>
+              <div className="p-5">
+                <h2 className="text-[17px] font-bold tracking-[-0.02em]">{c.name}</h2>
+                <p className="text-[13px] text-[#6e6e73] mt-1">{c.impact}</p>
+                <p className="num text-[11.5px] text-[#aeaeb2] mt-3 break-all">{actionUrl(c.id).replace(/^https?:\/\//, '')}</p>
+                <div className="flex gap-2 mt-4">
+                  <Btn size="sm" tone={copied === c.id ? 'secondary' : 'primary'} icon={copied === c.id ? 'check' : 'copy'} onClick={() => copy(c.id)}>
+                    {copied === c.id ? 'Copied' : 'Copy Blink'}
+                  </Btn>
+                  <a href={dialUrl(c.id)} target="_blank" rel="noopener noreferrer" className="btn btn-outline h-8 px-3.5 text-[12.5px]">
+                    Preview <Icon name="arrowUpRight" size={13} />
+                  </a>
                 </div>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-xs text-gray-300">
-            All Blinks route to on-chain escrow vaults via Anchor programs. Transactions verifiable on Solscan.
+        <div className="card p-6 mt-10 max-w-[720px]">
+          <h3 className="text-[16px] font-bold">For developers</h3>
+          <p className="text-[13.5px] text-[#6e6e73] mt-1.5 leading-relaxed">
+            <span className="num">GET /api/actions/donate/&lt;causeId&gt;</span> returns the Action metadata; <span className="num">POST</span> with <span className="num">{'{ account }'}</span> and an <span className="num">amount</span> query returns an unsigned transaction calling the escrow program&apos;s <span className="num">donate</span> instruction. Dares have their own Blink at <span className="num">/api/actions/dare/&lt;dareId&gt;</span>. CORS and <span className="num">actions.json</span> are configured.
           </p>
-          <Link href="/" className="inline-block mt-4 btn-secondary px-6 py-2.5 text-[13px] rounded-xl">
-            Back to App
-          </Link>
         </div>
       </main>
     </div>

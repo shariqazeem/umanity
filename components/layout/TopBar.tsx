@@ -1,126 +1,68 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { WalletButton } from '@/components/wallet/WalletButton'
-import { apiGet, fmtSol, fmtUsd, short } from '@/lib/client/api'
-import { Btn, Mono, Pill } from '@/components/shared/ui'
-import { SOLANA_CLUSTER } from '@/lib/solana/constants'
+import { Btn, Avatar, Pill, Icon } from '@/components/shared/ui'
+import { fmtSol } from '@/lib/client/api'
 
-export interface PlatformStats {
-  totalDonations: number
-  totalEscrowed: number
-  totalDonors: number
-  totalTransactions: number
-  crossChainVolume: number
-  crossChainCount: number
-  discreetVolume: number
-  x402Calls: number
-  x402Revenue: string
-  proposals: number
-  activeProposals: number
-  escrowAwaitingVote: number
-  openDares: number
-  darePot: number
-  network: string
-}
+const NAV = [
+  { href: '/home', label: 'Home' },
+  { href: '/causes', label: 'Causes' },
+  { href: '/transparency', label: 'Transparency' },
+  { href: '/how-it-works', label: 'How it works' },
+]
 
-export function useStats(intervalMs = 30_000) {
-  const [stats, setStats] = useState<PlatformStats | null>(null)
-  useEffect(() => {
-    let alive = true
-    const load = () => apiGet<{ stats?: PlatformStats }>('/api/platform/stats').then((d) => alive && d.stats && setStats(d.stats)).catch(() => {})
-    load()
-    const t = setInterval(load, intervalMs)
-    return () => {
-      alive = false
-      clearInterval(t)
-    }
-  }, [intervalMs])
-  return stats
-}
-
-export function TopBar({ onGive }: { onGive: () => void }) {
-  const { signer, user, balance, solPrice, startDemo, stopDemo, toast } = useUmanity()
-  const stats = useStats()
-  const [starting, setStarting] = useState(false)
-
-  const demo = async () => {
-    setStarting(true)
-    const r = await startDemo()
-    setStarting(false)
-    if (r.error) toast(r.error, 'err')
-    else toast(r.funded ? 'Demo wallet funded with devnet SOL. Try a donation.' : 'Demo wallet ready.', 'ok')
-  }
-
-  const usd = (sol: number) => (solPrice ? ` (${fmtUsd(sol * solPrice)})` : '')
-
+export function TopBar() {
+  const pathname = usePathname()
+  const { signer, user, balance, isMainnet, openGive, openAuth, openWalletSheet } = useUmanity()
   return (
-    <header className="sticky top-0 z-50 h-14 bg-white/[0.86] backdrop-blur-xl border-b border-[#ECECED]">
-      <div className="h-full px-4 lg:px-6 flex items-center gap-4">
-        <div className="flex items-center gap-2.5 flex-shrink-0">
-          <Image src="/logo.png" alt="Umanity" width={30} height={30} className="rounded-full" />
-          <div className="hidden md:flex items-center gap-1.5 text-[11px] text-[#52525B] whitespace-nowrap">
-            <span className="pulse-dot" />
-            <span className="capitalize">Solana {SOLANA_CLUSTER === 'mainnet-beta' ? 'mainnet' : 'devnet'}</span>
-            <span className="hidden xl:inline text-[#D4D4D8]">·</span>
-            <span className="hidden xl:inline">31+ chains via NEAR Intents</span>
-          </div>
-        </div>
+    <header className="sticky top-0 z-50 glass hairline-b">
+      <div className="container-app h-16 flex items-center gap-6">
+        <Link href="/home" className="flex items-center gap-2.5 flex-shrink-0">
+          <Image src="/logo.png" alt="Umanity" width={34} height={34} className="rounded-full" priority />
+          <span className="hidden sm:inline text-[17px] font-bold tracking-[-0.02em]">Umanity</span>
+        </Link>
 
-        <div className="hidden lg:flex items-center gap-5 text-[11px] text-[#52525B] flex-1 min-w-0 justify-center overflow-hidden whitespace-nowrap">
-          {stats ? (
-            <>
-              <Stat label="Escrowed" value={`${fmtSol(stats.totalEscrowed, 2)} SOL`} sub={usd(stats.totalEscrowed)} />
-              <Stat label="Cross-chain" value={`${stats.crossChainCount} intents`} sub={stats.crossChainVolume > 0 ? ` · ${fmtSol(stats.crossChainVolume, 2)} SOL` : ''} />
-              <Stat label="Oracle calls" value={`${stats.x402Calls}`} sub={Number(stats.x402Revenue) > 0 ? ` · $${Number(stats.x402Revenue).toFixed(2)}` : ''} />
-              <Stat label="Live dares" value={`${stats.openDares}`} sub={stats.darePot > 0 ? ` · ${fmtSol(stats.darePot, 2)} SOL pot` : ''} tone="coral" />
-              <Stat label="Votes open" value={`${stats.activeProposals}`} sub={stats.escrowAwaitingVote > 0 ? ` · ${fmtSol(stats.escrowAwaitingVote, 2)} SOL` : ''} />
-            </>
-          ) : (
-            <span className="skeleton h-4 w-80 rounded" />
+        <nav className="hidden md:flex items-center gap-1 ml-2">
+          {NAV.map((n) => {
+            const active = pathname === n.href || (n.href !== '/home' && pathname.startsWith(n.href))
+            return (
+              <Link key={n.href} href={n.href} className={`px-3.5 h-9 inline-flex items-center rounded-full text-[13.5px] font-semibold transition-colors ${active ? 'bg-black/[0.06] text-[#1d1d1f]' : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/[0.04]'}`}>
+                {n.label}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-2">
+          {!isMainnet && (
+            <Pill tone="gray" className="hidden sm:inline-flex">
+              Devnet
+            </Pill>
           )}
-        </div>
-
-        <div className="ml-auto flex items-center gap-2 min-w-0 whitespace-nowrap">
-          <Btn tone="outline" size="sm" className="hidden sm:inline-flex" onClick={onGive}>
-            🌐 <span className="hidden xl:inline">Give from</span> any chain
+          <Btn tone="accent" size="md" icon="heart" onClick={() => openGive()} className="hidden sm:inline-flex">
+            Give
           </Btn>
-          {!signer && (
-            <Btn tone="emerald" size="sm" onClick={demo} loading={starting} title="Creates a browser wallet funded with devnet SOL so you can try everything in seconds">
-              ⚡ <span className="hidden xl:inline">Instant</span> demo wallet
+          {signer ? (
+            <button onClick={openWalletSheet} className="flex items-center gap-2 pl-1 pr-3 h-10 rounded-full border border-black/[0.08] bg-white hover:border-black/30 transition-colors">
+              <Avatar username={user?.username || 'u'} url={user?.avatarUrl} size={30} />
+              <span className="hidden sm:flex flex-col items-start leading-none">
+                <span className="text-[12.5px] font-semibold">{user?.handleClaimed ? `@${user.username}` : 'Your wallet'}</span>
+                <span className="text-[11px] text-[#6e6e73] num mt-0.5">{balance == null ? '…' : `${fmtSol(balance, 2)} SOL`}</span>
+              </span>
+            </button>
+          ) : (
+            <Btn tone="outline" size="md" onClick={openAuth}>
+              Sign in
             </Btn>
           )}
-          {signer?.kind === 'demo' && (
-            <div className="flex items-center gap-1.5 pl-2.5 pr-1 h-9 rounded-full bg-emerald-50 border border-emerald-100 min-w-0">
-              <Pill tone="emerald">DEMO</Pill>
-              <Mono className="hidden sm:inline text-[11px] text-emerald-800">{short(signer.publicKey.toBase58())}</Mono>
-              {balance != null && <Mono className="text-[11px] text-emerald-700">{fmtSol(balance, 2)} SOL</Mono>}
-              <button onClick={stopDemo} className="w-6 h-6 rounded-full hover:bg-emerald-100 text-emerald-700 text-[12px]" title="Forget demo wallet">
-                ×
-              </button>
-            </div>
-          )}
-          {signer?.kind === 'wallet' && balance != null && (
-            <Mono className="hidden md:inline text-[11px] text-[#52525B]">{fmtSol(balance, 2)} SOL</Mono>
-          )}
-          {user && signer?.kind === 'wallet' && <span className="hidden md:inline text-[12px] font-semibold">@{user.username}</span>}
-          <WalletButton />
+          <Link href="/profile" className="hidden lg:inline-flex w-10 h-10 rounded-full items-center justify-center text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/[0.04]" aria-label="Profile">
+            <Icon name="user" size={20} />
+          </Link>
         </div>
       </div>
     </header>
-  )
-}
-
-function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'coral' }) {
-  return (
-    <span className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
-      <span className="text-[#A1A1AA]">{label}</span>
-      <Mono className={`font-semibold ${tone === 'coral' ? 'text-[#D9431F]' : 'text-[#111113]'}`}>
-        {value}
-        {sub && <span className="font-normal text-[#A1A1AA]">{sub}</span>}
-      </Mono>
-    </span>
   )
 }

@@ -1,6 +1,7 @@
-import { and, desc, eq, sql } from 'drizzle-orm'
-import { getDb, newId, pools, donations, users, impactCertificates, tips, intents, x402Receipts, routedTransfers, type Pool, type Donation } from '@/lib/db'
-import { CAUSES, type CauseMeta } from '@/lib/causes'
+import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { getDb, newId, pools, donations, users, impactCertificates, tips, intents, x402Receipts, routedTransfers, fieldDeliveries, type Pool, type Donation, type User } from '@/lib/db'
+import { CAUSES, CAUSE_IDS, type CauseMeta } from '@/lib/causes'
+import type { GiftView, Supporter } from '@/lib/contracts'
 import { LAMPORTS_PER_SOL } from '@/lib/solana/constants'
 import { findUser, findUsersByAddresses, bumpStreak } from './users'
 import { createPost, notifyMany, getFollowers } from './social'
@@ -29,18 +30,29 @@ export interface PoolView extends CauseMeta {
 }
 
 export function toPoolView(p: Pool): PoolView {
+  // Copy lives in lib/causes.ts so wording changes never need a migration;
+  // the database row only carries the on-chain addresses and counters.
   const meta = CAUSES.find((c) => c.id === p.id)
-  return {
+  const base: CauseMeta = meta ?? {
     id: p.id,
     name: p.name,
-    shortName: meta?.shortName ?? p.name,
+    shortName: p.name,
+    tagline: p.description,
+    story: p.description,
     description: p.description,
     category: p.category,
     emoji: p.emoji,
-    deliveryMode: (p.deliveryMode as CauseMeta['deliveryMode']) || 'trust',
-    color: meta?.color ?? 'bg-gray-50 text-gray-600',
-    impact: meta?.impact ?? '',
-    website: meta?.website,
+    image: '',
+    imageAlt: p.name,
+    units: [],
+    impact: '',
+    deliveryMode: (p.deliveryMode as CauseMeta['deliveryMode']) || 'field',
+    location: '',
+    color: 'bg-gray-50 text-gray-600',
+    plan: { targetSol: 0, days: 0, milestones: [] },
+  }
+  return {
+    ...base,
     poolPda: p.poolPda,
     vaultPda: p.vaultPda,
     totalDonated: p.totalDonatedLamports / LAMPORTS_PER_SOL,
@@ -64,7 +76,8 @@ export async function ensurePools(derive: (id: string) => { poolPda: string; vau
 
 export async function getPools(): Promise<PoolView[]> {
   const db = await getDb()
-  const rows = await db.select().from(pools).where(eq(pools.isActive, true))
+  // Only causes that exist in lib/causes.ts; rows for retired ids stay in the table but are never shown.
+  const rows = await db.select().from(pools).where(and(eq(pools.isActive, true), inArray(pools.id, CAUSE_IDS)))
   const order = new Map(CAUSES.map((c, i) => [c.id, i]))
   return rows.sort((a, b) => (order.get(a.id) ?? 99) - (order.get(b.id) ?? 99)).map(toPoolView)
 }
@@ -90,8 +103,10 @@ export interface RecordDonationInput {
   sourceAsset?: string
   sourceAmount?: string
   intentId?: string
-  /** Skip the social post (e.g. anonymous/discreet routes). */
+  /** Skip the social post (e.g. discreet routes). */
   silent?: boolean
+  /** Donor chose to hide their name: stored on the row, no post, unnamed in lists. */
+  anonymous?: boolean
 }
 
 /**
@@ -117,6 +132,7 @@ export async function recordDonation(input: RecordDonationInput): Promise<{ dona
       sourceAmount: input.sourceAmount ?? null,
       intentId: input.intentId ?? null,
       rewardPoints: points,
+      anonymous: !!input.anonymous,
     })
     .onConflictDoNothing({ target: donations.signature })
     .returning()
@@ -150,8 +166,8 @@ export async function recordDonation(input: RecordDonationInput): Promise<{ dona
   // Certificate
   await db.insert(impactCertificates).values({ id: newId('cert'), ownerAddress: input.donorAddress, donationId: donation.id, causeName, amountLamports: input.amountLamports, tier, mintSignature: input.signature })
 
-  // Feed + notifications
-  if (!input.silent) {
+  // Feed + notifications (never for anonymous gifts)
+  if (!input.silent && !input.anonymous) {
     const sol = (input.amountLamports / LAMPORTS_PER_SOL).toFixed(input.amountLamports % 10_000_000 === 0 ? 2 : 3)
     const viaChain = input.route === 'intents' && input.sourceChain ? ` from ${input.sourceChain}${input.sourceAsset ? ` (${input.sourceAmount ?? ''} ${input.sourceAsset})`.replace('( ', '(') : ''} via NEAR Intents` : ''
     const content = `Donated ${sol} SOL${viaChain} to ${cause?.emoji ?? ''} ${causeName}. Locked in on-chain escrow until the community releases it.`
@@ -174,11 +190,11 @@ export async function getDonationsByDonor(address: string, limit = 50): Promise<
 
 export async function getRecentDonations(limit = 20): Promise<(Donation & { username: string; poolName: string })[]> {
   const db = await getDb()
-  const rows = await db.select().from(donations).orderBy(desc(donations.createdAt)).limit(limit)
+  const rows = await db.select().from(donations).where(inArray(donations.poolId, CAUSE_IDS)).orderBy(desc(donations.createdAt)).limit(limit)
   const authors = await findUsersByAddresses(Array.from(new Set(rows.map((r) => r.donorAddress))))
   return rows.map((d) => ({
     ...d,
-    username: authors.get(d.donorAddress)?.username ?? `${d.donorAddress.slice(0, 4)}…${d.donorAddress.slice(-4)}`,
+    username: d.anonymous ? 'anonymous' : authors.get(d.donorAddress)?.username ?? `${d.donorAddress.slice(0, 4)}…${d.donorAddress.slice(-4)}`,
     poolName: CAUSES.find((c) => c.id === d.poolId)?.name ?? d.poolId,
   }))
 }
@@ -208,6 +224,11 @@ export interface PlatformStats {
   x402Calls: number
   x402Revenue: string // USDC
   pools: number
+  /** SOL that has left the vaults after approved releases (on-chain: donated minus still held). */
+  releasedSol: number
+  /** Field deliveries posted by the team. */
+  deliveries: number
+  causes: number
 }
 
 export async function getPlatformStats(): Promise<PlatformStats> {
@@ -222,7 +243,12 @@ export async function getPlatformStats(): Promise<PlatformStats> {
       discreet: sql<number>`coalesce(sum(case when ${donations.route} = 'multihopper' then ${donations.amountLamports} else 0 end), 0)::bigint`,
     })
     .from(donations)
-  const poolRows = await db.select({ vault: sql<number>`coalesce(sum(${pools.vaultBalanceLamports}), 0)::bigint`, n: sql<number>`count(*)::int` }).from(pools)
+    .where(inArray(donations.poolId, CAUSE_IDS))
+  const poolRows = await db
+    .select({ vault: sql<number>`coalesce(sum(${pools.vaultBalanceLamports}), 0)::bigint`, donated: sql<number>`coalesce(sum(${pools.totalDonatedLamports}), 0)::bigint`, n: sql<number>`count(*)::int` })
+    .from(pools)
+    .where(inArray(pools.id, CAUSE_IDS))
+  const [deliveries] = await db.select({ n: sql<number>`count(*)::int` }).from(fieldDeliveries)
   const [x] = await db.select({ n: sql<number>`count(*)::int`, usd: sql<string>`coalesce(sum((${x402Receipts.amount})::numeric), 0)::text` }).from(x402Receipts).where(eq(x402Receipts.status, 'settled'))
   return {
     totalDonations: Number(agg?.total ?? 0) / LAMPORTS_PER_SOL,
@@ -235,6 +261,9 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     x402Calls: x?.n ?? 0,
     x402Revenue: x?.usd ?? '0',
     pools: poolRows[0]?.n ?? 0,
+    releasedSol: Math.max(0, Number(poolRows[0]?.donated ?? 0) - Number(poolRows[0]?.vault ?? 0)) / LAMPORTS_PER_SOL,
+    deliveries: deliveries?.n ?? 0,
+    causes: CAUSES.length,
   }
 }
 
@@ -266,7 +295,7 @@ export async function getActivity(limit = 20) {
     ...recent.map((d) => ({
       id: d.id,
       type: d.route === 'intents' ? 'intent' : d.route === 'multihopper' ? 'discreet' : 'donation',
-      username: d.route === 'multihopper' ? 'anonymous' : d.username,
+      username: d.route === 'multihopper' || d.anonymous ? 'anonymous' : d.username,
       amount: d.amountLamports / LAMPORTS_PER_SOL,
       poolId: d.poolId,
       poolName: d.poolName,
@@ -278,4 +307,124 @@ export async function getActivity(limit = 20) {
     ...routed.map((r) => ({ id: r.id, type: 'payout', username: '', amount: r.amountLamports / LAMPORTS_PER_SOL, poolId: r.poolId ?? '', poolName: CAUSES.find((c) => c.id === r.poolId)?.name ?? '', sourceChain: null, signature: r.providerRef ?? '', timestamp: r.createdAt.toISOString() })),
   ]
   return items.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, limit)
+}
+
+// ---- Gifts (donations as the screens show them) ----
+function shortAddr(a: string) {
+  return `${a.slice(0, 4)}…${a.slice(-4)}`
+}
+
+/** A donation row as a GiftView. Anonymous gifts are unnamed unless the viewer is the donor. */
+export function toGiftView(d: Donation, user: User | undefined, viewer?: string | null): GiftView {
+  const hide = d.anonymous && viewer !== d.donorAddress
+  const cause = CAUSES.find((c) => c.id === d.poolId)
+  return {
+    id: d.id,
+    poolId: d.poolId,
+    poolName: cause?.name ?? d.poolId,
+    username: hide ? 'anonymous' : user?.username ?? shortAddr(d.donorAddress),
+    displayName: hide ? 'Anonymous' : user?.displayName ?? '',
+    address: hide ? '' : d.donorAddress,
+    avatarUrl: hide ? null : user?.avatarUrl ?? null,
+    amount: d.amountLamports / LAMPORTS_PER_SOL,
+    route: d.route,
+    sourceChain: d.sourceChain ?? null,
+    signature: d.signature,
+    createdAt: d.createdAt.toISOString(),
+    anonymous: d.anonymous,
+  }
+}
+
+export async function toGiftViews(rows: Donation[], viewer?: string | null): Promise<GiftView[]> {
+  const authors = await findUsersByAddresses(Array.from(new Set(rows.map((r) => r.donorAddress))))
+  return rows.map((d) => toGiftView(d, authors.get(d.donorAddress), viewer))
+}
+
+export async function getGiftsForPool(poolId: string, limit = 30, viewer?: string | null): Promise<GiftView[]> {
+  const db = await getDb()
+  const rows = await db.select().from(donations).where(eq(donations.poolId, poolId)).orderBy(desc(donations.createdAt)).limit(limit)
+  return toGiftViews(rows, viewer)
+}
+
+export async function getGiftsForDonor(address: string, limit = 50, viewer?: string | null): Promise<GiftView[]> {
+  const db = await getDb()
+  const rows = await db.select().from(donations).where(and(eq(donations.donorAddress, address), inArray(donations.poolId, CAUSE_IDS))).orderBy(desc(donations.createdAt)).limit(limit)
+  return toGiftViews(rows, viewer)
+}
+
+/** Donors of a cause, aggregated. Anonymous gifts are counted but collapsed into one unnamed row. */
+export async function getSupporters(poolId: string, limit = 50): Promise<{ supporters: Supporter[]; count: number }> {
+  const db = await getDb()
+  const rows = await db
+    .select({
+      address: donations.donorAddress,
+      anonymous: donations.anonymous,
+      total: sql<number>`sum(${donations.amountLamports})::bigint`,
+      n: sql<number>`count(*)::int`,
+      last: sql<string>`max(${donations.createdAt})::text`,
+    })
+    .from(donations)
+    .where(eq(donations.poolId, poolId))
+    .groupBy(donations.donorAddress, donations.anonymous)
+    .orderBy(desc(sql`sum(${donations.amountLamports})`))
+  const named = rows.filter((r) => !r.anonymous)
+  const anon = rows.filter((r) => r.anonymous)
+  const us = await findUsersByAddresses(named.map((r) => r.address))
+  const supporters: Supporter[] = named.slice(0, limit).map((r) => {
+    const u = us.get(r.address)
+    return { address: r.address, username: u?.username ?? shortAddr(r.address), displayName: u?.displayName ?? '', avatarUrl: u?.avatarUrl ?? null, amount: Number(r.total) / LAMPORTS_PER_SOL, count: r.n, lastAt: new Date(r.last).toISOString(), anonymous: false }
+  })
+  if (anon.length) {
+    supporters.push({
+      address: '',
+      username: 'anonymous',
+      displayName: anon.length === 1 ? 'Anonymous' : `${anon.length} anonymous givers`,
+      avatarUrl: null,
+      amount: anon.reduce((s, r) => s + Number(r.total), 0) / LAMPORTS_PER_SOL,
+      count: anon.reduce((s, r) => s + r.n, 0),
+      lastAt: new Date(anon.map((r) => r.last).sort().reverse()[0]).toISOString(),
+      anonymous: true,
+    })
+  }
+  const distinct = new Set(rows.map((r) => r.address)).size
+  return { supporters, count: distinct }
+}
+
+/** Pool ids this wallet has given to. */
+export async function donorPoolsGiven(address: string): Promise<Set<string>> {
+  const db = await getDb()
+  const rows = await db.selectDistinct({ poolId: donations.poolId }).from(donations).where(eq(donations.donorAddress, address))
+  return new Set(rows.map((r) => r.poolId))
+}
+
+/** Distinct donor wallets of a cause (for delivery notifications). */
+export async function getDonorAddressesForPool(poolId: string): Promise<string[]> {
+  const db = await getDb()
+  const rows = await db.selectDistinct({ address: donations.donorAddress }).from(donations).where(eq(donations.poolId, poolId))
+  return rows.map((r) => r.address)
+}
+
+/** 1-based rank of this wallet's first gift among all donors (founding order); null when it has not given. */
+export async function firstGiftRank(address: string): Promise<number | null> {
+  const db = await getDb()
+  const rows = await db
+    .select({ address: donations.donorAddress, first: sql<string>`min(${donations.createdAt})::text` })
+    .from(donations)
+    .where(inArray(donations.poolId, CAUSE_IDS))
+    .groupBy(donations.donorAddress)
+    .orderBy(sql`min(${donations.createdAt})`)
+  const idx = rows.findIndex((r) => r.address === address)
+  return idx < 0 ? null : idx + 1
+}
+
+/** Per-cause totals for one donor. */
+export async function donorCauseTotals(address: string): Promise<{ poolId: string; amount: number; count: number }[]> {
+  const db = await getDb()
+  const rows = await db
+    .select({ poolId: donations.poolId, total: sql<number>`sum(${donations.amountLamports})::bigint`, n: sql<number>`count(*)::int` })
+    .from(donations)
+    .where(and(eq(donations.donorAddress, address), inArray(donations.poolId, CAUSE_IDS)))
+    .groupBy(donations.poolId)
+    .orderBy(desc(sql`sum(${donations.amountLamports})`))
+  return rows.map((r) => ({ poolId: r.poolId, amount: Number(r.total) / LAMPORTS_PER_SOL, count: r.n }))
 }

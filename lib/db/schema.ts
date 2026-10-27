@@ -143,6 +143,8 @@ export const donations = pgTable(
     sourceAmount: text('source_amount'),
     intentId: text('intent_id'),
     rewardPoints: integer('reward_points').notNull().default(0),
+    /** Donor chose to hide their name: no feed post, unnamed in lists. */
+    anonymous: boolean('anonymous').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -380,6 +382,16 @@ export const impactCertificates = pgTable(
 )
 
 // ---------- Field Fund (real-world delivery ledger) ----------
+/** Photos, videos, receipts and documents attached to a delivery (same shape as lib/contracts MediaItem). */
+export type MediaItem = {
+  url: string
+  kind: 'photo' | 'video' | 'receipt' | 'document'
+  sha256?: string
+  note?: string
+  lat?: number
+  lng?: number
+}
+
 export const fieldDeliveries = pgTable('field_deliveries', {
   id: text('id').primaryKey(),
   poolId: text('pool_id').notNull(),
@@ -391,6 +403,14 @@ export const fieldDeliveries = pgTable('field_deliveries', {
   location: text('location'),
   deliveredAt: timestamp('delivered_at', { withTimezone: true }),
   evidence: jsonb('evidence').$type<MilestoneEvidence>(),
+  /** Media the team uploaded for this delivery. */
+  media: jsonb('media').$type<MediaItem[]>(),
+  /** Admin wallet that posted it. */
+  postedBy: text('posted_by'),
+  /** Release vote opened for this delivery, if any. */
+  proposalId: text('proposal_id'),
+  /** Feed post created for this delivery. */
+  postId: text('post_id'),
   proofTxSignature: text('proof_tx_signature'),
   xPostUrl: text('x_post_url'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

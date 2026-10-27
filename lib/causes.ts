@@ -40,9 +40,15 @@ export interface CauseMeta {
   website?: string
   /** Legacy tint class kept for data compatibility; the UI uses one accent. */
   color: string
+  /**
+   * The on-chain campaign plan for this cause (created at bootstrap): the target that
+   * defines milestone thresholds, and the milestones donors vote to release.
+   * `targetSol` is multiplied by CAMPAIGN_TARGET_SCALE (devnet uses 0.05).
+   */
+  plan: { targetSol: number; days: number; milestones: { description: string; percentage: number }[] }
 }
 
-const img = (id: string) => `https://images.unsplash.com/${id}?w=1600&q=80&auto=format&fit=crop`
+const img = (id: string) => `https://images.unsplash.com/${id}?w=1200&q=75&auto=format&fit=crop`
 
 export const CAUSES: CauseMeta[] = [
   {
@@ -66,6 +72,15 @@ export const CAUSES: CauseMeta[] = [
     deliveryMode: 'field',
     location: 'Karachi, Pakistan',
     color: 'bg-emerald-50 text-emerald-700',
+    plan: {
+      targetSol: 20,
+      days: 180,
+      milestones: [
+        { description: 'First delivery: hot meals and school kits; photos and receipts posted', percentage: 30 },
+        { description: 'Second delivery: winter clothing and shoes for every child', percentage: 30 },
+        { description: "Full round delivered; receipts, photos and the orphanage's acknowledgement published", percentage: 40 },
+      ],
+    },
   },
   {
     id: 'street-animals',
@@ -77,8 +92,8 @@ export const CAUSES: CauseMeta[] = [
     description: 'Food, vaccines and vet care for street dogs and cats — delivered on the street by the Umanity team.',
     category: 'Animals',
     emoji: '🐾',
-    image: img('photo-1667099521469-df09eb52c812'),
-    imageAlt: 'A stray dog sleeping on a sidewalk',
+    image: img('photo-1585578488379-31c5504f0424'),
+    imageAlt: 'A street dog lying on the ground',
     units: [
       { usd: 1, label: 'day of food for a stray', plural: 'days of food for strays' },
       { usd: 6, label: 'rabies vaccination' },
@@ -88,6 +103,15 @@ export const CAUSES: CauseMeta[] = [
     deliveryMode: 'field',
     location: 'Karachi, Pakistan',
     color: 'bg-emerald-50 text-emerald-700',
+    plan: {
+      targetSol: 8,
+      days: 120,
+      milestones: [
+        { description: 'Feeding rounds and rabies vaccinations; vet invoices posted', percentage: 35 },
+        { description: 'Treatment of injured animals; before-and-after posted', percentage: 35 },
+        { description: 'Full round complete with every invoice published', percentage: 30 },
+      ],
+    },
   },
   {
     id: 'family-meals',
@@ -109,6 +133,15 @@ export const CAUSES: CauseMeta[] = [
     deliveryMode: 'field',
     location: 'Karachi & interior Sindh, Pakistan',
     color: 'bg-emerald-50 text-emerald-700',
+    plan: {
+      targetSol: 15,
+      days: 150,
+      milestones: [
+        { description: 'First ration distribution; wholesale receipts and hand-over photos', percentage: 40 },
+        { description: 'Second distribution to the next families on the list', percentage: 30 },
+        { description: 'Full round delivered; every receipt published', percentage: 30 },
+      ],
+    },
   },
   {
     id: 'medical-help',
@@ -131,6 +164,15 @@ export const CAUSES: CauseMeta[] = [
     deliveryMode: 'field',
     location: 'Karachi, Pakistan',
     color: 'bg-emerald-50 text-emerald-700',
+    plan: {
+      targetSol: 15,
+      days: 150,
+      milestones: [
+        { description: 'First patients covered; pharmacy and lab paid directly, invoices posted', percentage: 30 },
+        { description: 'Second batch of referred patients covered', percentage: 30 },
+        { description: 'Full round complete; prescriptions and invoices published', percentage: 40 },
+      ],
+    },
   },
   {
     id: 'clean-water',
@@ -152,6 +194,15 @@ export const CAUSES: CauseMeta[] = [
     deliveryMode: 'field',
     location: 'Interior Sindh, Pakistan',
     color: 'bg-emerald-50 text-emerald-700',
+    plan: {
+      targetSol: 25,
+      days: 180,
+      milestones: [
+        { description: 'Household filters distributed; photos and receipts posted', percentage: 30 },
+        { description: 'Hand pump installed; location and photos published', percentage: 30 },
+        { description: 'Full round complete; all installations mapped and receipted', percentage: 40 },
+      ],
+    },
   },
   {
     id: 'emergency-relief',
@@ -174,6 +225,15 @@ export const CAUSES: CauseMeta[] = [
     deliveryMode: 'field',
     location: 'Sindh & Balochistan, Pakistan',
     color: 'bg-emerald-50 text-emerald-700',
+    plan: {
+      targetSol: 20,
+      days: 365,
+      milestones: [
+        { description: 'Relief kits bought and delivered to the first affected families', percentage: 40 },
+        { description: 'Second deployment: tents and dry rations', percentage: 30 },
+        { description: 'Full deployment documented from purchase to hand-over', percentage: 30 },
+      ],
+    },
   },
 ]
 

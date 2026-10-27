@@ -17,7 +17,7 @@ export interface OracleInput {
   milestoneDescription: string
   amountSol: number
   recipient: string
-  deliveryMode: 'trust' | 'field'
+  deliveryMode: 'trust' | 'field' | 'partner'
   evidence: MilestoneEvidence | null
 }
 

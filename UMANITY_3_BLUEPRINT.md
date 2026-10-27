@@ -10,6 +10,18 @@ Targets (in priority order):
 | 2 | NEAR Hackathon "Build Beyond Boundaries" | Real-World Money, Agent Economy, Social Money, Open Innovation (track prizes $10k/$3k/$2k, grand prize $55k, paid in NEAR) | Build 1–14 Nov, submit by 14 Nov 23:59 UTC |
 | 3 | MultiHopper Build & Route Challenge | Integration + revenue share; prize needs $100k real mainnet volume by 30 Nov, treated as a long shot | Window 21 Oct–30 Nov |
 
+## 0. Addendum, 27 Oct evening: the product pivot that supersedes sections 3 and 5
+
+The founder reviewed the first 3.0 build and asked for three changes. They override anything below that contradicts them.
+
+1. **Build it as a mainnet product, not a demo.** No demo wallet, no seeded fake users, no "devnet" or "demo" wording in product copy. The browser wallet is the *Umanity wallet* (self-custodial, backup via secret key, imports into Phantom). The devnet faucet exists only off-mainnet and is a wallet-menu convenience, not a product mode. `npm run bootstrap` creates pools, campaigns and milestones on whatever cluster the server is configured for, so the mainnet launch is: deploy the program, set `NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta`, run bootstrap.
+2. **The cause is the hero; the mechanics are trust signals.** Six Umanity-run field causes (`lib/causes.ts`: orphan care, street animals, family food packs, medical help, clean water, emergency relief), all delivered in person in Pakistan with photos and receipts. Escrow, the oracle and the release vote live inside cause pages and delivery cards; there is no "Govern" or "Escrow" tab. The home feed is about gifts, deliveries ("You helped fund this"), dares, streaks and the Living Guardian pass. Real routes: `/`, `/home`, `/causes`, `/causes/[id]`, `/profile`, `/u/[handle]`, `/transparency`, `/how-it-works`, `/admin`, `/dares/[id]`, `/blinks`.
+3. **Back to the clean design the founder liked, and up from there.** The old Apple-grade light system (white on #f5f5f7, #1d1d1f text, hairlines, emerald as the only accent, black primary buttons) plus Instrument Serif for one headline per screen and real photography. No orange, coral, indigo or purple. Sparse screens, generous whitespace.
+
+The repository moved: the new code lives at `github.com/shariqazeem/umanity` (fresh history); `umanity-social` stays as the archived 2.0.
+
+The reasons people come back (the founder's word for this was "cause") are built in on purpose: the delivery loop (donors of a cause are notified with photos when their money is spent), the Living Guardian pass and streaks, founding-giver status, dares between friends, and the vote that puts donors in control of the money.
+
 ## 1. The idea, restated in one paragraph
 
 Umanity is the social network where giving is the content. Every donation is escrowed on Solana, released only when the community votes that a milestone was delivered, and the proof of delivery is audited by an AI Impact Oracle that anyone (or any agent) can pay per request. Two of the six causes are delivered in person by the Umanity team (the "Field Fund"): receipts, photos and geotags are posted, hashed and attested on-chain. Donors can give from any of 31+ chains through NEAR Intents (via Aurora), whales can give discreetly, and friends can stake SOL to dare each other into giving. That is the whole product. Everything in this document serves it.

@@ -1,62 +1,62 @@
 # Umanity — demo video script (target 3:00)
 
-Record at 1440p, light mode, browser zoom 110%. Pre-open the app, the Solscan tab, and the NEAR Intents explorer. Keep the demo wallet funded. Speak naturally; the script is a guide.
+Record at 1440p, browser zoom 110%. Two browser profiles: one as a donor, one signed in with the field-team wallet (`/admin`). Pre-open Solscan. Speak naturally; the script is a guide.
 
 ## 0:00 – 0:20 · Hook (face cam)
 
-"Crypto charity failed twice. Donation pages were black holes, and charity tokens were casinos. I'm Shariq, and I built Umanity to fix both: every donation sits in an on-chain escrow on Solana, leaves only when the community votes that a milestone was delivered, and the proof is audited by an AI oracle you can pay per request. Giving is the content."
+"Every donation page is a black hole: you send money, you get an email. I'm Shariq. I built Umanity so you can give to real people and watch it reach them. The money sits in escrow on Solana, my team delivers it in person in Pakistan, we post the photos and receipts, and the donors themselves vote the money out."
 
-## 0:20 – 0:50 · Zero-friction entry + first donation
+## 0:20 – 0:45 · A gift in one tap
 
-> Click ⚡ demo wallet. Point at the green DEMO pill.
+> Landing page. Press Start giving → Create a Umanity wallet → pick a name. Choose Orphan care, $5.
 
-"No wallet, no sign-up. A keypair is generated in the browser and funded with devnet SOL by our treasury. Real keys, real transactions."
+"No app store, no seed phrase to start: a wallet is created in the browser and you can back it up later. Five dollars is about three hot meals."
 
-> Give & Bridge → Solana → tap 0.01 SOL. Show the success card, click Solscan.
+> Confirm. Show "Thank you." and click the Solscan link.
 
-"One tap. The money is in the vault PDA, a DonationRecord was created, and the server re-read the transaction from RPC before giving me points and a Bronze certificate. Nothing here trusts the browser."
+"The gift is in the cause's vault. The server read the vault's balance change from the chain before it gave me points and a certificate. Nothing trusts the browser."
 
-## 0:50 – 1:20 · The feed and a staked dare
+## 0:45 – 1:15 · The cause, the proof, the vote
 
-> Feed. Scroll past dares and the vote card. Click Launch a staked dare → Create dare, dare @sol_impact for 0.05 SOL, 24h.
+> Open /causes/orphan-care. Scroll: what your gift buys, the vault with milestones.
 
-"The feed shows what people give, not what they say. And this is the social loop: I lock 0.05 SOL in a dare vault and challenge Sol to give too. Friends can boost the pot from inside the app or straight from X with a Blink. If Sol delivers, the pot goes to the cause. If he doesn't, the pot still goes to the cause. The cause never loses, and the 1.5% fee is enforced in the program."
+"Each cause has a plan: three milestones, each a share of what was raised. The vault shows exactly what is held, raised and released."
 
-> Click Boost pot on another dare. Show the pot increase and the Solscan link.
+> Switch to the field-team profile. Open /admin. Post a delivery: title, what was bought, PKR amount, a photo and a receipt, milestone 1, open the release vote.
 
-## 1:20 – 2:00 · Give from any chain (Aurora / NEAR Intents)
+"This is the part no charity app has. When my team delivers, they post it from this console: photos, receipts hashed on upload, and the vote opens for everyone who gave to that cause."
 
-> Give & Bridge → Any chain. Base / USDC / 10. Show the live quote.
+> Switch back to the donor. Home shows the delivery card with "You helped fund this". Press Approve release.
 
-"Most donors don't hold SOL. With NEAR Intents, through Aurora, anyone can fund a cause from 37 chains: Base USDC, Ethereum, Bitcoin, TON, NEAR. This is a live solver quote: 10 USDC in, this much SOL out, a 50 basis-point integrator fee that becomes Umanity revenue."
+## 1:15 – 1:45 · The oracle and x402
 
-> Paste the refund address, click Get deposit address. Show the QR, the explorer link, the status pill.
+> On the cause page press Audit this proof · $0.01. Show the 402, the verdict and the per-check marks, the attestation hash.
 
-"One deposit address, no bridging, no wrapped tokens. When the solver settles on Solana the donation shows up in the feed with a 'from Base via NEAR Intents' badge." (If you pre-recorded a settled intent, cut to it here.)
+"Anyone, including an AI agent, can pay one cent in USDC over HTTP 402 to run the Impact Oracle on the proof. The verdict and its hash are written into the milestone account on Solana, so the vote has an audit next to it."
 
-## 2:00 – 2:40 · Govern + x402 oracle
+## 1:45 – 2:15 · Release, ledger
 
-> Govern. Open the orphanage proposal, click Evidence.
+> Field-team profile: Close the vote now → Release on-chain. Show the release transaction. Open /transparency.
 
-"This is a field cause: my team bought school supplies and clothing for 24 kids. Receipts, geotagged photos, a video, with content hashes."
+"Approved by the donors, released by the program, visible to everyone: every vault, every release, every delivery, every fee. Umanity cannot pay itself."
 
-> Click Verify via x402. Show the 402 → payment → verdict. Show the attestation hash and the on-chain tx.
+## 2:15 – 2:45 · Any chain, friends, identity
 
-"Verification is a paid API over x402. Any human or AI agent pays one cent in USDC per audit; the oracle returns a verdict with confidence and per-check results, and the attestation hash is written into the Milestone account on Solana. Then the community votes. Approve, and the authority releases escrow on-chain. Reject, and the money stays locked."
+> Give → Any chain → Base USDC → live quote → deposit address.
 
-> Vote Approve. Show the tally.
+"Most donors do not hold SOL. Through NEAR Intents and Aurora, you can give from Base, Ethereum, Bitcoin, TON, NEAR, 37 chains, one deposit address, settled on Solana."
 
-## 2:40 – 3:00 · Profile + close (face cam)
+> Home: Dare a friend (stake 0.05 SOL, 48h). Profile: the Living Guardian pass, founding giver badge, streak.
 
-> Profile & Pass. Show the Living Guardian card and the certificates.
+"Giving is social here: dare a friend to match you, either way the cause wins. Your pass grows with every gift, streak and vote."
 
-"Your giving becomes an identity: a Living Guardian pass that evolves with streaks and votes, soulbound certificates, on-chain receipts, and Blinks you can share anywhere."
+## 2:45 – 3:00 · Close (face cam)
 
-"Umanity: escrowed on Solana, released by vote, verified by an oracle, funded from any chain. Thank you."
+"Give to real people. Watch it reach them. Umanity."
 
 ## Checklist before recording
 
-- Demo wallet funded (≥0.2 SOL) and holding devnet USDC for the x402 step (faucet.circle.com)
-- `npm run seed` done so dares and a vote are live
+- Donor wallet funded (SOL for the gift, a little USDC for the audit)
+- Field-team wallet signed in on the second profile (`ADMIN_WALLETS` or the org wallet)
+- A real delivery ready to post (photos, receipts, PKR amount)
 - Aurora/1Click quote loads (needs internet, no key required)
-- Keep the console closed; keep the right rail visible for live telemetry

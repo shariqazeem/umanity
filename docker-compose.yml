@@ -24,6 +24,9 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgres://umanity:umanity@db:5432/umanity
+      UPLOAD_DIR: /app/.data/uploads
+    volumes:
+      - appdata:/app/.data
     depends_on:
       db:
         condition: service_healthy
@@ -47,5 +50,6 @@ services:
 
 volumes:
   pgdata:
+  appdata:
   caddy_data:
   caddy_config:
