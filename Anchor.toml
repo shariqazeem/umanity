@@ -1,0 +1,23 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+umanity_donations = "9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1"
+umanity_tips = "DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau"
+
+[programs.devnet]
+umanity_donations = "9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1"
+umanity_tips = "DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/devnet.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

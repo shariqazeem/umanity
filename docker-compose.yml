@@ -1,0 +1,51 @@
+# Self-hosted Umanity: Postgres + app + Caddy (automatic HTTPS).
+# 1. cp .env.example .env  (fill DATABASE_URL=postgres://umanity:umanity@db:5432/umanity and the signers)
+# 2. set DOMAIN in .env (e.g. DOMAIN=umanity.xyz)
+# 3. docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: umanity
+      POSTGRES_PASSWORD: umanity
+      POSTGRES_DB: umanity
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U umanity']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://umanity:umanity@db:5432/umanity
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - '3000'
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
