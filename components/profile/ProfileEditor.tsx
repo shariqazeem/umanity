@@ -38,7 +38,7 @@ export function ProfileEditor() {
     <Sheet open={profileEditorOpen} onClose={closeProfileEditor} width="sm" title={user?.handleClaimed ? 'Edit profile' : 'Pick your name'}>
       <div className="flex items-center gap-3 mb-5">
         <Avatar username={username || user?.username || 'u'} url={user?.avatarUrl} size={48} />
-        <p className="text-[13px] text-[#6e6e73]">Shown next to your gifts, dares and votes.</p>
+        <p className="text-[13px] text-[#86868b]">Shown next to your gifts, dares and votes.</p>
       </div>
       <div className="space-y-3">
         <Field label="Username">

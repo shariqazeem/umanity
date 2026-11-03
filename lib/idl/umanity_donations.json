@@ -521,6 +521,132 @@
       ]
     },
     {
+      "name": "donate_all",
+      "docs": [
+        "Gives every lamport the donor holds above `keep`. Built for execute-on-",
+        "arrival flows (Aurora Intents Connect): the intermediary account that",
+        "received the solver's payout calls this without knowing the exact amount.",
+        "`keep` must be 0 (drain) or at least the rent-exempt minimum so the",
+        "donor account stays valid. The record's rent is paid before this runs."
+      ],
+      "discriminator": [
+        136,
+        142,
+        108,
+        90,
+        15,
+        133,
+        217,
+        192
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "pool_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "donation_record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  111,
+                  110,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "donor"
+              },
+              {
+                "kind": "arg",
+                "path": "nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "donor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "keep",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "donate_to_pool",
       "docs": [
         "v1-compatible: custom amount with a keypair-signed record."
@@ -934,75 +1060,6 @@
           "type": "bool"
         }
       ]
-    },
-    {
-      "name": "withdraw_from_pool",
-      "docs": [
-        "Admin withdrawal (kept for emergencies; governance path is release_milestone_funds)."
-      ],
-      "discriminator": [
-        62,
-        33,
-        128,
-        81,
-        40,
-        234,
-        29,
-        77
-      ],
-      "accounts": [
-        {
-          "name": "pool",
-          "writable": true
-        },
-        {
-          "name": "pool_vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool"
-              }
-            ]
-          }
-        },
-        {
-          "name": "recipient",
-          "writable": true
-        },
-        {
-          "name": "authority",
-          "signer": true,
-          "relations": [
-            "pool"
-          ]
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "_recipient",
-          "type": "pubkey"
-        }
-      ]
     }
   ],
   "accounts": [
@@ -1175,19 +1232,6 @@
         165,
         109,
         181
-      ]
-    },
-    {
-      "name": "PoolWithdrawal",
-      "discriminator": [
-        238,
-        212,
-        125,
-        61,
-        189,
-        201,
-        160,
-        146
       ]
     },
     {
@@ -1743,26 +1787,6 @@
           {
             "name": "bump",
             "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PoolWithdrawal",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pool",
-            "type": "pubkey"
-          },
-          {
-            "name": "recipient",
-            "type": "pubkey"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
           }
         ]
       }

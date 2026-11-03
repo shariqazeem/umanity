@@ -122,8 +122,23 @@ export async function getTokens(): Promise<IntentsToken[]> {
   return tokens
 }
 
+/** Slow-confirming origin chains need a longer quote deadline or the deposit lands after it expires. */
+const SLOW_CHAINS = new Set(['btc', 'ltc', 'doge', 'bch', 'zec', 'cardano'])
+export function deadlineMinutesFor(chain: string) {
+  return SLOW_CHAINS.has(chain) ? 150 : 40
+}
+
+/** Decimal string → smallest units without floating point (safe for 18/24-decimal tokens). */
+export function parseUnits(value: string | number, decimals: number): bigint {
+  const s = String(value).trim()
+  if (!/^\d*\.?\d*$/.test(s) || s === '' || s === '.') throw new Error('Invalid amount')
+  const [whole, frac = ''] = s.split('.')
+  const padded = (frac + '0'.repeat(decimals)).slice(0, decimals)
+  return BigInt(whole || '0') * BigInt(10) ** BigInt(decimals) + BigInt(padded || '0')
+}
+
 export async function getQuote(req: QuoteRequest): Promise<QuoteResponse> {
-  const deadline = new Date(Date.now() + (req.deadlineMinutes ?? 30) * 60_000).toISOString()
+  const deadline = new Date(Date.now() + (req.deadlineMinutes ?? 40) * 60_000).toISOString()
   const body: Record<string, unknown> = {
     dry: req.dry ?? true,
     swapType: 'EXACT_INPUT',
@@ -139,7 +154,8 @@ export async function getQuote(req: QuoteRequest): Promise<QuoteResponse> {
     deadline,
     quoteWaitingTimeMs: 3000,
   }
-  if (req.referral) body.referral = req.referral
+  // Aurora sets the referral (and the fee) per API key, so only the direct 1Click path sends them.
+  if (req.referral && provider() === 'oneclick') body.referral = req.referral
   if (provider() === 'oneclick' && process.env.INTENTS_FEE_RECIPIENT) {
     body.appFees = [{ recipient: process.env.INTENTS_FEE_RECIPIENT, fee: INTEGRATOR_FEE_BPS }]
   }

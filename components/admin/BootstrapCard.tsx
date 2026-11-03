@@ -35,12 +35,12 @@ export function BootstrapCard({ signer }: { signer: Signer }) {
   return (
     <Card className="p-5">
       <div className="flex items-start gap-3">
-        <span className="w-9 h-9 rounded-full bg-black/[0.05] text-[#6e6e73] flex items-center justify-center flex-shrink-0">
+        <span className="w-9 h-9 rounded-full bg-black/[0.05] text-[#86868b] flex items-center justify-center flex-shrink-0">
           <Icon name="bank" size={16} />
         </span>
         <div className="flex-1 min-w-0">
           <h3 className="text-[15px] font-bold tracking-[-0.01em]">Set up causes on-chain</h3>
-          <p className="text-[12.5px] text-[#6e6e73] mt-1 leading-relaxed">Creates any missing vault, campaign and milestone accounts for the six causes on Solana {isMainnet ? 'mainnet' : 'devnet'}, signed by the program authority on the server. Safe to run again; existing accounts are left alone.</p>
+          <p className="text-[12.5px] text-[#86868b] mt-1 leading-relaxed">Creates any missing vault, campaign and milestone accounts for the six causes on Solana {isMainnet ? 'mainnet' : 'devnet'}, signed by the program authority on the server. Safe to run again; existing accounts are left alone.</p>
         </div>
       </div>
       <Btn tone="outline" size="md" className="mt-4" onClick={run} loading={busy} icon="refresh">
@@ -53,14 +53,14 @@ export function BootstrapCard({ signer }: { signer: Signer }) {
             <li key={s.poolId} className="flex items-center gap-2 flex-wrap">
               <Icon name="check" size={13} className="text-[#047857]" />
               <span className="font-semibold">{s.poolId}</span>
-              <span className="text-[#6e6e73]">
+              <span className="text-[#86868b]">
                 pool {s.pool} · campaign {s.campaign} · target <span className="num">{s.targetSol} SOL</span>
               </span>
               {s.poolSignature && <TxLink sig={s.poolSignature} label="pool tx" />}
               {s.campaignSignature && <TxLink sig={s.campaignSignature} label="campaign tx" />}
             </li>
           ))}
-          {steps.length === 0 && <li className="text-[#6e6e73]">Nothing to do.</li>}
+          {steps.length === 0 && <li className="text-[#86868b]">Nothing to do.</li>}
         </ul>
       )}
     </Card>

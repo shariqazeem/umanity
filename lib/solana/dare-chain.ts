@@ -1,6 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 import { getConnection } from './chain'
 import { DONATIONS_PROGRAM } from './pda'
+import { readU64, readI64 } from './bytes'
 
 export interface OnChainDare {
   address: string
@@ -40,19 +41,19 @@ export function decodeDare(address: string, data: Buffer): OnChainDare {
   let targetHandle: string, text: string
   ;[targetHandle, o] = readString(data, o)
   ;[text, o] = readString(data, o)
-  const stake = Number(data.readBigUInt64LE(o))
+  const stake = Number(readU64(data, o))
   o += 8
-  const pot = Number(data.readBigUInt64LE(o))
+  const pot = Number(readU64(data, o))
   o += 8
   const backerCount = data.readUInt32LE(o)
   o += 4
-  const deadline = Number(data.readBigInt64LE(o))
+  const deadline = Number(readI64(data, o))
   o += 8
   const status = data.readUInt8(o)
   o += 1
-  const createdAt = Number(data.readBigInt64LE(o))
+  const createdAt = Number(readI64(data, o))
   o += 8
-  const settledAt = Number(data.readBigInt64LE(o))
+  const settledAt = Number(readI64(data, o))
   return { address, creator, pool, targetWallet, targetHandle, text, stake, pot, backerCount, deadline, status, createdAt, settledAt }
 }
 

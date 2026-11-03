@@ -5,6 +5,7 @@ import { runImpactOracle } from '@/lib/oracle/impact-oracle'
 import { attestMilestoneOnChain } from '@/lib/solana/authority-ops'
 import { getCause } from '@/lib/causes'
 import { explorerTx, USDC_MINT } from '@/lib/solana/constants'
+import type { OracleAttestation } from '@/lib/db'
 import { createHash } from 'crypto'
 
 export const runtime = 'nodejs'
@@ -13,38 +14,41 @@ export const runtime = 'nodejs'
  * POST /api/x402/verify-milestone { milestoneId }  — PAID (x402, USDC on Solana)
  *
  * 1. No PAYMENT-SIGNATURE → 402 with PAYMENT-REQUIRED (how to pay).
- * 2. Payment verified → the AI Impact Oracle audits the milestone evidence.
- * 3. The attestation is stored, its hash is written on-chain (attest_milestone),
- *    and the payment is settled; PAYMENT-RESPONSE carries the settlement tx.
+ * 2. Payment verified → the AI Impact Oracle audits the milestone evidence
+ *    (pure computation, nothing stored yet).
+ * 3. The payment settles on Solana; only then is the attestation stored and
+ *    its hash written on-chain (attest_milestone). PAYMENT-RESPONSE carries the
+ *    settlement tx, and the attestation records it.
  */
-export const POST = withX402<{ milestoneId?: string }>('verifyMilestone', async (body, paid) => {
-  if (!body.milestoneId) return NextResponse.json({ error: 'milestoneId required' }, { status: 400 })
-  const m = await getMilestone(body.milestoneId)
-  if (!m) return NextResponse.json({ error: 'Milestone not found' }, { status: 404 })
-  const cause = getCause(m.campaign.poolId)
-  const attestation = await runImpactOracle({
-    milestoneId: m.id,
-    causeName: cause?.name ?? m.campaign.poolId,
-    milestoneDescription: m.description,
-    amountSol: m.amount,
-    recipient: m.campaign.recipient,
-    deliveryMode: cause?.deliveryMode ?? 'trust',
-    evidence: m.evidence,
-  })
-  attestation.paymentSignature = paid.receiptId
-  await setMilestoneAttestation(m.id, attestation)
-  const onchain = await attestMilestoneOnChain(m.id, attestation)
-  const responseHash = createHash('sha256').update(JSON.stringify(attestation)).digest('hex')
-  return NextResponse.json({
-    success: true,
-    milestoneId: m.id,
-    attestation,
-    onchain: onchain ? { signature: onchain, explorer: explorerTx(onchain) } : null,
-    responseHash,
-    paidBy: paid.payer ?? null,
-    receiptId: paid.receiptId,
-  })
-})
+export const POST = withX402<{ milestoneId?: string }>(
+  'verifyMilestone',
+  async (body) => {
+    const m = await getMilestone(body.milestoneId!)
+    if (!m) return NextResponse.json({ error: 'Milestone not found' }, { status: 404 })
+    const cause = getCause(m.campaign.poolId)
+    const attestation = await runImpactOracle({
+      milestoneId: m.id,
+      causeName: cause?.name ?? m.campaign.poolId,
+      milestoneDescription: m.description,
+      amountSol: m.amount,
+      recipient: m.campaign.recipient,
+      deliveryMode: cause?.deliveryMode ?? 'trust',
+      evidence: m.evidence,
+    })
+    return NextResponse.json({ success: true, milestoneId: m.id, attestation })
+  },
+  {
+    validate: (body) => (body.milestoneId ? null : 'milestoneId required'),
+    afterSettle: async (body, paid, settlement, handlerJson) => {
+      const attestation = handlerJson.attestation as OracleAttestation
+      attestation.paymentSignature = settlement.transaction ?? paid.receiptId
+      await setMilestoneAttestation(body.milestoneId!, attestation)
+      const onchain = await attestMilestoneOnChain(body.milestoneId!, attestation)
+      const responseHash = createHash('sha256').update(JSON.stringify(attestation)).digest('hex')
+      return { attestation, onchain: onchain ? { signature: onchain, explorer: explorerTx(onchain) } : null, responseHash, paidBy: settlement.payer ?? null, payment: settlement.transaction ? { transaction: settlement.transaction, explorer: explorerTx(settlement.transaction) } : null, receiptId: paid.receiptId }
+    },
+  }
+)
 
 /** GET — discovery: describes the paid resource (free). */
 export async function GET(_req: NextRequest) {

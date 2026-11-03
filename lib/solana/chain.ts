@@ -5,6 +5,7 @@
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { SOLANA_RPC } from './constants'
 import { DONATIONS_PROGRAM, findPoolPDA, findVaultPDA, findCampaignPDA } from './pda'
+import { readU64, readI64 } from './bytes'
 
 let _conn: Connection | null = null
 export function getConnection(): Connection {
@@ -44,9 +45,9 @@ export function decodePool(data: Buffer) {
   ;[emoji, o] = readString(data, o)
   const poolType = data.readUInt8(o)
   o += 1
-  const totalDonated = Number(data.readBigUInt64LE(o))
+  const totalDonated = Number(readU64(data, o))
   o += 8
-  const donorCount = Number(data.readBigUInt64LE(o))
+  const donorCount = Number(readU64(data, o))
   o += 8
   const isActive = data.readUInt8(o) === 1
   return { authority, name, description, emoji, poolType, totalDonated, donorCount, isActive }
@@ -95,6 +96,8 @@ export async function verifyDonationTx(signature: string, expected: { donor: str
   const vaultIdx = keys.indexOf(vaultPda.toBase58())
   const donorIdx = keys.indexOf(expected.donor)
   if (vaultIdx < 0 || donorIdx < 0) return null
+  // The donor must have signed it; appearing in the account list is not enough.
+  if (!tx.transaction.message.isAccountSigner(donorIdx)) return null
   const pre = tx.meta!.preBalances
   const post = tx.meta!.postBalances
   const vaultDelta = post[vaultIdx] - pre[vaultIdx]
@@ -148,8 +151,8 @@ export async function listDonationRecords(limit = 200): Promise<OnChainDonationR
         address: a.pubkey.toBase58(),
         donor: new PublicKey(d.subarray(8, 40)).toBase58(),
         pool: new PublicKey(d.subarray(40, 72)).toBase58(),
-        amount: Number(d.readBigUInt64LE(72)),
-        timestamp: Number(d.readBigInt64LE(80)),
+        amount: Number(readU64(d, 72)),
+        timestamp: Number(readI64(d, 80)),
         donationType: d.readUInt8(88),
       }
     })
@@ -178,17 +181,17 @@ export function decodeCampaign(data: Buffer): OnChainCampaign {
   o += 32
   const recipient = new PublicKey(data.subarray(o, o + 32)).toBase58()
   o += 32
-  const targetAmount = Number(data.readBigUInt64LE(o))
+  const targetAmount = Number(readU64(data, o))
   o += 8
-  const totalRaised = Number(data.readBigUInt64LE(o))
+  const totalRaised = Number(readU64(data, o))
   o += 8
-  const donorCount = Number(data.readBigUInt64LE(o))
+  const donorCount = Number(readU64(data, o))
   o += 8
   const milestoneCount = data.readUInt8(o)
   o += 1
   const milestonesCompleted = data.readUInt8(o)
   o += 1
-  const deadline = Number(data.readBigInt64LE(o))
+  const deadline = Number(readI64(data, o))
   o += 8
   const isActive = data.readUInt8(o) === 1
   return { pool, authority, recipient, targetAmount, totalRaised, donorCount, milestoneCount, milestonesCompleted, deadline, isActive }
@@ -227,16 +230,16 @@ export function decodeMilestone(data: Buffer): OnChainMilestone {
   o += 1
   const status = data.readUInt8(o)
   o += 1
-  const approvedAt = Number(data.readBigInt64LE(o))
+  const approvedAt = Number(readI64(data, o))
   o += 8
-  const releasedAt = Number(data.readBigInt64LE(o))
+  const releasedAt = Number(readI64(data, o))
   o += 8
-  const amountReleased = Number(data.readBigUInt64LE(o))
+  const amountReleased = Number(readU64(data, o))
   o += 8
   const attestationHash = data.subarray(o, o + 32).toString('hex')
   o += 32
   const attestationConfidence = data.readUInt8(o)
   o += 1
-  const attestedAt = Number(data.readBigInt64LE(o))
+  const attestedAt = Number(readI64(data, o))
   return { index, description, percentage, status, approvedAt, releasedAt, amountReleased, attestationHash, attestationConfidence, attestedAt }
 }

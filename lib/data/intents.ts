@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray, ne } from 'drizzle-orm'
 import { getDb, newId, intents, x402Receipts, routedTransfers, type Intent } from '@/lib/db'
 
 export async function createIntentRecord(input: Omit<typeof intents.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>): Promise<Intent> {
@@ -11,6 +11,18 @@ export async function updateIntent(id: string, patch: Partial<typeof intents.$in
   const db = await getDb()
   const rows = await db.update(intents).set({ ...patch, updatedAt: new Date() }).where(eq(intents.id, id)).returning()
   return rows[0] ?? null
+}
+
+/** Atomically marks an intent settled; returns the row only for the caller that flipped it. */
+export async function claimIntentSuccess(id: string): Promise<Intent | null> {
+  const db = await getDb()
+  const rows = await db.update(intents).set({ status: 'success', updatedAt: new Date() }).where(and(eq(intents.id, id), ne(intents.status, 'success'))).returning()
+  return rows[0] ?? null
+}
+
+export async function getOpenIntents(states: string[], limit = 50): Promise<Intent[]> {
+  const db = await getDb()
+  return db.select().from(intents).where(inArray(intents.status, states)).orderBy(desc(intents.createdAt)).limit(limit)
 }
 
 export async function getIntent(id: string): Promise<Intent | null> {
@@ -39,6 +51,12 @@ export async function recordX402Receipt(input: Omit<typeof x402Receipts.$inferIn
   const db = await getDb()
   const rows = await db.insert(x402Receipts).values({ id: newId('x402'), ...input }).returning()
   return rows[0]
+}
+
+export async function findX402ReceiptByHash(paymentHash: string) {
+  const db = await getDb()
+  const rows = await db.select().from(x402Receipts).where(eq(x402Receipts.paymentHash, paymentHash)).limit(1)
+  return rows[0] ?? null
 }
 
 export async function updateX402Receipt(id: string, patch: Partial<typeof x402Receipts.$inferInsert>) {

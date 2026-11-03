@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { AccountLink, Btn, Icon, Pill, Progress } from '@/components/shared/ui'
-import { describeImpact, type CauseMeta } from '@/lib/causes'
+import { describeImpact, milestoneWhat, type CauseMeta } from '@/lib/causes'
 import { fmtSol, fmtUsd } from '@/lib/client/api'
 import type { CampaignView } from '@/lib/data/governance'
 import { milestoneRows, statusLabel } from './data'
@@ -20,7 +20,7 @@ export function GiveCard({ cause }: { cause: CauseMeta }) {
   return (
     <div className="card p-5">
       <h3 className="text-[17px] font-bold tracking-[-0.02em]">Give to {cause.shortName.toLowerCase()}</h3>
-      <p className="text-[12.5px] text-[#6e6e73] mt-0.5">Held in escrow until the delivery is proven.</p>
+      <p className="text-[12.5px] text-[#86868b] mt-0.5">Held in escrow until the delivery is proven.</p>
 
       <div className="grid grid-cols-2 gap-2 mt-4">
         {PRESETS.map((p) => {
@@ -36,7 +36,7 @@ export function GiveCard({ cause }: { cause: CauseMeta }) {
               className={`rounded-2xl border px-3 py-3 text-left transition-all ${on ? 'border-[#1d1d1f] bg-[#1d1d1f] text-white' : 'border-black/[0.08] hover:border-black/30'}`}
             >
               <span className="block num text-[18px] font-bold leading-none">${p}</span>
-              <span className={`block text-[11.5px] mt-1.5 leading-snug ${on ? 'text-white/70' : 'text-[#6e6e73]'}`}>{what ? `≈ ${what}` : ''}</span>
+              <span className={`block text-[11.5px] mt-1.5 leading-snug ${on ? 'text-white/70' : 'text-[#86868b]'}`}>{what ? `≈ ${what}` : ''}</span>
             </button>
           )
         })}
@@ -88,20 +88,20 @@ export function EscrowBox({ held, raised, released, vault, poolPda, campaign }: 
           <div key={l as string}>
             <p className="eyebrow">{l}</p>
             <p className="num text-[17px] font-bold mt-1 leading-none">{fmtSol(v as number, 2)}</p>
-            <p className="text-[11px] text-[#6e6e73] mt-1 num">SOL{solPrice ? ` · ${fmtUsd((v as number) * solPrice)}` : ''}</p>
+            <p className="text-[11px] text-[#86868b] mt-1 num">SOL{solPrice ? ` · ${fmtUsd((v as number) * solPrice)}` : ''}</p>
           </div>
         ))}
       </div>
       {target > 0 && (
         <div className="mt-4">
           <Progress value={raised} max={target} />
-          <p className="text-[11.5px] text-[#6e6e73] mt-1.5 num">
+          <p className="text-[11.5px] text-[#86868b] mt-1.5 num">
             {fmtSol(raised, 2)} of {fmtSol(target, target >= 10 ? 0 : 2)} SOL campaign target
           </p>
         </div>
       )}
       {vault && (
-        <p className="text-[12px] text-[#6e6e73] mt-4 flex items-center gap-1.5 flex-wrap">
+        <p className="text-[12px] text-[#86868b] mt-4 flex items-center gap-1.5 flex-wrap">
           Vault <AccountLink address={vault} />
           {poolPda && (
             <>
@@ -117,9 +117,9 @@ export function EscrowBox({ held, raised, released, vault, poolPda, campaign }: 
             const s = statusLabel(m.status)
             return (
               <li key={m.id} className="flex items-start gap-2.5">
-                <span className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${m.status === 'released' ? 'bg-[#10b981] text-white' : 'bg-black/[0.06] text-[#6e6e73]'}`}>{m.status === 'released' ? <Icon name="check" size={10} strokeWidth={3} /> : m.index + 1}</span>
+                <span className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${m.status === 'released' ? 'bg-[#10b981] text-white' : 'bg-black/[0.06] text-[#86868b]'}`}>{m.status === 'released' ? <Icon name="check" size={10} strokeWidth={3} /> : m.index + 1}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[12.5px] leading-snug">{m.description}</span>
+                  <span className="block text-[12.5px] leading-snug">{milestoneWhat(m.description)}</span>
                   <span className="block text-[11px] text-[#aeaeb2] num mt-0.5">
                     {m.percentage}% · opens at {fmtSol(m.thresholdSol, m.thresholdSol >= 10 ? 0 : 2)} SOL
                   </span>
@@ -130,7 +130,7 @@ export function EscrowBox({ held, raised, released, vault, poolPda, campaign }: 
           })}
         </ul>
       )}
-      <p className="text-[11.5px] text-[#6e6e73] mt-4 pt-3 border-t border-black/[0.06] leading-relaxed">Funds leave this vault only when the donors approve a delivery. The program enforces it; Umanity cannot move the money alone.</p>
+      <p className="text-[11.5px] text-[#86868b] mt-4 pt-3 border-t border-black/[0.06] leading-relaxed">Money leaves this vault two ways only: a milestone release to the field team's registered wallet once the donors approve the delivery, or a refund to donors if the deadline passes. The program enforces both; there is no withdraw.</p>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { apiGet } from '@/lib/client/api'
 export interface PlatformStats {
   totalDonations: number
   totalEscrowed: number
+  totalGifts: number
   totalDonors: number
   totalTransactions: number
   crossChainVolume: number

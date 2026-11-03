@@ -58,6 +58,17 @@ const ICONS: Record<string, string> = {
   info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 11v6M12 7h.01',
   truck: 'M3 6h11v10H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
   bank: 'M3 10 12 4l9 6M5 10v9M9 10v9M15 10v9M19 10v9M3 19h18',
+  bot: 'M12 8V4H8M4 12a8 8 0 0 1 8-4 8 8 0 0 1 8 4v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM9 14h.01M15 14h.01M2 14h2M20 14h2',
+  terminal: 'M4 17l6-6-6-6M12 19h8',
+  compass: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.2 7.8l-2.1 6.3-6.3 2.1 2.1-6.3z',
+  scale: 'M12 3v18M7 21h10M5 7h14M5 7l-3 7a4 4 0 0 0 6 0zM19 7l-3 7a4 4 0 0 0 6 0zM12 3l-7 4M12 3l7 4',
+  layers: 'm12 2 10 5-10 5L2 7zM2 17l10 5 10-5M2 12l10 5 10-5',
+  link: 'M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7',
+  zap: 'M13 2 4 14h7l-1 8 9-12h-7z',
+  sparkles: 'M9.9 2.6 11 6l3.4 1.1L11 8.2 9.9 11.6 8.8 8.2 5.4 7.1 8.8 6zM18 11l.9 2.6 2.6.9-2.6.9L18 18l-.9-2.6-2.6-.9 2.6-.9zM6 15l.6 1.9 1.9.6-1.9.6L6 20l-.6-1.9-1.9-.6 1.9-.6z',
+  hand: 'M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.4l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15',
+  moon: 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z',
+  eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
 }
 
 export function Icon({ name, size = 18, className = '', strokeWidth = 1.8, style }: { name: keyof typeof ICONS | string; size?: number; className?: string; strokeWidth?: number; style?: CSSProperties }) {
@@ -84,10 +95,10 @@ type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 export function Btn({ tone = 'primary', size = 'md', loading, full, icon, iconRight, className = '', children, disabled, ...rest }: BtnProps) {
   const sizes: Record<string, string> = {
-    sm: 'h-8 px-3.5 text-[12.5px]',
-    md: 'h-10 px-4.5 text-[13.5px]',
-    lg: 'h-12 px-6 text-[15px]',
-    xl: 'h-14 px-7 text-[16px]',
+    sm: 'h-8 px-3 !text-[12.5px] !rounded-[10px]',
+    md: 'h-10 px-4 !text-[13.5px]',
+    lg: 'h-12 px-6 !text-[15px]',
+    xl: 'h-14 px-7 !text-[16px] !rounded-2xl',
   }
   const iconSize = size === 'sm' ? 14 : size === 'xl' ? 20 : 16
   return (
@@ -101,7 +112,7 @@ export function Btn({ tone = 'primary', size = 'md', loading, full, icon, iconRi
 
 export function IconBtn({ icon, label, size = 36, className = '', ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { icon: string; label: string; size?: number }) {
   return (
-    <button aria-label={label} title={label} className={`inline-flex items-center justify-center rounded-full text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/[0.05] transition-colors ${className}`} style={{ width: size, height: size }} {...rest}>
+    <button aria-label={label} title={label} className={`inline-flex items-center justify-center rounded-full text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/[0.05] transition-colors ${className}`} style={{ width: size, height: size }} {...rest}>
       <Icon name={icon} size={Math.round(size * 0.5)} />
     </button>
   )
@@ -125,7 +136,7 @@ export function Card({ children, className = '', onClick, as = 'div', style }: {
 
 export function Pill({ children, tone = 'gray', className = '', dot }: { children: ReactNode; tone?: 'gray' | 'green' | 'amber' | 'red' | 'blue' | 'dark' | 'white'; className?: string; dot?: boolean }) {
   const tones: Record<string, string> = {
-    gray: 'bg-black/[0.05] text-[#6e6e73]',
+    gray: 'bg-black/[0.05] text-[#86868b]',
     green: 'bg-[#ecfdf5] text-[#047857]',
     amber: 'bg-[#fffbeb] text-[#b45309]',
     red: 'bg-[#fff1f1] text-[#c53030]',
@@ -165,7 +176,7 @@ export function Empty({ title, sub, action, icon = 'spark' }: { title: string; s
         <Icon name={icon} size={22} />
       </div>
       <p className="font-semibold text-[15px] text-[#1d1d1f]">{title}</p>
-      {sub && <p className="text-[13.5px] text-[#6e6e73] mt-1 max-w-sm mx-auto leading-relaxed">{sub}</p>}
+      {sub && <p className="text-[13.5px] text-[#86868b] mt-1 max-w-sm mx-auto leading-relaxed">{sub}</p>}
       {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   )
@@ -177,7 +188,7 @@ export function Stat({ label, value, sub, size = 'md', className = '' }: { label
     <div className={className}>
       <p className="eyebrow">{label}</p>
       <p className={`num font-bold text-[#1d1d1f] mt-1 leading-none ${v}`}>{value}</p>
-      {sub && <p className="text-[12px] text-[#6e6e73] mt-1.5">{sub}</p>}
+      {sub && <p className="text-[12px] text-[#86868b] mt-1.5">{sub}</p>}
     </div>
   )
 }
@@ -199,7 +210,7 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
   return (
     <div className={`inline-flex bg-black/[0.05] rounded-full p-1 ${className}`}>
       {options.map((o) => (
-        <button key={o.value} onClick={() => onChange(o.value)} className={`px-3.5 h-8 rounded-full text-[12.5px] font-semibold transition-all ${value === o.value ? 'bg-white shadow-sm text-[#1d1d1f]' : 'text-[#6e6e73] hover:text-[#1d1d1f]'}`}>
+        <button key={o.value} onClick={() => onChange(o.value)} className={`px-3.5 h-8 rounded-full text-[12.5px] font-semibold transition-all ${value === o.value ? 'bg-white shadow-sm text-[#1d1d1f]' : 'text-[#86868b] hover:text-[#1d1d1f]'}`}>
           {o.label}
         </button>
       ))}
@@ -294,7 +305,7 @@ export function TxLink({ sig, label = 'View transaction', cluster, className = '
 
 export function AccountLink({ address, label, cluster, className = '' }: { address: string; label?: string; cluster?: string; className?: string }) {
   return (
-    <a href={explorerAccount(address, cluster)} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1 num text-[12px] text-[#6e6e73] hover:text-[#1d1d1f] hover:underline ${className}`}>
+    <a href={explorerAccount(address, cluster)} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1 num text-[12px] text-[#86868b] hover:text-[#1d1d1f] hover:underline ${className}`}>
       {label ?? `${address.slice(0, 4)}…${address.slice(-4)}`} <Icon name="arrowUpRight" size={11} />
     </a>
   )
@@ -309,7 +320,7 @@ export function SectionTitle({ title, sub, right, className = '' }: { title: Rea
     <div className={`flex items-end justify-between gap-4 mb-4 ${className}`}>
       <div className="min-w-0">
         <h2 className="text-[20px] font-bold tracking-[-0.02em] text-[#1d1d1f]">{title}</h2>
-        {sub && <p className="text-[13.5px] text-[#6e6e73] mt-0.5">{sub}</p>}
+        {sub && <p className="text-[13.5px] text-[#86868b] mt-0.5">{sub}</p>}
       </div>
       {right && <div className="flex-shrink-0">{right}</div>}
     </div>

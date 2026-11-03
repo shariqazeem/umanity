@@ -7,9 +7,6 @@
  * team buys the goods, delivers them, posts photos and receipts, the Impact
  * Oracle audits the proof, and the donors of that cause approve the release
  * from escrow. Nothing leaves a vault before that.
- *
- * `image` is representative photography (Unsplash licence) until the team's
- * own field photos replace it. Swap the URL and nothing else changes.
  */
 export interface ImpactUnit {
   usd: number
@@ -28,9 +25,6 @@ export interface CauseMeta {
   description: string
   category: string
   emoji: string
-  /** Hero / card photo. */
-  image: string
-  imageAlt: string
   /** What a gift buys, smallest unit first. */
   units: ImpactUnit[]
   /** One-sentence version for cards. */
@@ -48,8 +42,6 @@ export interface CauseMeta {
   plan: { targetSol: number; days: number; milestones: { description: string; percentage: number }[] }
 }
 
-const img = (id: string) => `https://images.unsplash.com/${id}?w=1200&q=75&auto=format&fit=crop`
-
 export const CAUSES: CauseMeta[] = [
   {
     id: 'orphan-care',
@@ -61,8 +53,6 @@ export const CAUSES: CauseMeta[] = [
     description: 'Meals, school kits and winter clothing for children in orphanages — delivered in person by the Umanity team.',
     category: 'Children',
     emoji: '🎒',
-    image: img('photo-1622218479644-a8ef826bac87'),
-    imageAlt: 'A young girl in a floral dress',
     units: [
       { usd: 1.5, label: 'hot meal' },
       { usd: 8, label: 'school kit' },
@@ -92,8 +82,6 @@ export const CAUSES: CauseMeta[] = [
     description: 'Food, vaccines and vet care for street dogs and cats — delivered on the street by the Umanity team.',
     category: 'Animals',
     emoji: '🐾',
-    image: img('photo-1585578488379-31c5504f0424'),
-    imageAlt: 'A street dog lying on the ground',
     units: [
       { usd: 1, label: 'day of food for a stray', plural: 'days of food for strays' },
       { usd: 6, label: 'rabies vaccination' },
@@ -123,8 +111,6 @@ export const CAUSES: CauseMeta[] = [
     description: 'Monthly ration packs of flour, rice, lentils and oil for families below the line — bought and handed over by the Umanity team.',
     category: 'Hunger',
     emoji: '🍚',
-    image: img('photo-1593113616828-6f22bca04804'),
-    imageAlt: 'Volunteers packing food into bags',
     units: [
       { usd: 2, label: 'day of meals for a family', plural: 'days of meals for a family' },
       { usd: 30, label: 'monthly ration pack' },
@@ -153,8 +139,6 @@ export const CAUSES: CauseMeta[] = [
     description: 'Medicines, lab tests and treatment costs paid directly to pharmacies and labs for patients who cannot afford them.',
     category: 'Health',
     emoji: '💊',
-    image: img('photo-1758691462126-2ee47c8bf9e7'),
-    imageAlt: 'A doctor consulting with a mother and her child',
     units: [
       { usd: 5, label: 'course of medicine', plural: 'courses of medicine' },
       { usd: 20, label: 'doctor visit with tests', plural: 'doctor visits with tests' },
@@ -184,8 +168,6 @@ export const CAUSES: CauseMeta[] = [
     description: 'Hand pumps and household water filters installed in villages without safe drinking water, with the location of every pump published.',
     category: 'Water',
     emoji: '💧',
-    image: img('photo-1760873059715-7c7cfbe2a2c6'),
-    imageAlt: 'Children standing by a village water pump',
     units: [
       { usd: 10, label: 'household water filter' },
       { usd: 150, label: 'share of a hand pump', plural: 'shares of a hand pump' },
@@ -214,8 +196,6 @@ export const CAUSES: CauseMeta[] = [
     description: 'Tents, blankets, dry rations and water for families hit by floods or winter, bought locally and delivered by the Umanity team.',
     category: 'Emergency',
     emoji: '⛺',
-    image: img('photo-1727475807045-cac6e292e2b6'),
-    imageAlt: 'A young boy sitting outside a tent',
     units: [
       { usd: 5, label: 'blanket' },
       { usd: 25, label: 'family relief kit' },
@@ -252,4 +232,10 @@ export function describeImpact(cause: Pick<CauseMeta, 'units'>, usd: number): st
   if (n < 1) return `${Math.round((usd / unit.usd) * 100)}% of a ${unit.label}`
   const label = n === 1 ? unit.label : unit.plural ?? `${unit.label}s`
   return `${n} ${label}`
+}
+
+/** Milestone copy for after "Delivery #2: ": drops a leading "Second delivery:" so it isn't said twice. */
+export function milestoneWhat(description: string): string {
+  const s = description.replace(/^(first|second|third|fourth|fifth|final|last)\s+delivery\s*:\s*/i, '').trim()
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }

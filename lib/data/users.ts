@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, ne, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, ilike, inArray, ne, or, sql } from 'drizzle-orm'
 import { getDb, users, follows, donations, type User } from '@/lib/db'
 import { LAMPORTS_PER_SOL } from '@/lib/solana/constants'
 
@@ -60,7 +60,7 @@ export async function findUserByUsername(username: string): Promise<User | null>
 export async function findUsersByAddresses(addresses: string[]): Promise<Map<string, User>> {
   if (addresses.length === 0) return new Map()
   const db = await getDb()
-  const rows = await db.select().from(users).where(sql`${users.address} in ${addresses}`)
+  const rows = await db.select().from(users).where(inArray(users.address, addresses))
   return new Map(rows.map((r) => [r.address, r]))
 }
 
@@ -88,7 +88,7 @@ export async function ensureUser(address: string, preferred?: { username?: strin
         .values({
           address,
           username,
-          displayName: preferred?.displayName || (preferred?.username ? preferred.username : `${address.slice(0, 4)}…${address.slice(-4)}`),
+          displayName: preferred?.displayName || username,
           bio: preferred?.bio || '',
           rewardPoints: 50, // welcome bonus
           handleClaimed: !!preferred?.username,
@@ -205,6 +205,6 @@ export async function donationDays(address: string, days = 7): Promise<string[]>
   const rows = await db
     .select({ d: sql<string>`to_char(${donations.createdAt} at time zone 'UTC', 'YYYY-MM-DD')` })
     .from(donations)
-    .where(and(eq(donations.donorAddress, address), sql`${donations.createdAt} >= ${since}`))
+    .where(and(eq(donations.donorAddress, address), gte(donations.createdAt, since)))
   return Array.from(new Set(rows.map((r) => r.d))).sort()
 }

@@ -10,24 +10,27 @@ import { WalletSheet } from '@/components/wallet/WalletSheet'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://umanity.xyz'
 
+const TAGLINE = 'Crypto giving, on proof.'
+const DESCRIPTION = 'Give from any chain, or from an AI agent over x402. Every gift waits in on-chain escrow on Solana until the field team delivers it by hand, films it, and the donors vote to release it.'
+
 export const metadata: Metadata = {
-  title: { default: 'Umanity', template: '%s · Umanity' },
-  description: 'Give to real people, from any chain. Held in escrow on Solana, delivered in person, proven with receipts, released by the donors.',
-  keywords: ['solana', 'charity', 'donations', 'escrow', 'near intents', 'x402', 'pakistan', 'giving'],
+  title: { default: `Umanity — ${TAGLINE}`, template: '%s · Umanity' },
+  description: DESCRIPTION,
+  applicationName: 'Umanity',
+  keywords: ['solana', 'charity', 'donations', 'escrow', 'near intents', 'aurora intents', 'x402', 'ai agents', 'proof of impact', 'pakistan', 'giving'],
   authors: [{ name: 'Umanity' }],
   metadataBase: new URL(APP_URL),
   openGraph: {
-    title: 'Umanity',
-    description: 'Give to real people. Watch it reach them.',
+    title: `Umanity — ${TAGLINE}`,
+    description: DESCRIPTION,
     siteName: 'Umanity',
     type: 'website',
-    images: [{ url: '/logo.png', width: 512, height: 512, alt: 'Umanity' }],
   },
-  twitter: { card: 'summary', title: 'Umanity', description: 'Give to real people. Watch it reach them.', creator: '@umanity_xyz', images: ['/logo.png'] },
+  twitter: { card: 'summary_large_image', title: `Umanity — ${TAGLINE}`, description: DESCRIPTION, creator: '@umanity_xyz', site: '@umanity_xyz' },
   icons: { icon: '/favicon.png', apple: '/apple-touch-icon.png' },
 }
 
-export const viewport: Viewport = { themeColor: '#ffffff', width: 'device-width', initialScale: 1, viewportFit: 'cover' }
+export const viewport: Viewport = { themeColor: '#f5f5f7', width: 'device-width', initialScale: 1, viewportFit: 'cover' }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

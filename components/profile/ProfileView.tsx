@@ -1,26 +1,28 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { Btn, Card, Pill, Skeleton, Empty, Segmented, Avatar, Img, Icon, TxLink, Stat } from '@/components/shared/ui'
-import { apiGet, apiSend, fmtSol, fmtUsd, timeAgo, countdown } from '@/lib/client/api'
-import { useCountdown } from '@/lib/client/hooks'
+import { Avatar } from '@/components/shared/ui'
+import { ProofOrb } from '@/components/shared/ProofOrb'
+import { DareCard } from '@/components/dares/DareCard'
+import { PostCard } from '@/components/feed/PostCard'
+import { apiGet, apiSend, fmtSol, fmtUsd, short, timeAgo } from '@/lib/client/api'
+import { explorerTx } from '@/lib/solana/constants'
 import { getCause } from '@/lib/causes'
-import { GuardianPass } from './GuardianPass'
+import { TIERS } from '@/lib/guardian'
+import { chainLabel } from '@/components/feed/types'
 import { useProfile } from './useProfile'
+import { shownName } from '@/lib/client/names'
 import type { PublicProfile, GiftView, CertView } from '@/lib/contracts'
-import type { DareView } from '@/lib/data/dares'
-import type { FeedPost } from '@/lib/data/social'
 
 type Tab = 'gifts' | 'certificates' | 'dares' | 'posts'
 
 export function ProfileView({ username, mode }: { username: string; mode: 'own' | 'public' }) {
-  const { address, solPrice, openProfileEditor, openWalletSheet, openGive, ensureSigner, toast, user } = useUmanity()
+  const { address, solPrice, openProfileEditor, openWalletSheet, openGive, ensureSigner, toast } = useUmanity()
   const { profile, loading, error, reload, setProfile } = useProfile(username, address)
   const [tab, setTab] = useState<Tab>('gifts')
   const [isAdmin, setIsAdmin] = useState(false)
-  const [deliveries, setDeliveries] = useState<number | null>(null)
   const [streak, setStreak] = useState<{ currentStreak: number; longestStreak: number; donationDays: string[] } | null>(null)
   const own = mode === 'own'
 
@@ -38,292 +40,335 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
       .catch(() => setStreak(null))
   }, [profile])
 
-  // Deliveries this person helped fund: field updates on the causes they gave to.
-  useEffect(() => {
-    if (!profile || profile.causes.length === 0) {
-      setDeliveries(null)
-      return
-    }
-    let alive = true
-    Promise.all(profile.causes.map((c) => apiGet<{ success?: boolean; updates?: unknown[]; deliveries?: unknown[] }>(`/api/field/updates?poolId=${c.poolId}`)))
-      .then((rs) => {
-        if (!alive) return
-        if (rs.some((r) => r?.success === false)) return setDeliveries(null)
-        setDeliveries(rs.reduce((n, r) => n + (r.updates ?? r.deliveries ?? []).length, 0))
-      })
-      .catch(() => alive && setDeliveries(null))
-    return () => {
-      alive = false
-    }
-  }, [profile])
-
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-
   if (loading && !profile) return <ProfileSkeleton />
   if (!profile) {
-    return <Empty icon="user" title={error ?? 'Profile not found'} sub="There is no one with that name yet." action={<Link href="/home" className="btn btn-secondary h-10 px-4.5 text-[13.5px]">Back home</Link>} />
+    return (
+      <div className="card p-10 text-center mt-4">
+        <p className="font-semibold">{error ?? 'Profile not found'}</p>
+        <p className="text-[13px] text-[#86868b] mt-1">There is no one with that name yet.</p>
+        <Link href="/home" className="btn-secondary px-4 py-2 mt-4 !text-[13px]">
+          Back to the feed
+        </Link>
+      </div>
+    )
   }
 
   const p = profile
-  const totalUsd = solPrice ? p.totalDonated * solPrice : null
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
   const isSelf = address === p.address
-
   const share = () => {
-    const text = own ? `My giving on @umanity_xyz: ${fmtSol(p.totalDonated, 2)} SOL to real people, held in escrow until it is delivered and proven.\n\n${origin}/u/${p.username}` : `${p.displayName || '@' + p.username} on @umanity_xyz\n\n${origin}/u/${p.username}`
+    const text = own ? `My giving on @umanity_xyz: ${fmtSol(p.totalDonated, 2)} SOL, held in escrow until it is delivered by hand and proven.\n\n${origin}/u/${p.username}` : `@${p.username} on @umanity_xyz\n\n${origin}/u/${p.username}`
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener')
   }
-  const invite = () => {
-    navigator.clipboard.writeText(`${origin}/?ref=${p.username}`).then(() => toast('Invite link copied. When they give, you both earn points.', 'ok'))
-  }
+  const invite = () => navigator.clipboard.writeText(`${origin}/?ref=${p.username}`).then(() => toast('Invite link copied. When they give, you both earn points.', 'ok'))
 
-  return (
-    <div className="max-w-[760px] mx-auto">
-      {/* Header */}
-      <div className="flex items-start gap-4 sm:gap-5">
-        <Avatar username={p.username} url={p.avatarUrl} size={72} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-[24px] font-bold tracking-[-0.02em] leading-tight truncate">{p.handleClaimed || !own ? p.displayName || `@${p.username}` : 'Your profile'}</h1>
-            {p.foundingRank != null && p.foundingRank <= 100 && <Pill tone="green">Founding giver #{p.foundingRank}</Pill>}
-          </div>
-          <p className="text-[13.5px] text-[#6e6e73] mt-0.5">
-            {p.handleClaimed || !own ? `@${p.username}` : 'No name yet'} · <span className="num">{p.followers}</span> followers · <span className="num">{p.following}</span> following
-          </p>
-          {p.bio && <p className="text-[14px] text-[#1d1d1f] mt-2 leading-relaxed">{p.bio}</p>}
-          {own && !p.handleClaimed && (
-            <Btn size="sm" className="mt-3" icon="spark" onClick={openProfileEditor}>
-              Pick your name
-            </Btn>
-          )}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-wrap gap-2 mt-5">
-        {own ? (
-          <>
-            <Btn tone="outline" size="sm" icon="settings" onClick={openProfileEditor}>
-              Edit profile
-            </Btn>
-            <Btn tone="outline" size="sm" icon="wallet" onClick={openWalletSheet}>
-              Wallet
-            </Btn>
-            <Btn tone="outline" size="sm" icon="share" onClick={share}>
-              Share
-            </Btn>
-            <Btn tone="outline" size="sm" icon="users" onClick={invite}>
-              Invite
-            </Btn>
-            {isAdmin && (
-              <Link href="/admin" className="btn btn-outline h-8 px-3.5 text-[12.5px]">
-                <Icon name="truck" size={14} /> Field team console
-              </Link>
-            )}
-          </>
-        ) : (
-          <>
-            {!isSelf && <FollowButton profile={p} onChange={(f) => setProfile({ ...p, viewerFollows: f, followers: p.followers + (f ? 1 : -1) })} ensureSigner={ensureSigner} viewer={address} />}
-            {isSelf && (
-              <Link href="/profile" className="btn btn-outline h-8 px-3.5 text-[12.5px]">
-                This is you · open your profile
-              </Link>
-            )}
-            <Btn tone="outline" size="sm" icon="share" onClick={share}>
-              Share
-            </Btn>
-            <Btn tone="outline" size="sm" icon="bolt" onClick={() => (window.location.href = `/home?compose=dare&target=${p.username}`)}>
-              Dare {p.handleClaimed ? `@${p.username}` : 'them'}
-            </Btn>
-          </>
-        )}
-      </div>
-
-      {/* Pass */}
-      <div className="mt-6">
-        <GuardianPass guardian={p.guardian} name={p.displayName || p.username} handle={p.username} address={p.address} foundingRank={p.foundingRank} />
-      </div>
-
-      {/* Impact */}
-      <Card className="mt-4 p-5 sm:p-6">
-        <div className="flex items-end justify-between gap-4 mb-5">
-          <h2 className="text-[17px] font-bold tracking-[-0.02em]">{own ? 'Your impact' : 'Impact'}</h2>
-          {own && (
-            <Btn size="sm" tone="accent" icon="heart" onClick={() => openGive()}>
-              Give
-            </Btn>
-          )}
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-          <Stat label="Given" value={`${fmtSol(p.totalDonated, 2)} SOL`} sub={totalUsd != null ? fmtUsd(totalUsd) : `${p.donationCount} gifts`} size="sm" />
-          <Stat label="Gifts" value={p.donationCount} sub={p.causes.length === 1 ? '1 cause' : `${p.causes.length} causes`} size="sm" />
-          <Stat label="Points" value={p.rewardPoints.toLocaleString()} sub={`${p.votes} votes cast`} size="sm" />
-          <Stat label="Streak" value={`${streak?.currentStreak ?? p.streakCurrent}d`} sub={`best ${streak?.longestStreak ?? p.streakLongest}d`} size="sm" />
-        </div>
-        {streak && <StreakDots days={streak.donationDays} className="mt-4" />}
-        {deliveries != null && deliveries > 0 && (
-          <p className="text-[13px] text-[#047857] mt-4 inline-flex items-center gap-1.5">
-            <Icon name="truck" size={15} /> Helped fund <span className="num font-semibold">{deliveries}</span> {deliveries === 1 ? 'delivery' : 'deliveries'}
-          </p>
-        )}
-        {p.causes.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {p.causes.map((c) => (
-              <Link key={c.poolId} href={`/causes/${c.poolId}`} className="flex items-center gap-2 pl-1 pr-3 h-9 rounded-full border border-black/[0.08] bg-white hover:border-black/30 transition-colors">
-                <span className="w-7 h-7 rounded-full overflow-hidden bg-black/[0.05] flex-shrink-0">{c.image ? <Img src={c.image.replace('w=1600', 'w=96')} alt="" /> : null}</span>
-                <span className="text-[12.5px] font-semibold">{c.name}</span>
-                <span className="text-[12px] text-[#6e6e73] num">{fmtSol(c.amount, 2)} SOL</span>
-              </Link>
-            ))}
-          </div>
-        )}
-        {p.causes.length === 0 && own && <p className="text-[13.5px] text-[#6e6e73] mt-4">Your first gift starts the pass, the streak and the certificates. Five dollars is enough.</p>}
-      </Card>
-
-      {/* Tabs */}
-      <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
-        <Segmented
-          value={tab}
-          onChange={setTab}
-          options={[
-            { value: 'gifts', label: `Gifts${p.gifts.length ? ` · ${p.gifts.length}` : ''}` },
-            { value: 'certificates', label: `Certificates${p.certificates.length ? ` · ${p.certificates.length}` : ''}` },
-            { value: 'dares', label: `Dares${p.dares.length ? ` · ${p.dares.length}` : ''}` },
-            { value: 'posts', label: 'Posts' },
-          ]}
-        />
-        <button onClick={reload} className="text-[#aeaeb2] hover:text-[#1d1d1f]" title="Refresh">
-          <Icon name="refresh" size={16} />
-        </button>
-      </div>
-      <div className="mt-4">
-        {tab === 'gifts' && <Gifts gifts={p.gifts} solPrice={solPrice} own={own} onGive={() => openGive()} />}
-        {tab === 'certificates' && <Certificates certs={p.certificates} />}
-        {tab === 'dares' && <Dares dares={p.dares} username={p.username} />}
-        {tab === 'posts' && <Posts posts={p.posts} />}
-      </div>
-      {own && user && user.address !== p.address && <p className="text-[12px] text-[#aeaeb2] mt-6">Signed in as a different wallet than this profile.</p>}
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-
-function FollowButton({ profile, onChange, ensureSigner, viewer }: { profile: PublicProfile; onChange: (f: boolean) => void; ensureSigner: () => unknown; viewer: string | null }) {
-  const [busy, setBusy] = useState(false)
-  const toggle = async () => {
+  const follow = async () => {
     const s = ensureSigner()
-    if (!s || !viewer) return
-    setBusy(true)
-    const next = !profile.viewerFollows
-    const r = await apiSend<{ success: boolean }>('/api/social/follow', { followerAddress: viewer, followeeAddress: profile.address }, next ? 'POST' : 'DELETE').catch(() => ({ success: false }))
-    setBusy(false)
-    if (r.success) onChange(next)
-  }
-  return (
-    <Btn size="sm" tone={profile.viewerFollows ? 'secondary' : 'primary'} onClick={toggle} loading={busy} icon={profile.viewerFollows ? 'check' : 'plus'}>
-      {profile.viewerFollows ? 'Following' : 'Follow'}
-    </Btn>
-  )
-}
-
-export function StreakDots({ days, className = '' }: { days: string[]; className?: string }) {
-  const set = useMemo(() => new Set(days.map((d) => d.slice(0, 10))), [days])
-  const cells = useMemo(() => {
-    const out: { key: string; label: string; on: boolean; today: boolean }[] = []
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const key = d.toISOString().slice(0, 10)
-      out.push({ key, label: d.toLocaleDateString('en-US', { weekday: 'narrow' }), on: set.has(key), today: i === 0 })
+    if (!s) return
+    const next = !p.viewerFollows
+    setProfile({ ...p, viewerFollows: next, followers: p.followers + (next ? 1 : -1) })
+    try {
+      await apiSend('/api/social/follow', { followerAddress: address ?? s.publicKey.toBase58(), followeeAddress: p.address }, next ? 'POST' : 'DELETE')
+    } catch {
+      toast('Could not update follow', 'err')
     }
-    return out
-  }, [set])
-  return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      <div className="flex items-center gap-1.5">
-        {cells.map((c) => (
-          <span key={c.key} title={c.key} className="flex flex-col items-center gap-1">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center ${c.on ? 'bg-[#10b981] text-white' : c.today ? 'border border-dashed border-black/20' : 'bg-black/[0.05]'}`}>{c.on && <Icon name="check" size={12} strokeWidth={2.5} />}</span>
-            <span className="text-[10px] text-[#aeaeb2]">{c.label}</span>
-          </span>
-        ))}
-      </div>
-      <p className="text-[12px] text-[#6e6e73] leading-snug">Give any amount today to keep the streak alive.</p>
-    </div>
-  )
-}
-
-function Gifts({ gifts, solPrice, own, onGive }: { gifts: GiftView[]; solPrice: number | null; own: boolean; onGive: () => void }) {
-  if (gifts.length === 0) {
-    return (
-      <Card>
-        <Empty icon="heart" title={own ? 'No gifts yet' : 'No gifts yet'} sub={own ? 'Every gift is held in escrow until it is delivered and proven. Start with five dollars.' : 'Nothing given yet.'} action={own ? <Btn tone="accent" icon="heart" onClick={onGive}>Give</Btn> : undefined} />
-      </Card>
-    )
   }
-  return (
-    <div className="space-y-2 animate-stagger">
-      {gifts.map((g) => {
-        const c = getCause(g.poolId)
-        return (
-          <Card key={g.id} className="p-3.5 flex items-center gap-3.5">
-            <Link href={`/causes/${g.poolId}`} className="w-12 h-12 rounded-2xl overflow-hidden bg-black/[0.05] flex-shrink-0">
-              {c?.image ? <Img src={c.image.replace('w=1600', 'w=160')} alt={c.imageAlt} /> : null}
-            </Link>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-semibold truncate">{c?.name ?? g.poolName}</p>
-              <p className="text-[12px] text-[#6e6e73] mt-0.5 flex items-center gap-2 flex-wrap">
-                <span>{timeAgo(g.createdAt)}</span>
-                {g.route === 'intents' && g.sourceChain && <Pill tone="gray">from {g.sourceChain.toUpperCase()} via NEAR Intents</Pill>}
-                {g.route === 'multihopper' && <Pill tone="gray">private route</Pill>}
-                {g.anonymous && <Pill tone="gray">anonymous</Pill>}
-                <TxLink sig={g.signature} label="Receipt" />
-              </p>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="num text-[15px] font-bold">{fmtSol(g.amount, 3)} SOL</p>
-              {solPrice && <p className="num text-[12px] text-[#6e6e73]">{fmtUsd(g.amount * solPrice)}</p>}
-            </div>
-          </Card>
-        )
-      })}
-    </div>
-  )
-}
 
-const CERT_TONES: Record<string, { bg: string; ink: string; ring: string }> = {
-  bronze: { bg: '#f3ebe3', ink: '#6b4f3a', ring: '#d9c3ad' },
-  silver: { bg: '#eef0f2', ink: '#4f565c', ring: '#c9ced3' },
-  gold: { bg: '#f7f1dc', ink: '#705b1f', ring: '#e2d39f' },
-  diamond: { bg: '#e8f3f6', ink: '#2b5f6e', ring: '#b9dbe4' },
-}
-
-function Certificates({ certs }: { certs: CertView[] }) {
-  if (certs.length === 0) {
-    return (
-      <Card>
-        <Empty icon="trophy" title="No certificates yet" sub="Each gift mints an impact certificate: bronze, silver from 0.1 SOL, gold from 0.5 SOL, diamond from 1 SOL." />
-      </Card>
-    )
-  }
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 animate-stagger">
-      {certs.map((c) => {
-        const t = CERT_TONES[c.tier] ?? CERT_TONES.bronze
-        const cause = c.poolId ? getCause(c.poolId) : undefined
-        return (
-          <div key={c.id} className="rounded-[22px] p-4 flex flex-col min-h-[150px]" style={{ background: t.bg, color: t.ink, border: `1px solid ${t.ring}` }}>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.08em] opacity-80">{c.tier}</span>
-              <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.6)' }}>
-                <Icon name="trophy" size={14} />
+    <div className="space-y-4">
+      {/* Header */}
+      <section className="card p-5 md:p-6">
+        <div className="flex items-start gap-4">
+          <Avatar username={p.username} url={p.avatarUrl} size={72} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-[22px] font-bold tracking-[-0.02em] leading-tight truncate">{shownName(p.displayName, p.username) ?? `@${p.username}`}</h2>
+              {p.foundingRank != null && p.foundingRank <= 100 && <span className="pill bg-emerald-50 text-emerald-700 !text-[10px] font-semibold">Founding giver #{p.foundingRank}</span>}
+            </div>
+            <p className="text-[13px] text-[#86868b] mt-0.5">
+              @{p.username} · <span className="font-mono text-[11px]">{short(p.address)}</span>
+            </p>
+            {p.bio && <p className="text-[14px] mt-2 leading-relaxed">{p.bio}</p>}
+            <div className="flex items-center gap-4 mt-3 text-[13px]">
+              <span>
+                <span className="font-bold counter">{p.followers}</span> <span className="text-[#86868b]">followers</span>
+              </span>
+              <span>
+                <span className="font-bold counter">{p.following}</span> <span className="text-[#86868b]">following</span>
+              </span>
+              <span>
+                <span className="font-bold counter text-emerald-600">{p.rewardPoints.toLocaleString()}</span> <span className="text-[#86868b]">points</span>
               </span>
             </div>
-            <p className="num text-[22px] font-bold mt-4 leading-none">{fmtSol(c.amount, 3)} SOL</p>
-            <p className="text-[12.5px] mt-1.5 font-medium truncate">{cause?.name ?? c.causeName}</p>
-            <div className="mt-auto pt-3 flex items-center justify-between text-[11px] opacity-80">
-              <span>{new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-              {c.signature && <TxLink sig={c.signature} label="Proof" className="!text-current" />}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {own ? (
+            <>
+              <button onClick={openProfileEditor} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
+                {p.handleClaimed ? 'Edit profile' : '✦ Pick your name'}
+              </button>
+              <button onClick={openWalletSheet} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
+                Wallet
+              </button>
+              <button onClick={share} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
+                Share
+              </button>
+              <button onClick={invite} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
+                Invite
+              </button>
+              {isAdmin && (
+                <Link href="/admin" className="btn-primary h-9 px-3.5 !text-[12.5px]">
+                  🚚 Field console
+                </Link>
+              )}
+            </>
+          ) : (
+            <>
+              {!isSelf && (
+                <button onClick={follow} className={`h-9 px-4 !text-[12.5px] ${p.viewerFollows ? 'btn-secondary' : 'btn-primary'}`}>
+                  {p.viewerFollows ? 'Following' : 'Follow'}
+                </button>
+              )}
+              <button onClick={share} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
+                Share
+              </button>
+              {!isSelf && (
+                <Link href={`/home?compose=dare&target=${p.username}`} className="h-9 px-3.5 inline-flex items-center rounded-xl bg-amber-50 text-amber-700 text-[12.5px] font-semibold hover:bg-amber-100">
+                  ⚡ Dare @{p.username}
+                </Link>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      <GuardianCard p={p} solPrice={solPrice} />
+
+      {/* Streak + causes */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <StreakCard current={streak?.currentStreak ?? p.streakCurrent} longest={streak?.longestStreak ?? p.streakLongest} days={streak?.donationDays ?? []} />
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-[15px]">Causes backed</h3>
+            {own && (
+              <button onClick={() => openGive()} className="btn-primary h-8 px-3 !text-[12px]">
+                ♡ Give
+              </button>
+            )}
+          </div>
+          {p.causes.length === 0 ? (
+            <p className="text-[13px] text-[#86868b] leading-relaxed">{own ? 'Your first gift starts the pass, the streak and the certificates. 0.01 SOL is enough.' : 'No gifts yet.'}</p>
+          ) : (
+            <ul className="space-y-2">
+              {p.causes.map((c) => (
+                <li key={c.poolId}>
+                  <Link href={`/causes/${c.poolId}`} className="flex items-center gap-3 px-2 py-1.5 -mx-2 rounded-xl hover:bg-black/[0.03]">
+                    <span className="w-9 h-9 rounded-xl bg-[#f5f5f7] flex items-center justify-center">{getCause(c.poolId)?.emoji ?? c.emoji}</span>
+                    <span className="flex-1 text-[13px] font-medium">{c.name}</span>
+                    <span className="text-[12px] font-semibold counter">{fmtSol(c.amount, 3)} SOL</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1.5 pt-2">
+        {(
+          [
+            ['gifts', `Receipts${p.gifts.length ? ` · ${p.gifts.length}` : ''}`],
+            ['certificates', `Certificates${p.certificates.length ? ` · ${p.certificates.length}` : ''}`],
+            ['dares', `Dares${p.dares.length ? ` · ${p.dares.length}` : ''}`],
+            ['posts', 'Posts'],
+          ] as const
+        ).map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className={`px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors ${tab === k ? 'bg-[#1d1d1f] text-white' : 'bg-white border border-black/[0.04] text-[#86868b] hover:text-[#1d1d1f]'}`}>
+            {l}
+          </button>
+        ))}
+        <button onClick={reload} className="ml-auto text-[12px] text-[#aeaeb2] hover:text-[#1d1d1f]">
+          Refresh
+        </button>
+      </div>
+
+      {tab === 'gifts' && <Receipts gifts={p.gifts} solPrice={solPrice} />}
+      {tab === 'certificates' && <Certificates certs={p.certificates} owner={p.address} />}
+      {tab === 'dares' && (p.dares.length === 0 ? <EmptyLine text="No dares yet." /> : <div className="space-y-2.5">{p.dares.map((d) => <DareCard key={d.id} dare={d} />)}</div>)}
+      {tab === 'posts' && (p.posts.length === 0 ? <EmptyLine text="No posts yet." /> : <div className="space-y-2.5">{p.posts.filter((x) => x.type !== 'joined').map((x) => <PostCard key={x.id} post={x} />)}</div>)}
+    </div>
+  )
+}
+
+/** The Living Guardian pass: a collectible that grows with giving, streaks and votes. */
+function GuardianCard({ p, solPrice }: { p: PublicProfile; solPrice: number | null }) {
+  const g = p.guardian
+  const idx = TIERS.findIndex((t) => t.tier === g.tier)
+  return (
+    <section className="relative overflow-hidden rounded-[28px] p-6 md:p-7 text-white" style={{ background: 'linear-gradient(135deg, #111113 0%, #1d1d1f 55%, #0f2a22 100%)' }}>
+      <div className="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+      <div className="absolute -left-16 bottom-0 w-56 h-56 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
+      <div className="relative flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+            Living Guardian · Tier {g.level} of {TIERS.length}
+          </p>
+          <h3 className="text-[40px] md:text-[48px] font-black tracking-[-0.04em] leading-none mt-2">{g.tier}</h3>
+          <p className="text-[12px] text-white/50 mt-2">
+            @{p.username} · <span className="font-mono">{short(p.address)}</span>
+          </p>
+        </div>
+        <ProofOrb totalDonated={p.totalDonated} engagement={p.donationCount} size="lg" />
+      </div>
+
+      <div className="relative grid grid-cols-4 gap-3 mt-6">
+        {[
+          ['Given', `${fmtSol(p.totalDonated, 2)}`, solPrice ? fmtUsd(p.totalDonated * solPrice) : 'SOL'],
+          ['Gifts', String(p.donationCount), `${p.causes.length} causes`],
+          ['Votes', String(p.votes), 'on releases'],
+          ['Score', g.score.toLocaleString(), g.nextTier ? `${g.pointsToNext} to ${g.nextTier}` : 'max tier'],
+        ].map(([l, v, s]) => (
+          <div key={l} className="min-w-0">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/40">{l}</p>
+            <p className="text-[20px] md:text-[24px] font-bold counter leading-tight mt-0.5">{v}</p>
+            <p className="text-[10px] text-white/40 truncate">{s}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="relative mt-5">
+        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-300 transition-all duration-700" style={{ width: `${Math.round(g.progress * 100)}%` }} />
+        </div>
+        <div className="flex items-center justify-between mt-3 gap-3">
+          <div className="flex items-center gap-1.5">
+            {TIERS.map((t, i) => (
+              <span key={t.tier} title={t.tier} className="h-1.5 rounded-full transition-all" style={{ width: i <= idx ? 22 : 10, background: i <= idx ? '#34d399' : 'rgba(255,255,255,0.15)' }} />
+            ))}
+          </div>
+          <p className="text-[11px] text-white/50 truncate">{g.perks.join(' · ')}</p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function StreakCard({ current, longest, days }: { current: number; longest: number; days: string[] }) {
+  const set = new Set(days.map((d) => d.slice(0, 10)))
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setUTCDate(d.getUTCDate() - (6 - i))
+    const key = d.toISOString().slice(0, 10)
+    return { key, label: d.toLocaleDateString('en-US', { weekday: 'narrow', timeZone: 'UTC' }), on: set.has(key) }
+  })
+  const onFire = current >= 3
+  return (
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <span className={`text-2xl ${onFire ? 'animate-pulse' : ''}`} style={onFire ? { filter: 'drop-shadow(0 0 8px rgba(251,146,60,0.7))' } : undefined}>
+            🔥
+          </span>
+          <div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold counter">{current}</span>
+              <span className="text-xs text-[#86868b]">day streak</span>
+            </div>
+            {onFire && <span className="inline-block pill !text-[10px] font-semibold text-orange-600 bg-orange-50 mt-0.5">On fire</span>}
+          </div>
+        </div>
+        <div className="text-right">
+          <span className="text-xs text-[#86868b]">Best </span>
+          <span className="text-sm font-semibold counter">{longest}d</span>
+        </div>
+      </div>
+      <div className="pt-3 border-t border-black/[0.03] flex items-center justify-between">
+        {last7.map((d) => (
+          <div key={d.key} className="flex flex-col items-center gap-1.5">
+            <span className="text-[10px] text-[#d4d4d4] font-medium">{d.label}</span>
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${d.on ? 'bg-emerald-500 shadow-sm shadow-emerald-500/30' : 'bg-[#f5f5f7] border border-black/[0.05]'}`}>
+              {d.on && (
+                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Receipts({ gifts, solPrice }: { gifts: GiftView[]; solPrice: number | null }) {
+  if (gifts.length === 0) return <EmptyLine text="No gifts yet. Every gift shows up here with its on-chain receipt." />
+  return (
+    <div className="card divide-y divide-black/[0.04]">
+      {gifts.map((g) => {
+        const cause = getCause(g.poolId)
+        const via = g.route === 'intents' ? `from ${chainLabel(g.sourceChain) ?? 'another chain'}` : g.route === 'x402' ? 'via x402' : g.route === 'multihopper' ? 'private route' : g.route === 'blink' ? 'via Blink' : 'Solana'
+        return (
+          <div key={g.id} className="flex items-center gap-3 px-4 py-3 hover:bg-black/[0.015] transition-colors">
+            <span className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">{cause?.emoji ?? '💚'}</span>
+            <Link href={`/gift/${g.id}`} className="flex-1 min-w-0 group">
+              <p className="text-[13px] font-semibold truncate group-hover:underline">{g.poolName}</p>
+              <p className="text-[11px] text-[#86868b]">
+                {via} · {timeAgo(g.createdAt)} · <span className="text-emerald-600 font-medium">follow →</span>
+              </p>
+            </Link>
+            <div className="text-right">
+              <p className="text-[13px] font-bold counter">{fmtSol(g.amount, 3)} SOL</p>
+              {solPrice && <p className="text-[10px] text-[#aeaeb2] counter">{fmtUsd(g.amount * solPrice)}</p>}
+            </div>
+            {g.signature && !g.signature.startsWith('x402_') && (
+              <a href={explorerTx(g.signature)} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 font-medium hover:underline">
+                Solscan ↗
+              </a>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+const CERT: Record<string, { label: string; bg: string; accent: string; emoji: string }> = {
+  bronze: { label: 'Bronze', bg: 'bg-amber-50', accent: 'text-amber-600', emoji: '🥉' },
+  silver: { label: 'Silver', bg: 'bg-[#f5f5f7]', accent: 'text-[#86868b]', emoji: '🥈' },
+  gold: { label: 'Gold', bg: 'bg-yellow-50', accent: 'text-yellow-600', emoji: '🥇' },
+  diamond: { label: 'Diamond', bg: 'bg-sky-50', accent: 'text-sky-600', emoji: '💎' },
+}
+
+function Certificates({ certs, owner }: { certs: CertView[]; owner: string }) {
+  if (certs.length === 0) return <EmptyLine text="Every gift mints a soulbound impact certificate. None yet." />
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {certs.map((c) => {
+        const t = CERT[c.tier] ?? CERT.bronze
+        return (
+          <div key={c.id} className="card overflow-hidden group">
+            <div className={`${t.bg} p-6 text-center relative transition-all group-hover:py-7`}>
+              <div className="text-3xl mb-1.5">{t.emoji}</div>
+              <div className={`text-[9px] font-semibold ${t.accent} uppercase tracking-[0.2em]`}>{t.label} Impact</div>
+              <span className="absolute top-2.5 right-2.5 pill bg-white/70 text-[#86868b] !text-[8px]">Soulbound</span>
+            </div>
+            <div className="p-4">
+              <p className="font-semibold text-[13px] mb-2 truncate">{c.causeName}</p>
+              <div className="flex justify-between text-[11px]">
+                <span className="text-[#86868b]">Amount</span>
+                <span className="font-bold counter">{fmtSol(c.amount, 3)} SOL</span>
+              </div>
+              <div className="flex justify-between text-[11px] mt-1">
+                <span className="text-[#86868b]">Owner</span>
+                <span className="font-mono text-[#86868b]">{short(owner)}</span>
+              </div>
+              {c.signature && !c.signature.startsWith('x402_') && (
+                <a href={explorerTx(c.signature)} target="_blank" rel="noopener noreferrer" className="mt-2 block text-center text-[10px] text-[#aeaeb2] hover:text-[#525252]">
+                  View transaction
+                </a>
+              )}
             </div>
           </div>
         )
@@ -332,92 +377,19 @@ function Certificates({ certs }: { certs: CertView[] }) {
   )
 }
 
-function Dares({ dares, username }: { dares: DareView[]; username: string }) {
-  if (dares.length === 0) {
-    return (
-      <Card>
-        <Empty icon="bolt" title="No dares yet" sub="Dare a friend to match a gift and stake SOL on it. Whether they deliver or not, the cause wins." />
-      </Card>
-    )
-  }
-  return (
-    <div className="space-y-2 animate-stagger">
-      {dares.map((d) => (
-        <DareRow key={d.id} dare={d} username={username} />
-      ))}
-    </div>
-  )
-}
-
-function DareRow({ dare, username }: { dare: DareView; username: string }) {
-  const left = useCountdown(dare.secondsLeft)
-  const mine = dare.creator.username === username
-  const open = dare.status === 'open'
-  return (
-    <Link href={`/dares/${dare.id}`} className="card card-hover p-4 flex items-center gap-4 block">
-      <span className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${open ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-black/[0.05] text-[#6e6e73]'}`}>
-        <Icon name="bolt" size={18} />
-      </span>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13.5px] font-semibold truncate">
-          {mine ? `You dared @${dare.targetHandle}` : `@${dare.creator.username} dared you`}
-        </p>
-        <p className="text-[12.5px] text-[#6e6e73] truncate mt-0.5">
-          {dare.text} · {dare.poolName}
-        </p>
-      </div>
-      <div className="text-right flex-shrink-0">
-        <p className="num text-[14px] font-bold">{fmtSol(dare.pot, 3)} SOL</p>
-        <p className="text-[11.5px] text-[#6e6e73]">{open ? countdown(left) : dare.status}</p>
-      </div>
-    </Link>
-  )
-}
-
-function Posts({ posts }: { posts: FeedPost[] }) {
-  if (posts.length === 0) {
-    return (
-      <Card>
-        <Empty icon="chat" title="Nothing posted yet" sub="Gifts, dares and votes show up here automatically." />
-      </Card>
-    )
-  }
-  return (
-    <div className="space-y-2 animate-stagger">
-      {posts.map((p) => (
-        <Card key={p.id} className="p-4">
-          <div className="flex items-center gap-2 text-[12px] text-[#6e6e73]">
-            <span className="capitalize">{p.type.replace('_', ' ')}</span>
-            <span>·</span>
-            <span>{timeAgo(p.createdAt)}</span>
-            {p.txSignature && <TxLink sig={p.txSignature} label="Receipt" />}
-          </div>
-          <p className="text-[14px] mt-1.5 leading-relaxed whitespace-pre-wrap">{p.content}</p>
-          <p className="text-[12px] text-[#aeaeb2] mt-2 inline-flex items-center gap-1.5">
-            <Icon name="heart" size={13} /> <span className="num">{p.likeCount}</span>
-            <Icon name="chat" size={13} className="ml-2" /> <span className="num">{p.commentCount}</span>
-          </p>
-        </Card>
-      ))}
-    </div>
-  )
+function EmptyLine({ text }: { text: string }) {
+  return <div className="card p-8 text-center text-[13px] text-[#86868b]">{text}</div>
 }
 
 function ProfileSkeleton() {
   return (
-    <div className="max-w-[760px] mx-auto">
-      <div className="flex items-start gap-5">
-        <Skeleton className="w-[72px] h-[72px] !rounded-full" />
-        <div className="flex-1 space-y-2 pt-2">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </div>
+    <div className="space-y-4">
+      <div className="skeleton h-40 !rounded-[20px]" />
+      <div className="skeleton h-56 !rounded-[28px]" />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="skeleton h-32" />
+        <div className="skeleton h-32" />
       </div>
-      <Skeleton className="h-[220px] mt-8 !rounded-[28px]" />
-      <Skeleton className="h-[160px] mt-4 !rounded-[20px]" />
-      <Skeleton className="h-10 w-80 mt-6 !rounded-full" />
-      <Skeleton className="h-[72px] mt-4 !rounded-[20px]" />
-      <Skeleton className="h-[72px] mt-2 !rounded-[20px]" />
     </div>
   )
 }

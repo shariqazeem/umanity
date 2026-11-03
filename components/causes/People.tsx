@@ -49,7 +49,7 @@ export function Supporters({ supporters, count, friends, onGive }: { supporters:
               <Avatar username={s.anonymous ? 'anonymous' : s.username} url={s.anonymous ? null : s.avatarUrl} size={36} />
               <span className="min-w-0 flex-1">
                 <span className="block text-[13.5px] font-semibold truncate">{name}</span>
-                <span className="block text-[11.5px] text-[#6e6e73] num">
+                <span className="block text-[11.5px] text-[#86868b] num">
                   {fmtSol(s.amount, 3)} SOL · {s.count} {s.count === 1 ? 'gift' : 'gifts'} · {timeAgo(s.lastAt)}
                 </span>
               </span>
@@ -89,8 +89,8 @@ export function GiftsList({ gifts }: { gifts: GiftView[] }) {
                 </Link>
               )}{' '}
               gave <span className="num font-semibold">{fmtSol(g.amount, 3)} SOL</span>
-              {chain && g.route === 'intents' && <span className="text-[#6e6e73]"> from {chain}</span>}
-              {g.route === 'multihopper' && <span className="text-[#6e6e73]"> privately</span>}
+              {chain && g.route === 'intents' && <span className="text-[#86868b]"> from {chain}</span>}
+              {g.route === 'multihopper' && <span className="text-[#86868b]"> privately</span>}
               <span className="text-[#aeaeb2]"> · {timeAgo(g.createdAt)}</span>
             </span>
             <TxLink sig={g.signature} label="tx" className="flex-shrink-0" />
@@ -124,7 +124,7 @@ function DareRow({ d }: { d: DareView }) {
           <span className="block text-[13.5px] leading-snug">
             <span className="font-semibold">@{d.creator.username}</span> dared <span className="font-semibold">@{d.targetHandle}</span>: {d.text}
           </span>
-          <span className="block text-[11.5px] text-[#6e6e73] mt-0.5 num">
+          <span className="block text-[11.5px] text-[#86868b] mt-0.5 num">
             {fmtSol(d.pot, 3)} SOL in the pot · {d.backerCount} {d.backerCount === 1 ? 'backer' : 'backers'}
           </span>
         </span>

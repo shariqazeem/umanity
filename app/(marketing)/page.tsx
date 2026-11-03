@@ -5,20 +5,17 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { Btn, Icon, Img, Progress, Pill } from '@/components/shared/ui'
-import { CAUSES } from '@/lib/causes'
 import { useStats } from '@/lib/client/hooks'
-import { apiGet, fmtSol, fmtUsd } from '@/lib/client/api'
-import { UMANITY_DONATIONS_PROGRAM_ID, explorerAccount } from '@/lib/solana/constants'
-import type { PoolView } from '@/lib/data/donations'
-import type { CampaignView } from '@/lib/data/governance'
+import { apiGet, fmtSol, timeAgo } from '@/lib/client/api'
+import { getCause } from '@/lib/causes'
+import { Img } from '@/components/shared/ui'
+import type { FieldUpdateView } from '@/lib/contracts'
+
+const GITHUB = 'https://github.com/shariqazeem/umanity'
 
 export default function Landing() {
   const router = useRouter()
-  const { openGive, openAuth, signer, solPrice, isMainnet } = useUmanity()
-  const stats = useStats(60_000)
-  const [pools, setPools] = useState<Record<string, PoolView>>({})
-  const [campaigns, setCampaigns] = useState<Record<string, CampaignView>>({})
+  const { openAuth, signer, isMainnet } = useUmanity()
 
   // Returning people go straight to the app; ?stay=1 shows this page anyway.
   useEffect(() => {
@@ -30,307 +27,453 @@ export default function Landing() {
     }
   }, [router])
 
-  useEffect(() => {
-    apiGet<{ pools?: PoolView[] }>('/api/pools')
-      .then((d) => setPools(Object.fromEntries((d.pools ?? []).map((p) => [p.id, p]))))
-      .catch(() => {})
-    apiGet<{ campaigns?: CampaignView[] }>('/api/campaigns')
-      .then((d) => setCampaigns(Object.fromEntries((d.campaigns ?? []).map((c) => [c.pool_id, c]))))
-      .catch(() => {})
-  }, [])
-
-  const usd = (sol: number) => (solPrice ? fmtUsd(sol * solPrice) : null)
-  const hero = CAUSES[0]
-  const second = CAUSES[4]
-  const third = CAUSES[1]
-
   return (
-    <div className="min-h-[100dvh] bg-white text-[#1d1d1f]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass hairline-b">
-        <div className="container-app h-16 flex items-center gap-6">
-          <Link href="/?stay=1" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="Umanity" width={34} height={34} className="rounded-full" priority />
-            <span className="text-[17px] font-bold tracking-[-0.02em]">Umanity</span>
+    <div className="min-h-[100dvh] bg-white overflow-hidden">
+      {/* Floating header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-2xl border-b border-black/[0.04]">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link href="/?stay=1">
+            <Image src="/logo.png" alt="Umanity" width={38} height={38} className="rounded-full" priority />
           </Link>
-          <nav className="hidden md:flex items-center gap-1 ml-4">
-            {[
-              ['/causes', 'Causes'],
-              ['/how-it-works', 'How it works'],
-              ['/transparency', 'Transparency'],
-            ].map(([href, label]) => (
-              <Link key={href} href={href} className="px-3.5 h-9 inline-flex items-center rounded-full text-[13.5px] font-semibold text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/[0.04]">
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-5">
+            <Link href="/home" className="hidden sm:block text-[13px] text-[#86868b] hover:text-[#1d1d1f] font-medium transition-colors">
+              Explore App
+            </Link>
+            <Link href="/agents" className="hidden sm:block text-[13px] text-[#86868b] hover:text-[#1d1d1f] font-medium transition-colors">
+              Agents
+            </Link>
+            <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hidden sm:block text-[13px] text-[#86868b] hover:text-[#1d1d1f] font-medium transition-colors">
+              GitHub
+            </a>
             {signer ? (
-              <Link href="/home" className="btn btn-outline h-10 px-4.5 text-[13.5px]">
+              <Link href="/home" className="btn-primary h-10 px-5 !text-[13px]">
                 Open app
               </Link>
             ) : (
-              <Btn tone="ghost" onClick={openAuth} className="hidden sm:inline-flex">
+              <button onClick={openAuth} className="btn-primary h-10 px-5 !text-[13px]">
                 Sign in
-              </Btn>
+              </button>
             )}
-            <Btn tone="accent" icon="heart" onClick={() => openGive()}>
-              Give
-            </Btn>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="container-app pt-12 pb-16 md:pt-20 md:pb-24">
-        <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
-          <div className="animate-fade-up">
-            <p className="eyebrow mb-5">Giving on Solana · Delivered in person in Pakistan</p>
-            <h1 className="font-display text-[46px] sm:text-[62px] lg:text-[72px] leading-[0.98] tracking-[-0.02em]">
-              Give to real people.
-              <br />
-              <span className="italic text-[#047857]">Watch it reach them.</span>
-            </h1>
-            <p className="text-[17px] sm:text-[19px] text-[#6e6e73] leading-[1.55] mt-7 max-w-[520px]">
-              Your gift waits in escrow on Solana. The Umanity team buys what is needed, delivers it by hand, and posts the photos and receipts. The money moves only when you and the other donors say so.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 mt-9">
-              <Btn tone="accent" size="xl" icon="heart" onClick={() => openGive()}>
-                Start giving
-              </Btn>
-              <Link href="/causes" className="btn btn-secondary h-14 px-7 text-[16px]">
-                See the causes <Icon name="arrowRight" size={18} />
-              </Link>
+      <main>
+        {/* ===== HERO ===== */}
+        <section className="relative min-h-[100dvh] flex items-center">
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/40 via-white to-white" />
+          <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-16 w-full">
+            <div className="max-w-3xl animate-fade-up">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/40 text-[11px] font-semibold text-emerald-700 mb-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live on Solana {isMainnet ? 'Mainnet' : 'Devnet'} · gifts from 30+ chains
+              </div>
+
+              <h1 className="text-[clamp(2.8rem,8vw,6rem)] font-black tracking-[-0.04em] leading-[0.88] mb-8 text-[#1d1d1f]">
+                Crypto giving
+                <br />
+                <span className="text-[#d4d4d4] line-through decoration-[#e5e5e5] decoration-[3px]">on trust.</span>
+                <br />
+                <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">On proof.</span>
+              </h1>
+
+              <p className="text-lg md:text-[22px] text-[#86868b] max-w-xl leading-[1.5] mb-10">
+                Give from any chain. Your gift waits in on-chain escrow until we deliver it by hand, film it, and the donors vote to release it. Charity you can verify, not just believe.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-start gap-3 mb-6">
+                <Link href="/home" className="btn-primary px-7 py-3.5 text-[14px]">
+                  Open the app
+                </Link>
+                <Link href="/give" className="btn-secondary px-7 py-3.5 text-[14px] font-medium">
+                  ♡ Give 0.01 SOL
+                </Link>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-[#aeaeb2]">
+                {[
+                  { label: 'Escrowed on-chain', icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z' },
+                  { label: 'Any chain', icon: 'M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18M12 3a15 15 0 000 18' },
+                  { label: 'Delivered by hand', icon: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' },
+                  { label: 'Agents welcome', icon: 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z' },
+                ].map((item) => (
+                  <span key={item.label} className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                    </svg>
+                    {item.label}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-8 text-[13px] text-[#6e6e73]">
+
+            <div className="hidden lg:block absolute right-6 top-1/2 -translate-y-1/2">
+              <div className="card-glass p-6 w-[220px]">
+                <StatsColumn />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="lg:hidden border-y border-black/[0.04] bg-white/80 py-6">
+          <StatsRow />
+        </div>
+
+        {/* ===== HOW A GIFT MOVES ===== */}
+        <section className="py-20 md:py-28 bg-white">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-14">
+              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">How a gift moves</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">From any wallet to a real hand.</h2>
+              <p className="text-[#86868b] text-base max-w-lg mx-auto">Four steps. Every one of them leaves a record you can check.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
-                ['lock', 'Escrowed on Solana'],
-                ['shieldCheck', 'Proof before release'],
-                ['globe', 'Give from 37 chains'],
-              ].map(([icon, label]) => (
-                <span key={label} className="inline-flex items-center gap-1.5">
-                  <Icon name={icon} size={15} className="text-[#047857]" /> {label}
-                </span>
+                { n: '01', icon: '♡', title: 'Give', body: 'One tap with SOL, from any of 30+ chains through NEAR Intents, from a Blink on X, or from an AI agent over x402.' },
+                { n: '02', icon: '🔐', title: 'Escrow', body: "The gift lands in the cause's Anchor vault PDA on Solana, not a wallet. The program only lets it out as an approved milestone or a refund." },
+                { n: '03', icon: '🚚', title: 'Deliver & prove', body: 'The field team buys, delivers and films it in Pakistan. Photos and receipts are hashed; an AI oracle audits them.' },
+                { n: '04', icon: '🔓', title: 'Release', body: "The cause's donors vote. Only a yes moves the milestone out of escrow with release_milestone_funds." },
+              ].map((s) => (
+                <div key={s.n} className="relative bg-white rounded-2xl p-6 border border-black/[0.05] hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="w-11 h-11 rounded-2xl bg-[#f5f5f7] flex items-center justify-center text-lg">{s.icon}</div>
+                    <span className="text-[11px] font-bold text-[#d4d4d4] counter">{s.n}</span>
+                  </div>
+                  <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-1.5">{s.title}</h3>
+                  <p className="text-[13px] text-[#86868b] leading-relaxed">{s.body}</p>
+                </div>
               ))}
             </div>
           </div>
+        </section>
 
-          {/* Photo collage */}
-          <div className="relative h-[420px] sm:h-[520px] animate-fade-in" style={{ animationDelay: '0.15s' }}>
-            <div className="absolute left-0 top-0 w-[68%] h-[72%] rounded-[32px] overflow-hidden shadow-[var(--shadow-lg)]">
-              <Img src={hero.image} alt={hero.imageAlt} />
-            </div>
-            <div className="absolute right-0 top-[14%] w-[44%] h-[42%] rounded-[28px] overflow-hidden shadow-[var(--shadow-lg)] border-4 border-white">
-              <Img src={second.image} alt={second.imageAlt} />
-            </div>
-            <div className="absolute right-[8%] bottom-0 w-[48%] h-[40%] rounded-[28px] overflow-hidden shadow-[var(--shadow-lg)] border-4 border-white">
-              <Img src={third.image} alt={third.imageAlt} />
-            </div>
-            <div className="absolute left-[6%] bottom-[6%] card p-4 w-[240px] shadow-[var(--shadow-lg)] float">
-              <p className="eyebrow">Held in escrow right now</p>
-              <p className="num text-[26px] font-bold mt-1 leading-none">{stats ? `${fmtSol(stats.totalEscrowed, 2)} SOL` : '—'}</p>
-              <p className="text-[12px] text-[#6e6e73] mt-1">{stats && usd(stats.totalEscrowed) ? `${usd(stats.totalEscrowed)} · ` : ''}released only after proof</p>
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* ===== FOLLOW YOUR GIFT ===== */}
+        <FollowSection />
 
-      {/* Live numbers */}
-      <section className="border-y border-black/[0.06] bg-[#fafafa]">
-        <div className="container-app py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            ['Given so far', stats ? `${fmtSol(stats.totalDonations, 2)} SOL` : '—', stats ? usd(stats.totalDonations) : null],
-            ['Waiting in escrow', stats ? `${fmtSol(stats.totalEscrowed, 2)} SOL` : '—', 'moves only on approval'],
-            ['People giving', stats ? String(stats.totalDonors) : '—', 'on-chain, every one'],
-            ['Cross-chain gifts', stats ? String(stats.crossChainCount) : '—', 'via NEAR Intents'],
-          ].map(([label, value, sub]) => (
-            <div key={label as string}>
-              <p className="eyebrow">{label}</p>
-              <p className="num text-[28px] font-bold mt-1 leading-none">{value}</p>
-              {sub && <p className="text-[12px] text-[#6e6e73] mt-1.5">{sub}</p>}
+        {/* ===== WHAT CRYPTO CHARITY GOT WRONG ===== */}
+        <section className="py-20 md:py-28 bg-[#fafafa]">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-14">
+              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">What crypto charity got wrong &rarr; What Umanity does</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Six fixes. One app.</h2>
+              <p className="text-[#86868b] text-base max-w-lg mx-auto">Built on the version that won Superteam and the Solana Graveyard Hackathon, rebuilt for any chain and for agents.</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="container-app py-20 md:py-28">
-        <div className="max-w-[640px]">
-          <p className="eyebrow mb-4">How it works</p>
-          <h2 className="font-display text-[38px] sm:text-[48px] leading-[1.02]">Three steps. No black hole.</h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-5 mt-12">
-          {[
-            ['1', 'Choose a cause and give', 'SOL from your wallet, or USDC, ETH, BTC and 200+ assets from 37 chains. One tap, one deposit address, nothing to bridge.', 'heart'],
-            ['2', 'It waits in escrow', 'A Solana program holds the gift in a vault that nobody can empty alone. You can watch the balance on-chain the whole time.', 'lock'],
-            ['3', 'We deliver and prove it, you release it', 'The team buys and hands over the goods, posts photos and receipts, an AI oracle audits them, and the donors vote the money out.', 'shieldCheck'],
-          ].map(([n, title, body, icon]) => (
-            <div key={n} className="card p-7">
-              <div className="flex items-center justify-between">
-                <span className="font-display text-[40px] leading-none text-[#aeaeb2]">{n}</span>
-                <span className="w-10 h-10 rounded-full bg-[#ecfdf5] text-[#047857] flex items-center justify-center">
-                  <Icon name={icon} size={18} />
-                </span>
-              </div>
-              <h3 className="text-[19px] font-bold tracking-[-0.02em] mt-6">{title}</h3>
-              <p className="text-[14.5px] text-[#6e6e73] leading-relaxed mt-2">{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Causes */}
-      <section className="bg-[#f5f5f7] py-20 md:py-28">
-        <div className="container-app">
-          <div className="flex items-end justify-between gap-6 flex-wrap">
-            <div className="max-w-[640px]">
-              <p className="eyebrow mb-4">The causes</p>
-              <h2 className="font-display text-[38px] sm:text-[48px] leading-[1.02]">Six things we deliver by hand.</h2>
-              <p className="text-[16px] text-[#6e6e73] mt-4 leading-relaxed">Each one has its own vault, its own delivery log and its own receipts. Pick the one that moves you.</p>
-            </div>
-            <Link href="/causes" className="btn btn-outline h-11 px-5 text-[14px]">
-              All causes <Icon name="arrowRight" size={16} />
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
-            {CAUSES.map((c) => {
-              const p = pools[c.id]
-              const camp = campaigns[c.id]
-              const raised = p?.totalDonated ?? 0
-              const target = camp?.target_amount ?? 0
-              return (
-                <Link key={c.id} href={`/causes/${c.id}`} className="card card-hover overflow-hidden group block">
-                  <div className="relative h-[200px] overflow-hidden">
-                    <Img src={c.image} alt={c.imageAlt} className="group-hover:scale-[1.03] transition-transform duration-700" />
-                    <span className="absolute top-3 left-3">
-                      <Pill tone="white">{c.category}</Pill>
-                    </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {FIXES.map((r) => (
+                <div key={r.dead} className="group bg-white rounded-2xl p-6 border border-black/[0.05] hover:border-emerald-200/60 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm">🪦</span>
+                    <span className="text-[13px] font-bold text-[#aeaeb2] line-through">{r.dead}</span>
                   </div>
-                  <div className="p-5">
-                    <h3 className="text-[18px] font-bold tracking-[-0.02em]">{c.name}</h3>
-                    <p className="text-[13.5px] text-[#6e6e73] mt-1 leading-relaxed">{c.tagline}</p>
-                    <p className="text-[13px] text-[#047857] font-semibold mt-3">{c.impact}</p>
-                    {target > 0 && (
-                      <div className="mt-4">
-                        <Progress value={raised} max={target} />
-                        <p className="text-[12px] text-[#6e6e73] mt-1.5 num">
-                          {fmtSol(raised, 2)} of {fmtSol(target, 0)} SOL toward the next delivery
-                        </p>
-                      </div>
-                    )}
+                  <p className="text-[11px] text-[#aeaeb2] leading-relaxed mb-4">{r.why}</p>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex-1 h-px bg-black/[0.06]" />
+                    <span className="text-[10px] font-bold text-emerald-600">FIXED</span>
+                    <div className="flex-1 h-px bg-black/[0.06]" />
                   </div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Why people stay */}
-      <section className="container-app py-20 md:py-28">
-        <div className="max-w-[640px]">
-          <p className="eyebrow mb-4">Why people come back</p>
-          <h2 className="font-display text-[38px] sm:text-[48px] leading-[1.02]">Giving that gives something back.</h2>
-        </div>
-        <div className="grid md:grid-cols-2 gap-5 mt-12">
-          {[
-            ['camera', 'See your gift arrive', 'When a delivery you funded happens, you get the photos, the receipts and a note that says: you helped fund this. Not a thank-you email. The actual thing.'],
-            ['vote', 'You hold the keys', 'Every donor of a cause votes on whether the proof is good enough before a single lamport leaves the vault. Umanity cannot pay itself.'],
-            ['spark', 'A pass that grows with you', 'Your Living Guardian pass evolves with your giving, your streak and your votes. Tiers unlock perks and a seat at the table for how the Field Fund is spent.'],
-            ['bolt', 'Give together', 'Dare a friend to match you. Stake SOL on it. Whether they deliver or not, the cause wins and the feed sees it.'],
-          ].map(([icon, title, body]) => (
-            <div key={title} className="card p-7 flex gap-5">
-              <span className="w-11 h-11 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center flex-shrink-0">
-                <Icon name={icon} size={19} />
-              </span>
-              <div>
-                <h3 className="text-[18px] font-bold tracking-[-0.02em]">{title}</h3>
-                <p className="text-[14.5px] text-[#6e6e73] leading-relaxed mt-1.5">{body}</p>
-              </div>
+                  <div className="flex items-center justify-between mb-2 gap-2">
+                    <h3 className="text-[15px] font-bold text-[#1d1d1f]">{r.alive}</h3>
+                    <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">{r.tag}</span>
+                  </div>
+                  <p className="text-[12px] text-[#86868b] leading-relaxed mb-3">{r.how}</p>
+                  <div className="inline-flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-semibold text-emerald-700">{r.stat}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Proof */}
-      <section className="bg-[#1d1d1f] text-white py-20 md:py-28">
-        <div className="container-app grid lg:grid-cols-[1fr_1fr] gap-12 items-start">
-          <div>
-            <p className="eyebrow !text-white/50 mb-4">Built to be checked</p>
-            <h2 className="font-display text-[38px] sm:text-[48px] leading-[1.02]">Every rupee has a receipt. Every receipt has a hash.</h2>
-            <p className="text-[16px] text-white/70 leading-relaxed mt-5 max-w-[520px]">Umanity is open source and verifiable end to end. The escrow program, the oracle attestations and every release live on Solana where anyone, including you, can audit them.</p>
-            <div className="flex flex-wrap gap-3 mt-8">
-              <Link href="/transparency" className="btn btn-white h-11 px-5 text-[14px]">
-                Open the ledger
+        {/* ===== DELIVERED BY HAND ===== */}
+        <FieldSection />
+
+        {/* ===== TECH DEPTH ===== */}
+        <section className="py-16 md:py-20 bg-[#1d1d1f] text-white">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold tracking-[-0.02em] mb-2">Built for real impact</h2>
+              <p className="text-white/50 text-sm">Not a toy. Real on-chain infrastructure, real deliveries.</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {[
+                { num: '18', label: 'On-chain instructions', sub: '2 Anchor programs, escrow + dares' },
+                { num: '30+', label: 'Chains to give from', sub: 'NEAR Intents via Aurora' },
+                { num: '3', label: 'Paid agent endpoints', sub: 'x402, USDC on Solana' },
+                { num: '6', label: 'Causes, 6 Blinks', sub: 'Give straight from X' },
+              ].map((s) => (
+                <div key={s.label} className="text-center py-4">
+                  <p className="text-3xl md:text-4xl font-black counter mb-1">{s.num}</p>
+                  <p className="text-[13px] font-medium text-white/80">{s.label}</p>
+                  <p className="text-[11px] text-white/40 mt-0.5">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ===== CTA ===== */}
+        <section className="py-20 md:py-28 bg-white">
+          <div className="max-w-2xl mx-auto px-6 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Ready to make an impact?</h2>
+            <p className="text-[#86868b] text-base mb-8 max-w-md mx-auto">Browse without a wallet. Give in one tap. Watch your gift get delivered.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link href="/home" className="btn-primary px-7 py-3.5 text-[14px]">
+                Open the app
               </Link>
-              <a href="https://github.com/shariqazeem/umanity" target="_blank" rel="noopener noreferrer" className="btn h-11 px-5 text-[14px] bg-white/10 text-white hover:bg-white/15">
-                Source on GitHub <Icon name="arrowUpRight" size={15} />
-              </a>
+              <Link href="/agents" className="btn-secondary px-7 py-3.5 text-[14px] font-medium">
+                🤖 Give from an agent
+              </Link>
             </div>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              ['Escrow program', 'Anchor program with 14 instructions: pool vaults, donation records, campaigns, milestones and staked dares.', 'lock'],
-              ['Impact Oracle', 'Delivery evidence is audited by an AI oracle; the attestation hash is written into the milestone account on-chain.', 'shieldCheck'],
-              ['Paid per audit, x402', 'Any person or agent can pay one cent in USDC over HTTP to re-run an audit. Revenue, not a grant.', 'bolt'],
-              ['Any chain in', 'NEAR Intents and Aurora turn USDC on Base, ETH, BTC or TON into SOL in a cause vault with one deposit.', 'globe'],
-            ].map(([title, body, icon]) => (
-              <div key={title} className="rounded-[20px] bg-white/[0.06] border border-white/[0.08] p-5">
-                <Icon name={icon} size={18} className="text-[#34d399]" />
-                <h3 className="text-[15px] font-bold mt-4">{title}</h3>
-                <p className="text-[13px] text-white/60 leading-relaxed mt-1.5">{body}</p>
+        </section>
+
+        <footer className="border-t border-black/[0.04] py-8 px-6 bg-[#fafafa]">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Image src="/logo.png" alt="Umanity" width={28} height={28} className="rounded-full" />
+              <span className="text-[11px] text-[#aeaeb2]">Crypto giving, on proof.</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-5 text-[11px] text-[#aeaeb2]">
+              <Link href="/transparency" className="hover:text-[#86868b]">
+                Ledger
+              </Link>
+              <Link href="/agents" className="hover:text-[#86868b]">
+                Agents API
+              </Link>
+              <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="hover:text-[#86868b]">
+                @umanity_xyz
+              </a>
+              <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-[#86868b]">
+                GitHub
+              </a>
+              <span>&copy; 2026</span>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </div>
+  )
+}
+
+const FIXES = [
+  {
+    dead: 'Donations disappear',
+    why: 'You give, a wallet receives it, and you never hear about it again.',
+    alive: 'Escrow until proof',
+    how: 'Gifts sit in Anchor vault PDAs. A milestone only releases after delivery proof and a donor vote. Every transfer is on Solscan.',
+    tag: 'Anchor',
+    stat: 'Program-owned vaults',
+  },
+  {
+    dead: 'Only SOL holders can give',
+    why: 'Most crypto sits on Base, Ethereum, Bitcoin or TON. Bridging to give is a chore nobody does.',
+    alive: 'Give from any chain',
+    how: 'One deposit address takes funds from 30+ chains. NEAR Intents solvers swap and settle straight into the Solana escrow.',
+    tag: 'Aurora Intents',
+    stat: '30+ chains, one address',
+  },
+  {
+    dead: 'Trust the charity',
+    why: 'Annual reports, stock photos, a promise. No way to check a single delivery.',
+    alive: 'Proof of delivery',
+    how: 'The field team films every delivery and uploads receipts. An AI Impact Oracle audits them and its verdict is hashed on-chain.',
+    tag: 'AI Oracle',
+    stat: 'Verdict written on-chain',
+  },
+  {
+    dead: 'DAO theater',
+    why: 'Votes on things that do not matter, with nothing at stake.',
+    alive: 'Donors release the money',
+    how: 'Only the donors of a cause vote on its releases, weighted by what they gave. No yes, no money moves.',
+    tag: 'Governance',
+    stat: '1 SOL given = 1,000 votes',
+  },
+  {
+    dead: 'Giving is lonely',
+    why: 'A receipt email. No friends, no story, no reason to come back.',
+    alive: 'Giving is social',
+    how: 'A feed of gifts and deliveries, dares with real money on the line, streaks, a Guardian pass that grows, and Blinks for X.',
+    tag: 'Consumer',
+    stat: 'Dares settle on-chain',
+  },
+  {
+    dead: 'Humans only',
+    why: 'Agents now earn and spend money, and charity has no API for them.',
+    alive: 'Agents give too',
+    how: 'One HTTP request to the Give API: 402, pay USDC on Solana, get a receipt. An MCP server lets Claude give on your behalf.',
+    tag: 'x402',
+    stat: 'Pay-per-request, no keys',
+  },
+]
+
+function StatsColumn() {
+  const stats = useStats(60_000)
+  const rows: [string, string][] = stats
+    ? [
+        [fmtSol(stats.totalDonations, 2), 'SOL given'],
+        [String(stats.totalGifts), 'Gifts'],
+        [fmtSol(stats.totalEscrowed, 2), 'SOL in escrow'],
+        [String(stats.crossChainCount + stats.x402Calls), 'Any-chain & agent gifts'],
+      ]
+    : []
+  if (!stats) return <div className="skeleton h-56" />
+  return (
+    <div className="space-y-5">
+      {rows.map(([v, l]) => (
+        <div key={l} className="text-center">
+          <p className="text-2xl md:text-3xl font-bold counter tracking-tight text-[#1d1d1f]">{v}</p>
+          <p className="text-[10px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1">{l}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function StatsRow() {
+  const stats = useStats(60_000)
+  if (!stats) return null
+  return (
+    <div className="flex items-center justify-center gap-10 px-6">
+      {[
+        [fmtSol(stats.totalDonations, 2), 'SOL given'],
+        [String(stats.totalGifts), 'Gifts'],
+        [fmtSol(stats.totalEscrowed, 2), 'In escrow'],
+      ].map(([v, l]) => (
+        <div key={l} className="text-center">
+          <p className="text-2xl font-bold counter tracking-tight">{v}</p>
+          <p className="text-[10px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1">{l}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const JOURNEY = [
+  { icon: '♡', title: 'Given', body: 'Your wallet, chain or agent, with its transaction' },
+  { icon: '🔐', title: 'Escrowed', body: 'The vault it sits in, on Solscan' },
+  { icon: '🚚', title: 'Delivered', body: 'Photos of the hand-over it paid for' },
+  { icon: '🤖', title: 'Audited', body: "The oracle's verdict, its hash on-chain" },
+  { icon: '🗳️', title: 'Voted', body: "The cause's donors approve the proof" },
+  { icon: '🔓', title: 'Released', body: 'The release transaction' },
+]
+
+/** The tracker every gift gets; links to a real gift once one exists. */
+function FollowSection() {
+  const [example, setExample] = useState<string | null>(null)
+  useEffect(() => {
+    apiGet<{ activities?: { id: string; type: string }[] }>('/api/activity?limit=10')
+      .then((d) => setExample(d.activities?.find((a) => a.id.startsWith('don_'))?.id ?? null))
+      .catch(() => {})
+  }, [])
+  return (
+    <section className="py-20 md:py-28 bg-[#f5f5f7]">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mb-3">Follow your gift</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Every gift gets a tracking page.</h2>
+          <p className="text-[#86868b] text-base max-w-lg mx-auto">Like a parcel, from your wallet to the hand-over. Each step is a record you can open, and the link unfurls on X as a progress card.</p>
+        </div>
+        <div className="card p-6 md:p-8">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-5">
+            {JOURNEY.map((s, i) => (
+              <div key={s.title} className="flex flex-col gap-3">
+                <div className={`h-1.5 rounded-full ${i < 2 ? 'bg-emerald-500' : i === 2 ? 'bg-amber-400' : 'bg-black/[0.06]'}`} />
+                <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] flex items-center justify-center">{s.icon}</div>
+                <p className="text-[14px] font-bold">{s.title}</p>
+                <p className="text-[12px] text-[#86868b] leading-snug">{s.body}</p>
               </div>
             ))}
           </div>
-        </div>
-        <div className="container-app mt-12 pt-8 border-t border-white/10 text-[12px] text-white/40 flex flex-wrap gap-x-6 gap-y-2">
-          <span>
-            Program{' '}
-            <a href={explorerAccount(UMANITY_DONATIONS_PROGRAM_ID)} target="_blank" rel="noopener noreferrer" className="num text-white/60 hover:text-white underline underline-offset-2">
-              {UMANITY_DONATIONS_PROGRAM_ID.slice(0, 8)}…{UMANITY_DONATIONS_PROGRAM_ID.slice(-6)}
-            </a>
-          </span>
-          <span>{isMainnet ? 'Solana mainnet' : 'Solana devnet (mainnet launch in progress)'}</span>
-          <span>x402 endpoint: POST /api/x402/verify-milestone</span>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="container-app py-24 md:py-32 text-center">
-        <h2 className="font-display text-[44px] sm:text-[60px] leading-[1]">Start with five dollars.</h2>
-        <p className="text-[17px] text-[#6e6e73] mt-5 max-w-[460px] mx-auto leading-relaxed">That is three hot meals, or a rabies shot for a street dog, or a blanket before the cold. You will see where it went.</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-9">
-          <Btn tone="accent" size="xl" icon="heart" onClick={() => openGive({ amountUsd: 5 })}>
-            Give $5
-          </Btn>
-          <Btn tone="secondary" size="xl" onClick={openAuth}>
-            Create your wallet
-          </Btn>
-        </div>
-      </section>
-
-      <footer className="border-t border-black/[0.06] py-10">
-        <div className="container-app flex flex-col sm:flex-row items-center justify-between gap-4 text-[12.5px] text-[#aeaeb2]">
-          <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Umanity" width={26} height={26} className="rounded-full" />
-            <span>Umanity · give to real people</span>
-          </div>
-          <div className="flex items-center gap-5">
-            <Link href="/how-it-works" className="hover:text-[#1d1d1f]">
-              How it works
-            </Link>
-            <Link href="/transparency" className="hover:text-[#1d1d1f]">
-              Transparency
-            </Link>
-            <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="hover:text-[#1d1d1f]">
-              @umanity_xyz
-            </a>
-            <a href="https://github.com/shariqazeem/umanity" target="_blank" rel="noopener noreferrer" className="hover:text-[#1d1d1f]">
-              GitHub
-            </a>
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-black/[0.04]">
+            <p className="text-[12px] text-[#86868b]">Linked from the success screen, the feed, your profile and every agent receipt.</p>
+            {example && (
+              <Link href={`/gift/${example}`} className="btn-primary px-5 py-2.5 !text-[13px]">
+                Open a real one →
+              </Link>
+            )}
           </div>
         </div>
-      </footer>
-    </div>
+      </div>
+    </section>
+  )
+}
+
+/** Real deliveries only: hidden until the field team has posted one with photos. */
+function FieldSection() {
+  const [updates, setUpdates] = useState<FieldUpdateView[] | null>(null)
+  useEffect(() => {
+    apiGet<{ updates?: FieldUpdateView[] }>('/api/field/updates?limit=6')
+      .then((d) => setUpdates((d.updates ?? []).filter((u) => u.media?.some((m) => m.kind === 'photo')).slice(0, 3)))
+      .catch(() => setUpdates([]))
+  }, [])
+  return (
+    <section className="py-20 md:py-28 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid lg:grid-cols-[1fr_1.4fr] gap-12 items-center">
+          <div>
+            <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">Real world, real hands</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">We deliver it ourselves. On camera.</h2>
+            <p className="text-[#86868b] text-base leading-relaxed mb-6">
+              Umanity&apos;s field team buys the meals, the medicine, the water filters and the vaccines, and hands them over in person in Karachi and interior Sindh. Every delivery is filmed, receipted and posted, here and on X, before a single lamport leaves escrow.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {['🎒 Orphan care', '🐾 Street animals', '🍚 Food packs', '💊 Medical help', '💧 Clean water', '⛺ Emergency relief'].map((c) => (
+                <span key={c} className="pill bg-[#f5f5f7] text-[#525252] !text-[11px]">
+                  {c}
+                </span>
+              ))}
+            </div>
+            <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="inline-block mt-6 text-[13px] font-semibold text-emerald-600 hover:underline">
+              Follow the deliveries on X →
+            </a>
+          </div>
+          <div>
+            {updates && updates.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {updates.map((u) => {
+                  const photo = u.media.find((m) => m.kind === 'photo')!
+                  const cause = getCause(u.poolId)
+                  return (
+                    <Link key={u.id} href={`/causes/${u.poolId}#proof`} className="card-interactive overflow-hidden block">
+                      <div className="aspect-[4/5] bg-black/[0.04]">
+                        <Img src={photo.url} alt={u.title} />
+                      </div>
+                      <div className="p-3">
+                        <p className="text-[10px] text-[#86868b]">
+                          {cause?.emoji} {u.poolName} · {timeAgo(u.deliveredAt ?? u.createdAt)}
+                        </p>
+                        <p className="text-[12px] font-semibold leading-snug mt-0.5 line-clamp-2">{u.title}</p>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="rounded-3xl bg-[#1d1d1f] text-white p-8 md:p-10">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">The proof standard</p>
+                <ul className="space-y-4">
+                  {[
+                    ['📍', 'Where', 'Location of every hand-over, mapped'],
+                    ['🧾', 'What it cost', 'Wholesale receipts and invoices, hashed on upload'],
+                    ['🎥', 'Who received it', 'Photos and video of the delivery itself'],
+                    ['🤖', 'Checked', "The Impact Oracle's audit, its hash written on-chain"],
+                  ].map(([i, t, s]) => (
+                    <li key={t} className="flex items-start gap-3">
+                      <span className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">{i}</span>
+                      <span>
+                        <span className="block text-[14px] font-semibold">{t}</span>
+                        <span className="block text-[12px] text-white/50">{s}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }

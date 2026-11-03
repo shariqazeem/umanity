@@ -362,3 +362,17 @@ export async function governanceSummary() {
   const awaiting = ps.reduce((s, p) => s + p.escrowAmount, 0)
   return { active: active?.n ?? 0, total: total?.n ?? 0, executed: executed?.n ?? 0, escrowAwaitingVote: awaiting }
 }
+
+/**
+ * Counts a new gift toward its cause's campaign, whatever rail it came by
+ * (wallet, Blink, x402, NEAR Intents), and opens a release vote for every
+ * milestone threshold the gift crossed. Returns the new proposal ids.
+ */
+export async function creditGiftToCampaign(poolId: string, lamports: number, donor: string): Promise<string[]> {
+  if (!(lamports > 0)) return []
+  const camp = await addCampaignRaised(poolId, lamports)
+  if (!camp) return []
+  const ids: string[] = []
+  for (const m of camp.crossed) ids.push((await createMilestoneProposal(camp.campaign, m, donor)).id)
+  return ids
+}

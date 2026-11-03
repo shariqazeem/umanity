@@ -1,74 +1,113 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { Btn, Icon, Img, Pill, Progress } from '@/components/shared/ui'
-import { fmtSol, timeAgo } from '@/lib/client/api'
+import { fmtSol, short, timeAgo } from '@/lib/client/api'
+import { explorerAccount, SOLANA_CLUSTER } from '@/lib/solana/constants'
 import type { CauseListItem } from './data'
 
+export function blinkUrl(poolId: string) {
+  const actionUrl = `${window.location.origin}/api/actions/donate/${poolId}`
+  return `https://dial.to/?action=solana-action:${encodeURIComponent(actionUrl)}${SOLANA_CLUSTER === 'devnet' ? '&cluster=devnet' : ''}`
+}
+
+/** The original pool card: emoji tile, category, escrow vault, raised · donors, Blink + Give. */
 export function CauseCard({ c }: { c: CauseListItem }) {
   const { openGive } = useUmanity()
-  const target = c.nextMilestone?.thresholdSol ?? c.campaign?.target_amount ?? 0
-  const raised = c.raisedSol
-  const href = `/causes/${c.id}`
+  const [copied, setCopied] = useState(false)
+  const next = c.nextMilestone
+  const target = next?.thresholdSol ?? c.campaign?.target_amount ?? 0
+  const pct = target > 0 ? Math.min(100, (c.raisedSol / target) * 100) : 0
+
   return (
-    <article className="card flex flex-col overflow-hidden">
-      <Link href={href} className="block relative h-[210px] overflow-hidden group bg-black/[0.04]">
-        {c.image && <Img src={c.image} alt={c.imageAlt} className="group-hover:scale-[1.03] transition-transform duration-700" />}
-        <span className="absolute top-3 left-3">
-          <Pill tone="white">{c.category}</Pill>
-        </span>
+    <div className="card-interactive p-6 flex flex-col">
+      <Link href={`/causes/${c.id}`} className="block">
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#f5f5f7] flex items-center justify-center text-2xl">{c.emoji}</div>
+          <span className="pill bg-black/[0.04] text-[#525252] !text-[10px]">{c.category}</span>
+        </div>
+        <h4 className="font-semibold mb-1">{c.name}</h4>
+        <p className="text-xs text-[#86868b] mb-2 line-clamp-2">{c.tagline}</p>
       </Link>
-      <div className="p-5 flex-1 flex flex-col">
-        <Link href={href} className="block">
-          <h3 className="text-[19px] font-bold tracking-[-0.02em] leading-tight">{c.name}</h3>
-        </Link>
-        <p className="text-[13.5px] text-[#6e6e73] mt-1.5 leading-relaxed">{c.tagline}</p>
-        {c.impact && <p className="text-[13px] text-[#047857] font-semibold mt-3">{c.impact}</p>}
 
-        {target > 0 && (
-          <div className="mt-4">
-            <Progress value={raised} max={target} />
-            <p className="text-[12px] text-[#6e6e73] mt-1.5 num">
-              {fmtSol(raised, 2)} of {fmtSol(target, target >= 10 ? 0 : 2)} SOL toward the next delivery
-            </p>
+      <div className="flex items-center gap-1.5 mb-4 flex-wrap">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+        <span className="text-[10px] text-[#86868b]">Escrow vault</span>
+        {c.vaultPda ? (
+          <a href={explorerAccount(c.vaultPda)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-600 hover:underline font-mono">
+            {short(c.vaultPda)}
+          </a>
+        ) : (
+          <span className="text-[10px] text-[#aeaeb2]">opening…</span>
+        )}
+        <span className="text-[10px] text-[#d4d4d4]">·</span>
+        <span className="text-[10px] text-[#86868b]">Delivered by hand · {c.location?.split(',')[0]}</span>
+      </div>
+
+      {target > 0 && (
+        <div className="mb-4">
+          <div className="progress emerald">
+            <span style={{ width: `${pct}%` }} />
           </div>
-        )}
-
-        <p className="text-[12px] text-[#6e6e73] mt-3 num">
-          {c.supporterCount} {c.supporterCount === 1 ? 'person' : 'people'} · {fmtSol(c.heldSol, 2)} SOL held in escrow
-        </p>
-        {c.latestUpdate && (
-          <p className="text-[12px] text-[#1d1d1f] mt-1.5 flex items-center gap-1.5 min-w-0">
-            <Icon name="truck" size={13} className="text-[#047857]" />
-            <span className="truncate">{c.latestUpdate.title}</span>
-            <span className="text-[#aeaeb2] flex-shrink-0">· {timeAgo(c.latestUpdate.deliveredAt ?? c.latestUpdate.createdAt)}</span>
+          <p className="text-[10px] text-[#86868b] mt-1.5 truncate">
+            <span className="counter font-semibold text-[#1d1d1f]">{fmtSol(c.raisedSol, 2)}</span> / <span className="counter">{fmtSol(target, target >= 10 ? 0 : 2)}</span> SOL to unlock delivery #{(next?.index ?? 0) + 1}
           </p>
-        )}
+        </div>
+      )}
 
-        <div className="flex items-center gap-2 mt-auto pt-5">
-          <Btn tone="accent" icon="heart" onClick={() => openGive({ causeId: c.id })}>
+      {c.latestUpdate && (
+        <Link href={`/causes/${c.id}#proof`} className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-[#f5f5f7] hover:bg-black/[0.05] transition-colors min-w-0">
+          <span className="text-[12px]">🚚</span>
+          <span className="text-[11px] text-[#1d1d1f] truncate flex-1">{c.latestUpdate.title}</span>
+          <span className="text-[10px] text-[#aeaeb2] flex-shrink-0">{timeAgo(c.latestUpdate.deliveredAt ?? c.latestUpdate.createdAt)}</span>
+        </Link>
+      )}
+
+      <div className="flex items-center justify-between mt-auto">
+        <div>
+          <span className="text-sm font-bold counter">{fmtSol(c.raisedSol, 3)}</span>
+          <span className="text-xs text-[#86868b] ml-1">SOL</span>
+          <span className="text-xs text-[#d4d4d4] mx-1.5">·</span>
+          <span className="text-xs text-[#86868b]">
+            {c.donorCount} {c.donorCount === 1 ? 'gift' : 'gifts'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(blinkUrl(c.id)).then(() => {
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1500)
+              })
+            }}
+            className="py-2 px-3 text-[10px] font-medium rounded-lg border border-black/[0.06] text-[#86868b] hover:text-[#1d1d1f] hover:border-black/[0.12] transition-all"
+            title="Copy a Solana Blink for X"
+          >
+            {copied ? 'Copied!' : 'Blink'}
+          </button>
+          <button onClick={() => openGive({ causeId: c.id })} className="btn-primary py-2 px-5 !text-xs">
             Give
-          </Btn>
-          <Link href={href} className="btn btn-ghost h-10 px-3.5 text-[13.5px] ml-auto">
-            See the cause <Icon name="arrowRight" size={15} />
-          </Link>
+          </button>
         </div>
       </div>
-    </article>
+    </div>
   )
 }
 
 export function CauseCardSkeleton() {
   return (
-    <div className="card overflow-hidden">
-      <div className="skeleton h-[210px] !rounded-none" />
-      <div className="p-5 space-y-3">
-        <div className="skeleton h-5 w-2/3" />
-        <div className="skeleton h-4 w-full" />
-        <div className="skeleton h-4 w-5/6" />
-        <div className="skeleton h-2 w-full mt-4" />
-        <div className="skeleton h-10 w-24 mt-5" />
+    <div className="card p-6 space-y-3">
+      <div className="flex justify-between">
+        <div className="skeleton w-12 h-12 !rounded-2xl" />
+        <div className="skeleton w-16 h-5" />
+      </div>
+      <div className="skeleton h-4 w-2/3" />
+      <div className="skeleton h-3 w-full" />
+      <div className="skeleton h-1 w-full mt-4" />
+      <div className="flex justify-between pt-2">
+        <div className="skeleton h-4 w-24" />
+        <div className="skeleton h-8 w-28" />
       </div>
     </div>
   )

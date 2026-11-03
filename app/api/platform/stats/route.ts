@@ -25,7 +25,7 @@ export async function GET() {
   } catch (e) {
     console.error('stats error', e)
     return ok({
-      stats: { totalDonations: 0, totalEscrowed: 0, totalDonors: 0, totalTransactions: 0, crossChainVolume: 0, crossChainCount: 0, discreetVolume: 0, x402Calls: 0, x402Revenue: '0', pools: CAUSES.length, releasedSol: 0, deliveries: 0, causes: CAUSES.length, proposals: 0, activeProposals: 0, escrowAwaitingVote: 0, openDares: 0, darePot: 0, network: SOLANA_CLUSTER },
+      stats: { totalDonations: 0, totalEscrowed: 0, totalGifts: 0, totalDonors: 0, totalTransactions: 0, crossChainVolume: 0, crossChainCount: 0, discreetVolume: 0, x402Calls: 0, x402Revenue: '0', pools: CAUSES.length, releasedSol: 0, deliveries: 0, causes: CAUSES.length, proposals: 0, activeProposals: 0, escrowAwaitingVote: 0, openDares: 0, darePot: 0, network: SOLANA_CLUSTER },
     })
   }
 }

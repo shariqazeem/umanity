@@ -142,6 +142,12 @@ export const donations = pgTable(
     sourceAsset: text('source_asset'),
     sourceAmount: text('source_amount'),
     intentId: text('intent_id'),
+    /**
+     * The payment's own transaction when value arrived off-program (the x402
+     * USDC settlement, the cross-chain solver's payout). `signature` is then the
+     * escrow deposit that moved it into the vault.
+     */
+    settlementSignature: text('settlement_signature'),
     rewardPoints: integer('reward_points').notNull().default(0),
     /** Donor chose to hide their name: no feed post, unnamed in lists. */
     anonymous: boolean('anonymous').notNull().default(false),
@@ -318,20 +324,26 @@ export const intents = pgTable(
 )
 
 // ---------- x402 receipts ----------
-export const x402Receipts = pgTable('x402_receipts', {
-  id: text('id').primaryKey(),
-  endpoint: text('endpoint').notNull(),
-  resourceId: text('resource_id'),
-  payer: text('payer'),
-  network: text('network').notNull(),
-  asset: text('asset').notNull(),
-  amount: text('amount').notNull(),
-  paymentSignature: text('payment_signature'),
-  /** verified | settled | failed */
-  status: text('status').notNull().default('verified'),
-  responseHash: text('response_hash'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-})
+export const x402Receipts = pgTable(
+  'x402_receipts',
+  {
+    id: text('id').primaryKey(),
+    endpoint: text('endpoint').notNull(),
+    resourceId: text('resource_id'),
+    payer: text('payer'),
+    network: text('network').notNull(),
+    asset: text('asset').notNull(),
+    amount: text('amount').notNull(),
+    paymentSignature: text('payment_signature'),
+    /** Hash of the signed payment transaction message: one request per payment (replay guard). */
+    paymentHash: text('payment_hash'),
+    /** verified | settled | pending | failed */
+    status: text('status').notNull().default('verified'),
+    responseHash: text('response_hash'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('x402_receipts_payment_hash_idx').on(t.paymentHash)]
+)
 
 // ---------- MultiHopper routed transfers ----------
 export const routedTransfers = pgTable('routed_transfers', {

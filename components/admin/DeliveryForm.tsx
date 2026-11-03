@@ -97,8 +97,8 @@ export function DeliveryForm({ signer, onPosted }: { signer: Signer; onPosted: (
         <span className="w-14 h-14 rounded-full bg-[#10b981] text-white flex items-center justify-center mx-auto check-pop">
           <Icon name="check" size={26} strokeWidth={2.5} />
         </span>
-        <h3 className="font-display text-[30px] leading-none mt-5">Posted.</h3>
-        <p className="text-[14px] text-[#6e6e73] mt-3 max-w-[380px] mx-auto">The update is live on the cause page and in the feed, and everyone who gave to {cause.name} has been told their gift arrived.</p>
+        <h3 className="text-[26px] font-black tracking-[-0.03em] mt-5">Posted.</h3>
+        <p className="text-[14px] text-[#86868b] mt-3 max-w-[380px] mx-auto">The update is live on the cause page and in the feed, and everyone who gave to {cause.name} has been told their gift arrived.</p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center mt-6">
           <Link href={`/causes/${done.poolId}`} className="btn btn-primary h-11 px-5 text-[14px]">
             Open the cause page
@@ -124,9 +124,7 @@ export function DeliveryForm({ signer, onPosted }: { signer: Signer; onPosted: (
             const on = c.id === poolId
             return (
               <button key={c.id} type="button" onClick={() => (setPoolId(c.id), setMilestoneIndex(''))} className={`flex items-center gap-2.5 p-2 pr-3 rounded-2xl border text-left transition-colors ${on ? 'border-[#1d1d1f] bg-[#1d1d1f] text-white' : 'border-black/[0.08] bg-white hover:border-black/30'}`}>
-                <span className="w-10 h-10 rounded-xl overflow-hidden bg-black/[0.05] flex-shrink-0">
-                  <Img src={c.image.replace('w=1600', 'w=120')} alt="" />
-                </span>
+                <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-[18px] ${on ? 'bg-white/15' : 'bg-black/[0.04]'}`}>{c.emoji}</span>
                 <span className="text-[12.5px] font-semibold leading-tight">{c.shortName}</span>
               </button>
             )
@@ -165,7 +163,7 @@ export function DeliveryForm({ signer, onPosted }: { signer: Signer; onPosted: (
       {/* Milestone */}
       <div className="rounded-2xl border border-black/[0.06] bg-[#fafafa] p-4">
         <p className="text-[12.5px] font-semibold">Milestone this delivery fulfils</p>
-        <p className="text-[12px] text-[#6e6e73] mt-0.5">Attaches the proof to a milestone so donors can vote to release it from the vault.</p>
+        <p className="text-[12px] text-[#86868b] mt-0.5">Attaches the proof to a milestone so donors can vote to release it from the vault.</p>
         {campaign ? (
           <div className="mt-3 space-y-1.5">
             <label className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer ${milestoneIndex === '' ? 'border-[#1d1d1f] bg-white' : 'border-transparent hover:bg-white'}`}>
@@ -179,7 +177,7 @@ export function DeliveryForm({ signer, onPosted }: { signer: Signer; onPosted: (
                   <span className="block text-[13px] leading-snug">
                     {m.index + 1}. {m.description}
                   </span>
-                  <span className="block text-[11.5px] text-[#6e6e73] mt-0.5">
+                  <span className="block text-[11.5px] text-[#86868b] mt-0.5">
                     {m.percentage}% of funds · <span className="capitalize">{m.status}</span>
                     {m.evidence ? ' · has evidence' : ''}
                   </span>
@@ -190,7 +188,7 @@ export function DeliveryForm({ signer, onPosted }: { signer: Signer; onPosted: (
             {milestoneIndex !== '' && (
               <div className="pt-2">
                 <Toggle on={requestRelease} onChange={setRequestRelease} label="Open the release vote for this milestone now" />
-                <p className="text-[11.5px] text-[#6e6e73] mt-1.5 ml-[50px]">Donors of this cause get 72 hours to approve or reject on the strength of the proof.</p>
+                <p className="text-[11.5px] text-[#86868b] mt-1.5 ml-[50px]">Donors of this cause get 72 hours to approve or reject on the strength of the proof.</p>
               </div>
             )}
           </div>

@@ -19,7 +19,7 @@ export function PastDeliveries({ refreshKey }: { refreshKey: number }) {
           <Skeleton className="h-14" />
         </div>
       ) : error || data?.success === false ? (
-        <p className="text-[12.5px] text-[#6e6e73] mt-3">Could not load deliveries: {error ?? data?.error}</p>
+        <p className="text-[12.5px] text-[#86868b] mt-3">Could not load deliveries: {error ?? data?.error}</p>
       ) : list.length === 0 ? (
         <div className="-mx-2">
           <Empty icon="truck" title="Nothing posted yet" sub="The first delivery you post shows up here and on the cause page." />
@@ -32,14 +32,14 @@ export function PastDeliveries({ refreshKey }: { refreshKey: number }) {
             const voting = u.milestone?.status === 'voting' || (u.proposal && u.proposal.status === 'active')
             return (
               <li key={u.id} className="py-3 flex items-start gap-3">
-                <span className="w-9 h-9 rounded-full bg-black/[0.05] text-[#6e6e73] flex items-center justify-center flex-shrink-0">
+                <span className="w-9 h-9 rounded-full bg-black/[0.05] text-[#86868b] flex items-center justify-center flex-shrink-0">
                   <Icon name="truck" size={16} />
                 </span>
                 <div className="flex-1 min-w-0">
                   <Link href={`/causes/${u.poolId}`} className="text-[13.5px] font-semibold hover:underline block truncate">
                     {u.title}
                   </Link>
-                  <p className="text-[12px] text-[#6e6e73] mt-0.5 flex items-center gap-1.5 flex-wrap">
+                  <p className="text-[12px] text-[#86868b] mt-0.5 flex items-center gap-1.5 flex-wrap">
                     <span>{c?.shortName ?? u.poolName}</span>
                     <span>·</span>
                     <span>{u.deliveredAt ? new Date(u.deliveredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>

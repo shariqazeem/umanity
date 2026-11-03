@@ -59,7 +59,7 @@ async function compose(): Promise<TransparencyReport> {
     network: SOLANA_CLUSTER,
     programs: { donations: UMANITY_DONATIONS_PROGRAM_ID, tips: UMANITY_TIPS_PROGRAM_ID },
     wallets: { authority: '', treasury: UMANITY_TREASURY, orgWallet: UMANITY_ORG_WALLET, crossChainVault: CROSSCHAIN_VAULT },
-    totals: { raisedSol: raised, heldSol: held, releasedSol, donors: stats?.totalDonors ?? vaults.reduce((a, v) => a + v.donorCount, 0), gifts: stats?.totalTransactions ?? 0, crossChainGifts: stats?.crossChainCount ?? 0, crossChainSol: stats?.crossChainVolume ?? 0, causes: CAUSES.length },
+    totals: { raisedSol: raised, heldSol: held, releasedSol, donors: stats?.totalDonors ?? vaults.reduce((a, v) => a + v.donorCount, 0), gifts: stats?.totalGifts ?? vaults.reduce((a, v) => a + v.donorCount, 0), crossChainGifts: stats?.crossChainCount ?? 0, crossChainSol: stats?.crossChainVolume ?? 0, causes: CAUSES.length },
     vaults,
     releases,
     deliveries: [],

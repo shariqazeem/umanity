@@ -1,0 +1,1 @@
+ALTER TABLE "donations" ADD COLUMN "settlement_signature" text;

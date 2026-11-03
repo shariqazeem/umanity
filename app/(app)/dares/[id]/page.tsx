@@ -65,7 +65,7 @@ function DareDetail({ dare: initial, stakes, onChange }: { dare: DareView; stake
 
   return (
     <div className="max-w-[640px] mx-auto space-y-4">
-      <Link href="/home" className="inline-flex items-center gap-1 text-[13px] text-[#6e6e73] hover:text-[#1d1d1f]">
+      <Link href="/home" className="inline-flex items-center gap-1 text-[13px] text-[#86868b] hover:text-[#1d1d1f]">
         <Icon name="chevronLeft" size={14} /> Home
       </Link>
 
@@ -91,23 +91,23 @@ function DareDetail({ dare: initial, stakes, onChange }: { dare: DareView; stake
             </Link>
           </p>
         </div>
-        <h1 className="font-display text-[34px] sm:text-[42px] leading-[1.08] mt-5">&ldquo;{dare.text}&rdquo;</h1>
+        <h1 className="text-[26px] sm:text-[32px] font-bold tracking-[-0.03em] leading-[1.15] mt-5">&ldquo;{dare.text}&rdquo;</h1>
 
         <div className="grid grid-cols-3 gap-3 mt-7">
           <div>
             <p className="eyebrow">Pot</p>
             <p className="num text-[24px] font-bold mt-1 leading-none">{fmtSol(dare.pot, 3)}</p>
-            <p className="text-[11.5px] text-[#6e6e73] mt-1 num">SOL{solPrice ? ` · ${fmtUsd(dare.pot * solPrice)}` : ''}</p>
+            <p className="text-[11.5px] text-[#86868b] mt-1 num">SOL{solPrice ? ` · ${fmtUsd(dare.pot * solPrice)}` : ''}</p>
           </div>
           <div>
             <p className="eyebrow">Backers</p>
             <p className="num text-[24px] font-bold mt-1 leading-none">{dare.backerCount}</p>
-            <p className="text-[11.5px] text-[#6e6e73] mt-1">people in</p>
+            <p className="text-[11.5px] text-[#86868b] mt-1">people in</p>
           </div>
           <div>
             <p className="eyebrow">Stake</p>
             <p className="num text-[24px] font-bold mt-1 leading-none">{fmtSol(dare.stake, 3)}</p>
-            <p className="text-[11.5px] text-[#6e6e73] mt-1">SOL to match</p>
+            <p className="text-[11.5px] text-[#86868b] mt-1">SOL to match</p>
           </div>
         </div>
 
@@ -135,13 +135,11 @@ function DareDetail({ dare: initial, stakes, onChange }: { dare: DareView; stake
 
       {cause && (
         <Link href={`/causes/${cause.id}`} className="card card-hover flex items-center gap-4 p-3 pr-5 block">
-          <span className="w-20 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-black/[0.04]">
-            <Img src={cause.image.replace('w=1600', 'w=320')} alt={cause.imageAlt} />
-          </span>
+          <span className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 bg-[#f5f5f7] text-[28px]">{cause.emoji}</span>
           <span className="min-w-0 flex-1">
             <span className="eyebrow block">For</span>
             <span className="block text-[16px] font-bold tracking-[-0.01em] truncate">{cause.name}</span>
-            <span className="block text-[12.5px] text-[#6e6e73] truncate">{cause.tagline}</span>
+            <span className="block text-[12.5px] text-[#86868b] truncate">{cause.tagline}</span>
           </span>
           <Icon name="arrowRight" size={18} className="text-[#aeaeb2]" />
         </Link>
@@ -150,7 +148,7 @@ function DareDetail({ dare: initial, stakes, onChange }: { dare: DareView; stake
       <Card className="p-5">
         <p className="eyebrow">Backers</p>
         {stakes.length === 0 ? (
-          <p className="text-[13.5px] text-[#6e6e73] mt-2">Only the stake so far. Boost it to be the first backer.</p>
+          <p className="text-[13.5px] text-[#86868b] mt-2">Only the stake so far. Boost it to be the first backer.</p>
         ) : (
           <ul className="mt-3 space-y-2.5">
             {stakes.map((s) => (

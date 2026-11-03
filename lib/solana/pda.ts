@@ -1,5 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 import { UMANITY_DONATIONS_PROGRAM_ID, UMANITY_TIPS_PROGRAM_ID } from './constants'
+import { u64le } from './bytes'
 
 export const DONATIONS_PROGRAM = new PublicKey(UMANITY_DONATIONS_PROGRAM_ID)
 export const TIPS_PROGRAM = new PublicKey(UMANITY_TIPS_PROGRAM_ID)
@@ -21,8 +22,7 @@ export function findUserProfilePDA(owner: PublicKey): [PublicKey, number] {
 }
 /** Dare escrow PDA (program v2). */
 export function findDarePDA(creator: PublicKey, nonce: bigint | number): [PublicKey, number] {
-  const n = Buffer.alloc(8)
-  n.writeBigUInt64LE(BigInt(nonce))
+  const n = u64le(nonce)
   return PublicKey.findProgramAddressSync([Buffer.from('dare'), creator.toBuffer(), n], DONATIONS_PROGRAM)
 }
 export function findDareVaultPDA(dare: PublicKey): [PublicKey, number] {

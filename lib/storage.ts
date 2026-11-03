@@ -4,6 +4,9 @@
  *  - Local driver (default): files under .data/uploads/<yyyy-mm>/<id>.<ext>,
  *    served by GET /api/media/<yyyy-mm>/<id>.<ext>. Fine on the Ubuntu box
  *    (mount .data as a volume); not for serverless hosts.
+ *  - Vercel Blob driver: selected when BLOB_READ_WRITE_TOKEN is set (Vercel
+ *    sets it when a Blob store is connected to the project). Files are public
+ *    and immutable; the stored URL is the blob's own https URL.
  *  - S3-compatible driver (R2, S3, MinIO): selected when S3_ENDPOINT,
  *    S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY and S3_PUBLIC_URL are
  *    set. Needs `@aws-sdk/client-s3` installed (see TODO below).
@@ -61,6 +64,17 @@ export async function saveMedia(bytes: Uint8Array, opts: { filename: string; con
   const ext = EXT_BY_TYPE[contentType]
   const month = new Date().toISOString().slice(0, 7)
   const rel = `${month}/${newId('m')}.${ext}`
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const { put } = await import('@vercel/blob')
+    const blob = await put(`deliveries/${rel}`, Buffer.from(bytes), {
+      access: 'public',
+      contentType,
+      addRandomSuffix: false,
+      cacheControlMaxAge: 31536000,
+    })
+    return { url: blob.url, sha256, size: bytes.byteLength, kind: kindForContentType(contentType), contentType, path: rel }
+  }
 
   if (s3Configured()) {
     // TODO(storage): S3/R2 driver. Install `@aws-sdk/client-s3`, then:

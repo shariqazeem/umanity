@@ -17,8 +17,8 @@ export default function TransparencyPage() {
     <div className="max-w-[1120px] mx-auto">
       <div className="max-w-[680px] animate-fade-up">
         <p className="eyebrow mb-3">Transparency</p>
-        <h1 className="font-display text-[40px] sm:text-[52px] leading-[1.02] tracking-[-0.01em]">Every rupee has a receipt.</h1>
-        <p className="text-[16px] text-[#6e6e73] mt-4 leading-relaxed">This is the public ledger of Umanity: what came in, what is waiting in each vault, what was released after a proven delivery, and the fees that keep the field team moving. All of it is checkable on Solana.</p>
+        <h1 className="text-2xl font-bold tracking-[-0.02em]">Every rupee has a receipt.</h1>
+        <p className="text-[16px] text-[#86868b] mt-4 leading-relaxed">This is the public ledger of Umanity: what came in, what is waiting in each vault, what was released after a proven delivery, and the fees that keep the field team moving. All of it is checkable on Solana.</p>
       </div>
 
       {/* Headline numbers */}
@@ -33,7 +33,7 @@ export default function TransparencyPage() {
           <div key={label as string}>
             <p className="eyebrow">{label}</p>
             {value == null ? <Skeleton className="h-7 w-24 mt-1" /> : <p className="num text-[24px] font-bold mt-1 leading-none">{value}</p>}
-            {sub && <p className="text-[11.5px] text-[#6e6e73] mt-1.5">{sub}</p>}
+            {sub && <p className="text-[11.5px] text-[#86868b] mt-1.5">{sub}</p>}
           </div>
         ))}
       </div>
@@ -90,7 +90,7 @@ export default function TransparencyPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[14px] font-semibold leading-snug">{rel.description}</p>
-                  <p className="text-[12.5px] text-[#6e6e73] mt-0.5">
+                  <p className="text-[12.5px] text-[#86868b] mt-0.5">
                     <Link href={`/causes/${rel.poolId}`} className="hover:underline">
                       {rel.poolName}
                     </Link>{' '}
@@ -132,7 +132,7 @@ export default function TransparencyPage() {
                   <Link href={`/causes/${d.poolId}`} className="text-[14px] font-semibold leading-snug hover:underline">
                     {d.title}
                   </Link>
-                  <p className="text-[12.5px] text-[#6e6e73] mt-0.5">
+                  <p className="text-[12.5px] text-[#86868b] mt-0.5">
                     {d.poolName}
                     {d.location ? ` · ${d.location}` : ''} · {new Date(d.deliveredAt ?? d.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} · {d.media.length} {d.media.length === 1 ? 'file' : 'files'}
                     {d.attestation ? ` · oracle ${d.attestation.verdict}` : ''}
@@ -140,7 +140,7 @@ export default function TransparencyPage() {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="num text-[15px] font-bold">{fmtSol(d.amountSol, 3)} SOL</p>
-                  {d.fiatAmount && <p className="text-[11.5px] text-[#6e6e73] num">{d.fiatAmount}</p>}
+                  {d.fiatAmount && <p className="text-[11.5px] text-[#86868b] num">{d.fiatAmount}</p>}
                 </div>
               </li>
             ))}
@@ -155,13 +155,13 @@ export default function TransparencyPage() {
           {[
             ['Dare settlements', `${((r?.fees.dareFeeBps ?? 150) / 100).toFixed(1)}%`, r ? `${fmtSol(r.fees.dareFeesSol, 3)} SOL collected` : null],
             ['Cross-chain routing', `${((r?.fees.intentsFeeBps ?? 50) / 100).toFixed(1)}%`, r ? `${fmtUsd(r.fees.intentsFeeUsd)} collected` : null],
-            ['Oracle audits', '$0.01 each', r ? `${r.fees.x402Calls} audits · ${fmtUsd(r.fees.x402RevenueUsd)}` : null],
-            ['Private routing', '0.25% share', r ? `${fmtSol(r.fees.routingFeesSol, 3)} SOL collected` : null],
+            ['Paid API calls (x402)', '$0.01+', r ? `${r.fees.x402Calls} calls · ${fmtUsd(r.fees.x402RevenueUsd)} settled` : null],
+            ['Gifts themselves', '0%', 'Wallet, Blink and agent gifts carry no platform fee'],
           ].map(([label, rate, sub]) => (
             <div key={label as string}>
               <p className="eyebrow">{label}</p>
               <p className="num text-[22px] font-bold mt-1 leading-none">{rate}</p>
-              {sub ? <p className="text-[11.5px] text-[#6e6e73] mt-1.5 num">{sub}</p> : <Skeleton className="h-4 w-24 mt-1.5" />}
+              {sub ? <p className="text-[11.5px] text-[#86868b] mt-1.5 num">{sub}</p> : <Skeleton className="h-4 w-24 mt-1.5" />}
             </div>
           ))}
         </div>
@@ -183,7 +183,7 @@ export default function TransparencyPage() {
               .filter(([, v]) => v)
               .map(([label, addr]) => (
                 <li key={label as string} className="flex items-center justify-between gap-3">
-                  <span className="text-[#6e6e73]">{label}</span>
+                  <span className="text-[#86868b]">{label}</span>
                   <span className="flex items-center gap-2">
                     <AccountLink address={addr as string} />
                     <CopyButton text={addr as string} label="" />
@@ -228,7 +228,7 @@ function Header({ title, sub, compact }: { title: string; sub?: string; compact?
   return (
     <div className={compact ? 'mb-4' : 'mb-4'}>
       <h2 className={`font-bold tracking-[-0.02em] ${compact ? 'text-[17px]' : 'text-[22px]'}`}>{title}</h2>
-      {sub && <p className="text-[13.5px] text-[#6e6e73] mt-0.5">{sub}</p>}
+      {sub && <p className="text-[13.5px] text-[#86868b] mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -250,7 +250,7 @@ function EmptyBox({ icon, title, sub }: { icon: string; title: string; sub: stri
       </span>
       <div>
         <p className="text-[15px] font-semibold">{title}</p>
-        <p className="text-[13.5px] text-[#6e6e73] mt-1 leading-relaxed max-w-[560px]">{sub}</p>
+        <p className="text-[13.5px] text-[#86868b] mt-1 leading-relaxed max-w-[560px]">{sub}</p>
       </div>
     </div>
   )

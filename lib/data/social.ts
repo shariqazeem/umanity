@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm'
 import { getDb, newId, posts, likes, comments, follows, users, notifications, type Post, type User } from '@/lib/db'
 import { findUser, findUsersByAddresses, toPublicUser } from './users'
 
@@ -66,7 +66,7 @@ export async function getGlobalFeed(limit = 30, viewerAddress?: string | null, b
   const rows = await db
     .select()
     .from(posts)
-    .where(before ? sql`${posts.createdAt} < ${before}` : undefined)
+    .where(before ? lt(posts.createdAt, before) : undefined)
     .orderBy(desc(posts.createdAt))
     .limit(limit)
   return hydratePosts(rows, viewerAddress)
@@ -93,7 +93,7 @@ export async function getTrendingPosts(limit = 5, viewerAddress?: string | null)
   const rows = await db
     .select()
     .from(posts)
-    .where(sql`${posts.createdAt} >= ${since}`)
+    .where(gte(posts.createdAt, since))
     .orderBy(desc(sql`${posts.likeCount} * 3 + ${posts.commentCount} * 2`), desc(posts.createdAt))
     .limit(limit)
   return hydratePosts(rows, viewerAddress)

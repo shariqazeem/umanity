@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { ok, fail, readJson, errorMessage, isPubkey, rateLimit, clientIp } from '@/lib/api'
-import { getQuote, getTokens, SOLANA_DEST_ASSETS, INTEGRATOR_FEE_BPS, intentsProvider } from '@/lib/intents/oneclick'
+import { getQuote, getTokens, SOLANA_DEST_ASSETS, INTEGRATOR_FEE_BPS, intentsProvider, parseUnits, deadlineMinutesFor } from '@/lib/intents/oneclick'
 import { CROSSCHAIN_VAULT } from '@/lib/intents/config'
 import { createIntentRecord } from '@/lib/data/intents'
 import { getCause } from '@/lib/causes'
@@ -43,13 +43,18 @@ export async function POST(req: NextRequest) {
     if (!token) return fail('Unknown origin asset')
     const human = Number(body.amount)
     if (!(human > 0)) return fail('Amount must be positive')
-    const smallest = BigInt(Math.round(human * 10 ** token.decimals)).toString()
+    let smallest: string
+    try {
+      smallest = parseUnits(String(body.amount), token.decimals).toString()
+    } catch {
+      return fail('Invalid amount')
+    }
     const destinationAsset = SOLANA_DEST_ASSETS[body.destAsset || 'SOL']
     // Dry quotes still require a syntactically valid refund address on the origin chain.
     const placeholder = dry ? placeholderRefund(token.blockchain, isPubkey(body.userAddress) ? body.userAddress! : null) : null
     const refundTo = body.refundTo || placeholder
     if (!refundTo) return fail(`Enter a refund address on ${token.blockchain.toUpperCase()} to get a quote`, 400, { needsRefundAddress: true })
-    const quote = await getQuote({ originAsset: body.originAsset, destinationAsset, amount: smallest, recipient: CROSSCHAIN_VAULT, refundTo, dry, referral: 'umanity' })
+    const quote = await getQuote({ originAsset: body.originAsset, destinationAsset, amount: smallest, recipient: CROSSCHAIN_VAULT, refundTo, dry, referral: 'umanity', deadlineMinutes: deadlineMinutesFor(token.blockchain) })
     let intentId: string | null = null
     if (!dry) {
       const row = await createIntentRecord({
@@ -69,7 +74,10 @@ export async function POST(req: NextRequest) {
       })
       intentId = row.id
     }
-    const feeUsd = quote.quote.amountInUsd ? (Number(quote.quote.amountInUsd) * INTEGRATOR_FEE_BPS) / 10_000 : null
+    // Show the fee that was actually applied to this quote, not the configured one.
+    const applied = (quote.quoteRequest?.appFees as { fee?: number }[] | undefined)?.reduce((n, f) => n + (f.fee ?? 0), 0)
+    const feeBps = intentsProvider() === 'aurora' ? INTEGRATOR_FEE_BPS : applied ?? 0
+    const feeUsd = quote.quote.amountInUsd ? (Number(quote.quote.amountInUsd) * feeBps) / 10_000 : null
     return ok({
       dry,
       intentId,
@@ -77,7 +85,7 @@ export async function POST(req: NextRequest) {
       token: { symbol: token.symbol, chain: token.blockchain, decimals: token.decimals },
       recipient: CROSSCHAIN_VAULT,
       quote: quote.quote,
-      fee: { bps: INTEGRATOR_FEE_BPS, usd: feeUsd, note: intentsProvider() === 'aurora' ? 'Integrator fee configured in Aurora Intents Studio (60/40 split)' : 'appFees via NEAR Intents 1Click (50/50 split)' },
+      fee: { bps: feeBps, usd: feeUsd, note: intentsProvider() === 'aurora' ? 'Integrator fee set per key in the Aurora Intents portal (60/40 with Aurora)' : feeBps > 0 ? 'appFees via NEAR Intents 1Click' : 'No integrator fee on this quote' },
       timestamp: quote.timestamp,
     })
   } catch (e) {

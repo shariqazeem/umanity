@@ -4,3 +4,7 @@ test-ledger
 .anchor
 certbot
 node_modules
+.data
+.env
+.env*.local
+tsconfig.tsbuildinfo

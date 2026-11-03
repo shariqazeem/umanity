@@ -1,62 +1,61 @@
-# Umanity — demo video script (target 3:00)
+# Umanity — demo video (target 3:00, limit 4:00)
 
-Record at 1440p, browser zoom 110%. Two browser profiles: one as a donor, one signed in with the field-team wallet (`/admin`). Pre-open Solscan. Speak naturally; the script is a guide.
+Record at 1440p, browser zoom 100%, light mode. Two browser profiles: a donor, and the field-team wallet for `/admin`. Keep a terminal open on the repo. Pre-fund the donor wallet with devnet SOL and a few devnet USDC (faucet.circle.com). Speak plainly; the screen does the proving.
 
-## 0:00 – 0:20 · Hook (face cam)
+## 0:00 – 0:20 · Hook (face cam, then the landing page)
 
-"Every donation page is a black hole: you send money, you get an email. I'm Shariq. I built Umanity so you can give to real people and watch it reach them. The money sits in escrow on Solana, my team delivers it in person in Pakistan, we post the photos and receipts, and the donors themselves vote the money out."
+"Every donation page is a black hole. You send money and you get an email. I'm Shariq, I deliver aid by hand in Karachi, and I built Umanity so you never have to take my word for it."
 
-## 0:20 – 0:45 · A gift in one tap
+> Landing: the headline *Crypto giving ~~on trust.~~ On proof.* Scroll once through *How a gift moves*.
 
-> Landing page. Press Start giving → Create a Umanity wallet → pick a name. Choose Orphan care, $5.
+"Your gift waits in on-chain escrow until we deliver it, film it, and the donors vote to release it."
 
-"No app store, no seed phrase to start: a wallet is created in the browser and you can back it up later. Five dollars is about three hot meals."
+## 0:20 – 0:50 · One tap, then follow it (Consumer)
 
-> Confirm. Show "Thank you." and click the Solscan link.
+> Open the app → Sign in → Create a Umanity wallet. Give → press the black circle.
 
-"The gift is in the cause's vault. The server read the vault's balance change from the chain before it gave me points and a certificate. Nothing trusts the browser."
+"No extension, no seed phrase to start. One tap: 0.01 SOL, about a dollar, goes into the orphan-care vault."
 
-## 0:45 – 1:15 · The cause, the proof, the vote
+> *Gift confirmed* → **Follow your gift**.
 
-> Open /causes/orphan-care. Scroll: what your gift buys, the vault with milestones.
+"Every gift gets its own tracking page: given, locked in escrow, delivered, audited, voted, released. Each step is a transaction you can open."
 
-"Each cause has a plan: three milestones, each a share of what was raised. The vault shows exactly what is held, raised and released."
+## 0:50 – 1:25 · Give from any chain (Aurora Intents)
 
-> Switch to the field-team profile. Open /admin. Post a delivery: title, what was bought, PKR amount, a photo and a receipt, milestone 1, open the release vote.
+> Give → Give from another chain → Base · USDC · 25.
 
-"This is the part no charity app has. When my team delivers, they post it from this console: photos, receipts hashed on upload, and the vote opens for everyone who gave to that cause."
+"Most crypto isn't on Solana. Here I give 25 USDC from Base. That's a live quote from the NEAR Intents solver network through Aurora: the cause receives about a quarter SOL in roughly thirty seconds, fee shown up front."
 
-> Switch back to the donor. Home shows the delivery card with "You helped fund this". Press Approve release.
+> Show the deposit address, QR, and the status steps. Cut to a completed one: *Settled* → *Deposited into the cause escrow*.
 
-## 1:15 – 1:45 · The oracle and x402
+"When the solver pays out on Solana, the server deposits it into the cause's vault and credits the donor once, even if they closed the tab."
 
-> On the cause page press Audit this proof · $0.01. Show the 402, the verdict and the per-check marks, the attestation hash.
+## 1:25 – 2:10 · Agents give too (x402)
 
-"Anyone, including an AI agent, can pay one cent in USDC over HTTP 402 to run the Impact Oracle on the proof. The verdict and its hash are written into the milestone account on Solana, so the vote has an audit next to it."
+> Agents → ▶ Pay $0.10 to Orphan care via x402. Let the console run.
 
-## 1:45 – 2:15 · Release, ledger
+"AI agents now hold money. This is the Give API. No account, no key: the server answers 402 with the price, my wallet signs a USDC transfer, the facilitator settles it on Solana, and the response is a receipt signed by the program authority. The console checks that signature right here."
 
-> Field-team profile: Close the vote now → Release on-chain. Show the release transaction. Open /transparency.
+> Terminal: `npm run x402:failures`.
 
-"Approved by the donors, released by the program, visible to everyone: every vault, every release, every delivery, every fee. Umanity cannot pay itself."
+"Bad requests are refused before anyone pays, and a replayed payment is rejected."
 
-## 2:15 – 2:45 · Any chain, friends, identity
+> Terminal: `npx tsx scripts/mcp-smoke.ts` (or Claude Desktop with the Umanity MCP server: "give a dollar to clean water and show me where it is").
 
-> Give → Any chain → Base USDC → live quote → deposit address.
+"And Claude can do it in a conversation, with spending caps, and follow the gift afterwards."
 
-"Most donors do not hold SOL. Through NEAR Intents and Aurora, you can give from Base, Ethereum, Bitcoin, TON, NEAR, 37 chains, one deposit address, settled on Solana."
+## 2:10 – 2:45 · Proof and release
 
-> Home: Dare a friend (stake 0.05 SOL, 48h). Profile: the Living Guardian pass, founding giver badge, streak.
+> Switch to the field-team profile → `/admin` → post a delivery with photos and a receipt, attach milestone 1, open the vote.
 
-"Giving is social here: dare a friend to match you, either way the cause wins. Your pass grows with every gift, streak and vote."
+"When we deliver, I post it from this console. Photos and receipts are hashed on upload, and every donor of that cause is notified."
 
-## 2:45 – 3:00 · Close (face cam)
+> Back as the donor → Govern → *Audit this proof · $0.01* → verdict → Approve release. Field team → Release on-chain → transaction.
 
-"Give to real people. Watch it reach them. Umanity."
+"Anyone can pay a cent to have the oracle audit the proof, and its verdict is written on-chain. The donors vote. Only then does the program release that milestone, and only to the field team's registered wallet. There is no withdraw button."
 
-## Checklist before recording
+## 2:45 – 3:00 · Close
 
-- Donor wallet funded (SOL for the gift, a little USDC for the audit)
-- Field-team wallet signed in on the second profile (`ADMIN_WALLETS` or the org wallet)
-- A real delivery ready to post (photos, receipts, PKR amount)
-- Aurora/1Click quote loads (needs internet, no key required)
+> Ledger page, then the gift tracker now showing *Released*.
+
+"Umanity: give from any wallet, any chain, or any agent, and watch it land. Crypto giving, on proof."

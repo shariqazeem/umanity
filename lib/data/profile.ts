@@ -52,7 +52,7 @@ export async function getPublicProfile(handleOrAddress: string, viewer?: string 
     dares: await toDareViews(dareRows),
     causes: causeTotals.map((t) => {
       const c = CAUSES.find((x) => x.id === t.poolId)
-      return { poolId: t.poolId, name: c?.name ?? t.poolId, emoji: c?.emoji ?? '', image: c?.image ?? '', amount: t.amount }
+      return { poolId: t.poolId, name: c?.name ?? t.poolId, emoji: c?.emoji ?? '', amount: t.amount }
     }),
     foundingRank: rank,
   }

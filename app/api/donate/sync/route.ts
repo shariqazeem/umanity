@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { ok, fail, isPubkey, readJson, errorMessage } from '@/lib/api'
 import { ensureUser, toPublicUser, findUser } from '@/lib/data/users'
 import { recordDonation } from '@/lib/data/donations'
-import { addCampaignRaised, createMilestoneProposal } from '@/lib/data/governance'
+import { creditGiftToCampaign } from '@/lib/data/governance'
 import { getDare } from '@/lib/data/dares'
 import { verifyDonationTx } from '@/lib/solana/chain'
 import { getCause } from '@/lib/causes'
@@ -35,15 +35,9 @@ export async function POST(req: NextRequest) {
     await ensureUser(body.donor)
     const result = await recordDonation({ donorAddress: body.donor, poolId: body.pool, amountLamports: verified.amountLamports, signature: body.signature, route: 'solana', anonymous: !!body.anonymous })
 
-    const milestoneProposals: string[] = []
+    let milestoneProposals: string[] = []
     if (result.created) {
-      const camp = await addCampaignRaised(body.pool, verified.amountLamports)
-      if (camp) {
-        for (const m of camp.crossed) {
-          const p = await createMilestoneProposal(camp.campaign, m, body.donor)
-          milestoneProposals.push(p.id)
-        }
-      }
+      milestoneProposals = await creditGiftToCampaign(body.pool, verified.amountLamports, body.donor)
       syncPoolsFromChain(5000).catch(() => {})
     }
     const user = await findUser(body.donor)

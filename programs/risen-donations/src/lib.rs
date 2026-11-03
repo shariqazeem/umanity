@@ -12,6 +12,14 @@
 //!  * staked dares: create / boost / settle (pot always ends in the cause vault).
 //!  * `attest_milestone`: oracle writes an attestation hash + confidence on-chain.
 //!  * `one_tap_donate` is 0.01 SOL as the UI always said.
+//!
+//! v2.1 (28 Oct 2026):
+//!  * `withdraw_from_pool` is gone. Money leaves a vault only through
+//!    `release_milestone_funds` (to the campaign's registered recipient, one
+//!    approved milestone at a time) or `claim_refund` (back to the donor).
+//!  * `donate_all(nonce, keep)` gives everything above `keep`, so a cross-chain
+//!    intermediary (Aurora Intents Connect) can donate whatever the solver
+//!    delivered without knowing the exact amount in advance.
 
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
@@ -101,13 +109,28 @@ pub mod umanity_donations {
         Ok(())
     }
 
-    /// Admin withdrawal (kept for emergencies; governance path is release_milestone_funds).
-    pub fn withdraw_from_pool(ctx: Context<WithdrawFromPool>, amount: u64, _recipient: Pubkey) -> Result<()> {
-        require!(amount > 0, ErrorCode::InvalidAmount);
-        let pool_key = ctx.accounts.pool.key();
-        let seeds: &[&[u8]] = &[b"vault", pool_key.as_ref(), &[ctx.bumps.pool_vault]];
-        transfer_out(&ctx.accounts.pool_vault, &ctx.accounts.recipient, &ctx.accounts.system_program, amount, seeds)?;
-        emit!(PoolWithdrawal { pool: pool_key, recipient: ctx.accounts.recipient.key(), amount });
+    /// Gives every lamport the donor holds above `keep`. Built for execute-on-
+    /// arrival flows (Aurora Intents Connect): the intermediary account that
+    /// received the solver's payout calls this without knowing the exact amount.
+    /// `keep` must be 0 (drain) or at least the rent-exempt minimum so the
+    /// donor account stays valid. The record's rent is paid before this runs.
+    pub fn donate_all(ctx: Context<DonateAll>, _nonce: u64, keep: u64) -> Result<()> {
+        let balance = ctx.accounts.donor.lamports();
+        require!(balance > keep, ErrorCode::InvalidAmount);
+        let amount = balance - keep;
+        transfer_in(&ctx.accounts.donor, &ctx.accounts.pool_vault, &ctx.accounts.system_program, amount)?;
+        let pool = &mut ctx.accounts.pool;
+        require!(pool.is_active, ErrorCode::PoolInactive);
+        pool.total_donated = pool.total_donated.checked_add(amount).unwrap();
+        pool.donor_count = pool.donor_count.checked_add(1).unwrap();
+        fill_record(&mut ctx.accounts.donation_record, ctx.accounts.donor.key(), pool.key(), amount, 4)?;
+        if let Some(campaign) = ctx.accounts.campaign.as_mut() {
+            if campaign.pool == pool.key() && campaign.is_active {
+                campaign.total_raised = campaign.total_raised.checked_add(amount).unwrap();
+                campaign.donor_count = campaign.donor_count.checked_add(1).unwrap();
+            }
+        }
+        emit!(DonationMade { donor: ctx.accounts.donor.key(), pool: pool.key(), amount, donation_type: 4 });
         Ok(())
     }
 
@@ -416,16 +439,25 @@ pub struct Donate<'info> {
 }
 
 #[derive(Accounts)]
-pub struct WithdrawFromPool<'info> {
-    #[account(mut, has_one = authority)]
+#[instruction(nonce: u64, keep: u64)]
+pub struct DonateAll<'info> {
+    #[account(mut)]
     pub pool: Account<'info, Pool>,
     /// CHECK: vault PDA
     #[account(mut, seeds = [b"vault", pool.key().as_ref()], bump)]
     pub pool_vault: AccountInfo<'info>,
-    /// CHECK: any recipient chosen by the authority
+    #[account(
+        init,
+        payer = donor,
+        space = 8 + DonationRecord::INIT_SPACE,
+        seeds = [b"donation", pool.key().as_ref(), donor.key().as_ref(), &nonce.to_le_bytes()],
+        bump
+    )]
+    pub donation_record: Account<'info, DonationRecord>,
+    #[account(mut, seeds = [b"campaign", pool.key().as_ref()], bump = campaign.bump)]
+    pub campaign: Option<Account<'info, Campaign>>,
     #[account(mut)]
-    pub recipient: AccountInfo<'info>,
-    pub authority: Signer<'info>,
+    pub donor: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -647,13 +679,6 @@ pub struct DonationMade {
     pub pool: Pubkey,
     pub amount: u64,
     pub donation_type: u8,
-}
-
-#[event]
-pub struct PoolWithdrawal {
-    pub pool: Pubkey,
-    pub recipient: Pubkey,
-    pub amount: u64,
 }
 
 #[event]

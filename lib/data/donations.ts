@@ -42,8 +42,6 @@ export function toPoolView(p: Pool): PoolView {
     description: p.description,
     category: p.category,
     emoji: p.emoji,
-    image: '',
-    imageAlt: p.name,
     units: [],
     impact: '',
     deliveryMode: (p.deliveryMode as CauseMeta['deliveryMode']) || 'field',
@@ -98,11 +96,15 @@ export interface RecordDonationInput {
   poolId: string
   amountLamports: number
   signature: string
-  route?: 'solana' | 'intents' | 'multihopper' | 'blink' | 'demo'
+  route?: 'solana' | 'intents' | 'multihopper' | 'blink' | 'x402' | 'demo'
+  /** Name an agent gave for itself (x402 gifts). */
+  agent?: string
   sourceChain?: string
   sourceAsset?: string
   sourceAmount?: string
   intentId?: string
+  /** Off-program payment tx (x402 settlement / solver payout) when `signature` is the escrow deposit. */
+  settlementSignature?: string
   /** Skip the social post (e.g. discreet routes). */
   silent?: boolean
   /** Donor chose to hide their name: stored on the row, no post, unnamed in lists. */
@@ -131,6 +133,7 @@ export async function recordDonation(input: RecordDonationInput): Promise<{ dona
       sourceAsset: input.sourceAsset ?? null,
       sourceAmount: input.sourceAmount ?? null,
       intentId: input.intentId ?? null,
+      settlementSignature: input.settlementSignature ?? null,
       rewardPoints: points,
       anonymous: !!input.anonymous,
     })
@@ -170,8 +173,11 @@ export async function recordDonation(input: RecordDonationInput): Promise<{ dona
   if (!input.silent && !input.anonymous) {
     const sol = (input.amountLamports / LAMPORTS_PER_SOL).toFixed(input.amountLamports % 10_000_000 === 0 ? 2 : 3)
     const viaChain = input.route === 'intents' && input.sourceChain ? ` from ${input.sourceChain}${input.sourceAsset ? ` (${input.sourceAmount ?? ''} ${input.sourceAsset})`.replace('( ', '(') : ''} via NEAR Intents` : ''
-    const content = `Donated ${sol} SOL${viaChain} to ${cause?.emoji ?? ''} ${causeName}. Locked in on-chain escrow until the community releases it.`
-    await createPost(input.donorAddress, content, 'donation', { amount: sol, cause: causeName, poolId: input.poolId, route: input.route ?? 'solana', ...(input.sourceChain ? { sourceChain: input.sourceChain } : {}) }, input.signature)
+    const content =
+      input.route === 'x402'
+        ? `${input.agent ? `Agent "${input.agent}"` : 'An agent'} gave ${input.sourceAmount ?? ''} USDC to ${cause?.emoji ?? ''} ${causeName} over x402. Settled on Solana and deposited into the cause's escrow.`
+        : `Donated ${sol} SOL${viaChain} to ${cause?.emoji ?? ''} ${causeName}. Locked in on-chain escrow until the community releases it.`
+    await createPost(input.donorAddress, content, 'donation', { amount: sol, cause: causeName, poolId: input.poolId, route: input.route ?? 'solana', ...(input.sourceChain ? { sourceChain: input.sourceChain } : {}), ...(input.sourceAsset ? { sourceAsset: input.sourceAsset, sourceAmount: input.sourceAmount ?? '' } : {}), ...(input.agent ? { agent: input.agent } : {}) }, input.signature)
 
     const donor = await findUser(input.donorAddress)
     if (donor) {
@@ -214,8 +220,12 @@ export async function recordTip(senderAddress: string, recipientAddress: string,
 
 // ---- Platform-wide stats ----
 export interface PlatformStats {
-  totalDonations: number // SOL, lifetime through the app
+  /** SOL that reached the vaults, from the program's counters (includes gifts made outside the app). */
+  totalDonations: number
   totalEscrowed: number // SOL currently in vaults (chain-synced)
+  /** Gifts counted by the program (one per donate instruction). */
+  totalGifts: number
+  /** Distinct wallets that gave through Umanity (database). */
   totalDonors: number
   totalTransactions: number
   crossChainVolume: number // SOL-equivalent via intents
@@ -245,13 +255,14 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     .from(donations)
     .where(inArray(donations.poolId, CAUSE_IDS))
   const poolRows = await db
-    .select({ vault: sql<number>`coalesce(sum(${pools.vaultBalanceLamports}), 0)::bigint`, donated: sql<number>`coalesce(sum(${pools.totalDonatedLamports}), 0)::bigint`, n: sql<number>`count(*)::int` })
+    .select({ vault: sql<number>`coalesce(sum(${pools.vaultBalanceLamports}), 0)::bigint`, donated: sql<number>`coalesce(sum(${pools.totalDonatedLamports}), 0)::bigint`, gifts: sql<number>`coalesce(sum(${pools.donorCount}), 0)::int`, n: sql<number>`count(*)::int` })
     .from(pools)
     .where(inArray(pools.id, CAUSE_IDS))
   const [deliveries] = await db.select({ n: sql<number>`count(*)::int` }).from(fieldDeliveries)
   const [x] = await db.select({ n: sql<number>`count(*)::int`, usd: sql<string>`coalesce(sum((${x402Receipts.amount})::numeric), 0)::text` }).from(x402Receipts).where(eq(x402Receipts.status, 'settled'))
   return {
-    totalDonations: Number(agg?.total ?? 0) / LAMPORTS_PER_SOL,
+    totalDonations: Number(poolRows[0]?.donated ?? 0) / LAMPORTS_PER_SOL,
+    totalGifts: Number(poolRows[0]?.gifts ?? 0),
     totalEscrowed: Number(poolRows[0]?.vault ?? 0) / LAMPORTS_PER_SOL,
     totalDonors: agg?.donors ?? 0,
     totalTransactions: agg?.txs ?? 0,
@@ -294,17 +305,19 @@ export async function getActivity(limit = 20) {
   const items = [
     ...recent.map((d) => ({
       id: d.id,
-      type: d.route === 'intents' ? 'intent' : d.route === 'multihopper' ? 'discreet' : 'donation',
+      type: d.route === 'intents' ? 'intent' : d.route === 'multihopper' ? 'discreet' : d.route === 'x402' ? 'agent' : 'donation',
       username: d.route === 'multihopper' || d.anonymous ? 'anonymous' : d.username,
       amount: d.amountLamports / LAMPORTS_PER_SOL,
       poolId: d.poolId,
       poolName: d.poolName,
       sourceChain: d.sourceChain,
+      sourceAsset: d.sourceAsset,
+      sourceAmount: d.sourceAmount,
       signature: d.signature,
       timestamp: d.createdAt.toISOString(),
     })),
-    ...recentIntents.map((i) => ({ id: i.id, type: 'intent_settled', username: '', amount: (i.amountOutLamports ?? 0) / LAMPORTS_PER_SOL, poolId: i.poolId ?? '', poolName: CAUSES.find((c) => c.id === i.poolId)?.name ?? '', sourceChain: i.sourceChain, signature: i.settlementSignature ?? '', timestamp: i.updatedAt.toISOString() })),
-    ...routed.map((r) => ({ id: r.id, type: 'payout', username: '', amount: r.amountLamports / LAMPORTS_PER_SOL, poolId: r.poolId ?? '', poolName: CAUSES.find((c) => c.id === r.poolId)?.name ?? '', sourceChain: null, signature: r.providerRef ?? '', timestamp: r.createdAt.toISOString() })),
+    ...recentIntents.map((i) => ({ id: i.id, type: 'intent_settled', username: '', amount: (i.amountOutLamports ?? 0) / LAMPORTS_PER_SOL, poolId: i.poolId ?? '', poolName: CAUSES.find((c) => c.id === i.poolId)?.name ?? '', sourceChain: i.sourceChain, sourceAsset: i.sourceAsset, sourceAmount: i.sourceAmount, signature: i.settlementSignature ?? '', timestamp: i.updatedAt.toISOString() })),
+    ...routed.map((r) => ({ id: r.id, type: 'payout', username: '', amount: r.amountLamports / LAMPORTS_PER_SOL, poolId: r.poolId ?? '', poolName: CAUSES.find((c) => c.id === r.poolId)?.name ?? '', sourceChain: null, sourceAsset: null, sourceAmount: null, signature: r.providerRef ?? '', timestamp: r.createdAt.toISOString() })),
   ]
   return items.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, limit)
 }

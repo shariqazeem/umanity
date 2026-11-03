@@ -41,8 +41,6 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
   const [preset, setPreset] = useState<number | null>(req.amountSol || req.amountUsd ? null : solPrice ? 25 : 0.1)
   const [method, setMethod] = useState<'solana' | 'anychain'>(req.method ?? 'solana')
   const [anonymous, setAnonymous] = useState(false)
-  const [privateRoute, setPrivateRoute] = useState(false)
-  const [mh, setMh] = useState<{ configured: boolean; feeSol: number; shareSol: number; minutes: number } | null>(null)
   const [result, setResult] = useState<DonateResult | null>(null)
   const [creating, setCreating] = useState(false)
   const cause = getCause(causeId)!
@@ -63,12 +61,6 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
   const valid = sol >= MIN_SOL && isFinite(sol)
   const enough = balance == null || balance >= sol + 0.0015
 
-  useEffect(() => {
-    if (!privateRoute || !(sol > 0)) return
-    apiSend<{ success: boolean; configured?: boolean; preview?: { percentFeeLamports: number; integratorShareLamports: number; estimatedArrivalSeconds: number } }>('/api/multihopper/route', { action: 'estimate', amount: sol, hops: 3 })
-      .then((r) => r.preview && setMh({ configured: !!r.configured, feeSol: r.preview.percentFeeLamports / 1e9, shareSol: r.preview.integratorShareLamports / 1e9, minutes: Math.round(r.preview.estimatedArrivalSeconds / 60) }))
-      .catch(() => {})
-  }, [privateRoute, sol])
 
   const create = async () => {
     setCreating(true)
@@ -80,11 +72,6 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
 
   const go = async () => {
     if (!signer || !valid) return
-    if (privateRoute) {
-      const r = await apiSend<{ success: boolean; error?: string; id?: string }>('/api/multihopper/route', { action: 'create', amount: sol, hops: 3, poolId: causeId, source: signer.publicKey.toBase58() })
-      if (!r.success) return toast(r.error || 'Private route unavailable right now', 'err')
-      return toast('Private route created. Continue in the MultiHopper step.', 'ok')
-    }
     const r = await donate(causeId, sol, { anonymous, dareId: req.dareId })
     if (r) setResult(r)
   }
@@ -96,10 +83,10 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-[30px] leading-[1.05]">Give</h3>
-          <p className="text-[13.5px] text-[#6e6e73] mt-1">Held in escrow on Solana until the delivery is proven.</p>
+          <h3 className="text-[24px] font-bold tracking-[-0.02em]">Give</h3>
+          <p className="text-[13.5px] text-[#86868b] mt-1">Held in escrow on Solana until the delivery is proven.</p>
         </div>
-        <button onClick={onClose} aria-label="Close" className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#6e6e73] hover:bg-black/[0.05]">
+        <button onClick={onClose} aria-label="Close" className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#86868b] hover:bg-black/[0.05]">
           <Icon name="x" size={18} />
         </button>
       </div>
@@ -111,9 +98,7 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
             const on = c.id === causeId
             return (
               <button key={c.id} onClick={() => setCauseId(c.id)} className={`flex items-center gap-2 pl-1 pr-3 h-10 rounded-full border transition-all ${on ? 'border-[#1d1d1f] bg-[#1d1d1f] text-white' : 'border-black/[0.08] bg-white hover:border-black/30'}`}>
-                <span className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-black/[0.05]">
-                  <Img src={c.image.replace(/w=\d+/, 'w=96')} alt="" />
-                </span>
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[15px] ${on ? 'bg-white/15' : 'bg-black/[0.04]'}`}>{c.emoji}</span>
                 <span className="text-[13px] font-semibold whitespace-nowrap">{c.shortName}</span>
               </button>
             )
@@ -136,7 +121,7 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
                   setCustom('')
                 }}
                 disabled={u === 'usd' && !solPrice}
-                className={`px-3 h-7 rounded-full text-[11.5px] font-semibold transition-all ${unit === u ? 'bg-white shadow-sm' : 'text-[#6e6e73]'} disabled:opacity-40`}
+                className={`px-3 h-7 rounded-full text-[11.5px] font-semibold transition-all ${unit === u ? 'bg-white shadow-sm' : 'text-[#86868b]'} disabled:opacity-40`}
               >
                 {u.toUpperCase()}
               </button>
@@ -174,7 +159,7 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
           />
         </div>
         <div className="flex items-center justify-between mt-2 min-h-[18px]">
-          <p className="text-[12.5px] text-[#6e6e73]">
+          <p className="text-[12.5px] text-[#86868b]">
             {valid ? (
               <>
                 {unit === 'usd' ? `${fmtSol(sol, 4)} SOL` : solPrice ? fmtUsd(usd) : ''}
@@ -205,7 +190,7 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
           ).map(([id, label, sub]) => (
             <button key={id} onClick={() => setMethod(id)} className={`rounded-[14px] px-3 py-2.5 text-left transition-all ${method === id ? 'bg-white shadow-sm' : 'hover:bg-white/60'}`}>
               <span className="block text-[13px] font-semibold">{label}</span>
-              <span className="block text-[11px] text-[#6e6e73]">{sub}</span>
+              <span className="block text-[11px] text-[#86868b]">{sub}</span>
             </button>
           ))}
         </div>
@@ -216,7 +201,7 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
           {!signer ? (
             <div className="rounded-2xl border border-black/[0.08] p-4">
               <p className="text-[13.5px] font-semibold">You need a wallet to give</p>
-              <p className="text-[12.5px] text-[#6e6e73] mt-0.5">Create one in a tap, or connect Phantom, Solflare or Backpack.</p>
+              <p className="text-[12.5px] text-[#86868b] mt-0.5">Create one in a tap, or connect Phantom, Solflare or Backpack.</p>
               <div className="flex gap-2 mt-3">
                 <Btn className="flex-1" icon="bolt" onClick={create} loading={creating}>
                   Create wallet
@@ -233,7 +218,7 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold truncate">{signer.kind === 'local' ? 'Umanity wallet' : 'Connected wallet'} {user?.handleClaimed ? `· @${user.username}` : ''}</p>
-                <p className="text-[12px] text-[#6e6e73] num">
+                <p className="text-[12px] text-[#86868b] num">
                   {balance == null ? '…' : `${fmtSol(balance, 3)} SOL`} {solPrice && balance != null ? `· ${fmtUsd(balance * solPrice)}` : ''}
                 </p>
               </div>
@@ -257,16 +242,11 @@ function GiveFlow({ req, onClose }: { req: GiveRequest; onClose: () => void }) {
 
           <div className="flex items-center justify-between mt-4 gap-4">
             <Toggle on={anonymous} onChange={setAnonymous} label={<span className="text-[13px]">Give anonymously</span>} />
-            <Toggle on={privateRoute} onChange={setPrivateRoute} label={<span className="text-[13px]">Private route</span>} />
+            <span className="text-[11px] text-[#aeaeb2]">{anonymous ? 'No feed post; unnamed in lists' : 'Shown in the feed'}</span>
           </div>
-          {privateRoute && (
-            <p className="text-[11.5px] text-[#6e6e73] mt-2 leading-relaxed">
-              Routed through MultiHopper in 3 timed hops with TRM screening. Fee 0.5% ({mh ? fmtSol(mh.feeSol, 4) : '…'} SOL), arrives in about {mh?.minutes ?? 10} minutes. {mh && !mh.configured ? 'Preview only until a routing key is configured on this deployment.' : ''}
-            </p>
-          )}
 
-          <Btn tone="accent" size="xl" full className="mt-5" onClick={go} loading={busy} disabled={!signer || !valid || (!enough && !privateRoute)}>
-            {valid ? (privateRoute ? `Route ${fmtSol(sol, 3)} SOL privately` : `Give ${unit === 'usd' ? fmtUsd(usd) : `${fmtSol(sol, 3)} SOL`}`) : 'Give'}
+          <Btn tone="accent" size="xl" full className="mt-5" onClick={go} loading={busy} disabled={!signer || !valid || !enough}>
+            {valid ? `Give ${unit === 'usd' ? fmtUsd(usd) : `${fmtSol(sol, 3)} SOL`}` : 'Give'}
           </Btn>
           <p className="text-[11px] text-[#aeaeb2] text-center mt-2.5">No platform fee on gifts. Your gift is recorded on-chain and verified by the server before it counts.</p>
         </div>
@@ -295,7 +275,7 @@ function Success({ result, causeId, usd, onClose }: { result: DonateResult; caus
       <div className="w-16 h-16 rounded-full bg-[#10b981] text-white flex items-center justify-center mx-auto check-pop">
         <Icon name="check" size={30} strokeWidth={2.5} />
       </div>
-      <h3 className="font-display text-[36px] leading-none mt-5">Thank you.</h3>
+      <h3 className="text-[28px] font-black tracking-[-0.03em] mt-5">Thank you.</h3>
       <p className="text-[15px] text-[#1d1d1f] mt-3">
         You gave <span className="font-semibold num">{shownUsd > 0 ? fmtUsd(shownUsd) : ''}</span>
         {shownUsd > 0 ? ' (' : ''}
@@ -314,7 +294,10 @@ function Success({ result, causeId, usd, onClose }: { result: DonateResult; caus
         </Pill>
         {result.milestoneProposals.length > 0 && <Pill tone="amber">A release vote just opened</Pill>}
       </div>
-      <div className="mt-3">
+      <div className="mt-3 flex items-center justify-center gap-4">
+        <a href={`/gift/${result.signature}`} className="text-[13px] font-semibold text-emerald-600 hover:underline">
+          Follow your gift →
+        </a>
         <TxLink sig={result.signature} label="View on Solscan" />
       </div>
       <div className="grid grid-cols-2 gap-2 mt-6">
@@ -361,7 +344,7 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
   const [refundTo, setRefundTo] = useState('')
   const [quote, setQuote] = useState<Quote | null>(null)
   const [quoting, setQuoting] = useState(false)
-  const [live, setLive] = useState<{ intentId: string; status: string; settlementSignature?: string | null; explorerUrl?: string | null } | null>(null)
+  const [live, setLive] = useState<{ intentId: string; status: string; settlementSignature?: string | null; explorerUrl?: string | null; escrow?: { escrowSignature?: string | null; mode?: string } | null; shortfall?: { received: string | null; expected: string | null; deadline: string | null } | null; refund?: { amount: string | null; reason: string | null } | null } | null>(null)
   const [txHash, setTxHash] = useState('')
   const [error, setError] = useState('')
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -429,9 +412,10 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
   useEffect(() => {
     if (!live?.intentId) return
     const poll = async () => {
-      const r = await apiGet<{ intent?: { status: string; settlementSignature?: string | null; explorerUrl?: string | null } }>(`/api/intents/status?id=${live.intentId}`)
-      if (r.intent) setLive((l) => (l ? { ...l, status: r.intent!.status, settlementSignature: r.intent!.settlementSignature, explorerUrl: r.intent!.explorerUrl } : l))
-      if (r.intent && ['success', 'refunded', 'failed'].includes(r.intent.status) && pollRef.current) clearInterval(pollRef.current)
+      const r = await apiGet<{ intent?: { status: string; settlementSignature?: string | null; explorerUrl?: string | null }; escrow?: { escrowSignature?: string | null; mode?: string } | null; shortfall?: { received: string | null; expected: string | null; deadline: string | null } | null; refund?: { amount: string | null; reason: string | null } | null }>(`/api/intents/status?id=${live.intentId}`)
+      if (r.intent) setLive((l) => (l ? { ...l, status: r.intent!.status, settlementSignature: r.intent!.settlementSignature, explorerUrl: r.intent!.explorerUrl, escrow: r.escrow ?? l.escrow, shortfall: r.shortfall ?? null, refund: r.refund ?? null } : l))
+      // FAILED is retried by the solver network, so keep polling it; success and refunds are final.
+      if (r.intent && ['success', 'refunded'].includes(r.intent.status) && pollRef.current) clearInterval(pollRef.current)
     }
     poll()
     pollRef.current = setInterval(poll, 8000)
@@ -447,7 +431,7 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
   }
 
   const steps = ['Quote', 'Send deposit', 'Swapping', 'Settled on Solana']
-  const stepIdx = !live ? 0 : live.status === 'pending_deposit' ? 1 : live.status === 'processing' ? 2 : live.status === 'success' ? 3 : -1
+  const stepIdx = !live ? 0 : live.status === 'pending_deposit' || live.status === 'incomplete_deposit' ? 1 : live.status === 'processing' || live.status === 'failed' ? 2 : live.status === 'success' ? 3 : -1
 
   return (
     <div className="mt-4">
@@ -503,22 +487,22 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
             ) : quote ? (
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[11.5px] text-[#6e6e73]">You send</p>
+                  <p className="text-[11.5px] text-[#86868b]">You send</p>
                   <p className="num font-semibold text-[15px]">
                     {quote.quote.amountInFormatted} {quote.token.symbol}
                   </p>
                 </div>
                 <Icon name="arrowRight" size={16} className="text-[#aeaeb2]" />
                 <div className="text-right">
-                  <p className="text-[11.5px] text-[#6e6e73]">Cause receives</p>
+                  <p className="text-[11.5px] text-[#86868b]">Cause receives</p>
                   <p className="num font-semibold text-[15px] text-[#047857]">{quote.quote.amountOutFormatted} SOL</p>
-                  <p className="text-[11px] text-[#6e6e73] num">
+                  <p className="text-[11px] text-[#86868b] num">
                     {quote.quote.amountOutUsd ? `≈ ${fmtUsd(Number(quote.quote.amountOutUsd))}` : ''} · ~{quote.quote.timeEstimate ?? 120}s
                   </p>
                 </div>
               </div>
             ) : (
-              <p className="text-[12.5px] text-[#6e6e73]">{error || 'Live quote from the NEAR Intents solver network.'}</p>
+              <p className="text-[12.5px] text-[#86868b]">{error || 'Live quote from the NEAR Intents solver network, via Aurora Intents.'}</p>
             )}
           </div>
 
@@ -533,7 +517,7 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
                 Get deposit address
               </Btn>
               <p className="text-[11px] text-[#aeaeb2] text-center mt-2.5">
-                {meta ? `${meta.chainCount} chains · ${meta.tokenCount} assets` : ''} · Settles on Solana mainnet · 0.5% routing fee funds Umanity
+                {meta ? `${meta.chainCount} chains · ${meta.tokenCount} assets · ` : ''}Settles on Solana, then goes into the cause&apos;s escrow{quote && quote.fee.bps > 0 ? ` · ${(quote.fee.bps / 100).toFixed(2)}% routing fee` : ''}
               </p>
             </>
           ) : (
@@ -555,7 +539,7 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
                     )}
                     <div className="flex items-center gap-2 mt-2">
                       <CopyButton text={quote.quote.depositAddress} label="Copy address" />
-                      <a href={`${INTENTS_EXPLORER}/?search=${quote.quote.depositAddress}`} target="_blank" rel="noopener noreferrer" className="text-[12px] font-medium text-[#047857] hover:underline inline-flex items-center gap-1">
+                      <a href={`${INTENTS_EXPLORER}/transactions/${quote.quote.depositAddress}`} target="_blank" rel="noopener noreferrer" className="text-[12px] font-medium text-[#047857] hover:underline inline-flex items-center gap-1">
                         Explorer <Icon name="arrowUpRight" size={12} />
                       </a>
                     </div>
@@ -569,8 +553,23 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
                     </span>
                   ))}
                   {live.status === 'refunded' && <Pill tone="amber">Refunded</Pill>}
-                  {live.status === 'failed' && <Pill tone="red">Failed</Pill>}
+                  {live.status === 'failed' && <Pill tone="amber">Retrying</Pill>}
                 </div>
+                {live.status === 'incomplete_deposit' && live.shortfall && (
+                  <p className="text-[12px] text-amber-700 bg-amber-50 rounded-xl px-3 py-2 mt-3">
+                    Received {live.shortfall.received ?? 'part'} of {live.shortfall.expected ?? 'the amount'}. Send the rest before {live.shortfall.deadline ? new Date(live.shortfall.deadline).toLocaleTimeString() : 'the deadline'}, or it is refunded to your address.
+                  </p>
+                )}
+                {live.status === 'refunded' && (
+                  <p className="text-[12px] text-amber-700 bg-amber-50 rounded-xl px-3 py-2 mt-3">
+                    Refunded {live.refund?.amount ?? ''} to your refund address{live.refund?.reason ? ` (${live.refund.reason})` : ''}. Nothing was given.
+                  </p>
+                )}
+                {live.status === 'success' && live.escrow?.escrowSignature && (
+                  <a href={explorerTx(live.escrow.escrowSignature)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[12px] font-semibold text-[#047857] hover:underline mt-3">
+                    🔐 Deposited into the cause escrow{live.escrow.mode === 'devnet-mirror' ? ' (devnet build)' : ''} <Icon name="arrowUpRight" size={12} />
+                  </a>
+                )}
                 {live.settlementSignature && (
                   <a href={live.explorerUrl || explorerTx(live.settlementSignature, 'mainnet-beta')} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[12px] font-medium text-[#047857] hover:underline mt-2">
                     Settlement transaction <Icon name="arrowUpRight" size={12} />
@@ -584,7 +583,7 @@ function AnyChain({ causeId, usd }: { causeId: string; usd: number }) {
                     </Btn>
                   </div>
                 )}
-                <p className="text-[11px] text-[#aeaeb2] mt-3">Valid until {quote.quote.deadline ? new Date(quote.quote.deadline).toLocaleTimeString() : 'the quote expires'}. Under-deposits are refunded to your address.</p>
+                <p className="text-[11px] text-[#aeaeb2] mt-3">Valid until {quote.quote.deadline ? new Date(quote.quote.deadline).toLocaleTimeString() : 'the quote expires'}. If less arrives than quoted, you can top up before the deadline or it is refunded to your address.</p>
               </div>
             )
           )}

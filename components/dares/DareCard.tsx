@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useConnection } from '@solana/wallet-adapter-react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { Avatar, Btn, Card, Icon, Img, Pill, TxLink } from '@/components/shared/ui'
+import { Avatar, Icon, TxLink } from '@/components/shared/ui'
 import { apiSend, countdown, fmtSol, fmtUsd } from '@/lib/client/api'
 import { useCountdown } from '@/lib/client/hooks'
 import { boostDareOnChain } from '@/lib/client/solana'
@@ -47,7 +47,7 @@ export function useBoost(dare: DareView, onBoosted?: (d: DareView) => void) {
   return { boost, busy }
 }
 
-export function DareCard({ dare: initial }: { dare: DareView }) {
+export function DareCard({ dare: initial, compact }: { dare: DareView; compact?: boolean }) {
   const { user, openGive, solPrice } = useUmanity()
   const [dare, setDare] = useState(initial)
   const left = useCountdown(dare.secondsLeft)
@@ -57,64 +57,66 @@ export function DareCard({ dare: initial }: { dare: DareView }) {
   const cause = getCause(dare.poolId)
 
   return (
-    <Card as="article" className="p-4">
-      <div className="flex items-start gap-3">
-        <Link href={`/u/${dare.creator.username}`} className="flex-shrink-0">
-          <Avatar username={dare.creator.username || 'u'} size={40} />
+    <article className={`dare-card p-4 ${compact ? 'w-[300px] flex-shrink-0' : ''}`}>
+      <div className="flex items-center gap-2.5 mb-2.5">
+        <Link href={`/u/${dare.creator.username}`}>
+          <Avatar username={dare.creator.username || 'u'} size={compact ? 32 : 40} />
         </Link>
         <div className="flex-1 min-w-0">
-          <p className="text-[15px] leading-snug">
-            <Link href={`/u/${dare.creator.username}`} className="font-semibold hover:underline underline-offset-2">
-              {dare.creator.displayName || `@${dare.creator.username}`}
-            </Link>{' '}
-            dared{' '}
-            <Link href={`/u/${dare.targetHandle}`} className="font-semibold hover:underline underline-offset-2">
-              @{dare.targetHandle}
-            </Link>
+          <p className="text-[13px] leading-snug truncate">
+            <Link href={`/u/${dare.creator.username}`} className="font-semibold hover:underline">@{dare.creator.username}</Link>
+            <span className="text-[#86868b]"> dared </span>
+            <Link href={`/u/${dare.targetHandle}`} className="font-semibold hover:underline">@{dare.targetHandle}</Link>
           </p>
-          <div className="flex items-center gap-2 mt-1 flex-wrap text-[12px] text-[#aeaeb2]">
-            <Pill tone={open ? 'dark' : dare.status === 'completed' ? 'green' : 'gray'}>
-              <Icon name={open ? 'bolt' : dare.status === 'completed' ? 'check' : 'clock'} size={11} />
-              {open ? countdown(left) : dare.status === 'completed' ? 'Delivered' : dare.status === 'expired' ? 'Expired · pot went to the cause' : dare.status}
-            </Pill>
-            {cause && (
-              <Link href={`/causes/${dare.poolId}`} className="inline-flex items-center gap-1.5 hover:text-[#1d1d1f]">
-                <span className="w-4 h-4 rounded-full overflow-hidden inline-block bg-black/[0.05]">{cause.image && <Img src={cause.image.replace('w=1600', 'w=64')} alt="" />}</span>
-                {dare.poolName}
-              </Link>
-            )}
-          </div>
-          <p className="font-display text-[22px] leading-[1.15] mt-2.5">&ldquo;{dare.text}&rdquo;</p>
-          <div className="flex items-center gap-4 mt-3">
-            <div>
-              <p className="num text-[22px] font-bold leading-none">{fmtSol(dare.pot, 3)} SOL</p>
-              <p className="text-[11.5px] text-[#6e6e73] mt-1 num">
-                {solPrice ? `${fmtUsd(dare.pot * solPrice)} · ` : ''}
-                {dare.backerCount} {dare.backerCount === 1 ? 'backer' : 'backers'}
-              </p>
-            </div>
-            <p className="text-[12px] text-[#aeaeb2] leading-snug max-w-[220px]">Whether @{dare.targetHandle} delivers or not, the pot goes to {dare.poolName}.</p>
-          </div>
-          <div className="flex items-center gap-2 mt-3.5 flex-wrap">
-            {open && isTarget && (
-              <Btn tone="accent" size="md" icon="heart" onClick={() => openGive({ causeId: dare.poolId, amountSol: dare.stake, dareId: dare.id })}>
-                Accept · give {fmtSol(dare.stake, 3)} SOL
-              </Btn>
-            )}
-            {open && (
-              <Btn tone={isTarget ? 'outline' : 'primary'} size="md" icon="plus" onClick={() => boost()} loading={busy} disabled={!dare.darePda}>
-                Boost {fmtSol(BOOST_SOL, 2)} SOL
-              </Btn>
-            )}
-            <button onClick={() => shareDare(dare)} className="inline-flex items-center justify-center w-10 h-10 rounded-full text-[#6e6e73] hover:bg-black/[0.04] hover:text-[#1d1d1f]" aria-label="Share dare">
-              <Icon name="share" size={16} />
-            </button>
-            <span className="ml-auto flex items-center gap-3">
-              {dare.resolveTxSignature ? <TxLink sig={dare.resolveTxSignature} label="Settlement" /> : dare.createTxSignature ? <TxLink sig={dare.createTxSignature} label="Stake tx" /> : null}
-            </span>
-          </div>
+          <p className="text-[10px] text-[#aeaeb2] counter">{open ? `${countdown(left)} left` : dare.status === 'completed' ? 'Dare completed' : 'Expired · pot went to the cause'}</p>
         </div>
+        <span className="pill bg-amber-50 text-amber-600 !text-[9px] font-semibold">⚡ Dare</span>
       </div>
-    </Card>
+
+      <p className={`text-[#1d1d1f] leading-relaxed mb-3 ${compact ? 'text-[13px] line-clamp-2 min-h-[40px]' : 'text-[14px]'}`}>&ldquo;{dare.text}&rdquo;</p>
+
+      <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/40 p-3.5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-base flex-shrink-0">{cause?.emoji || '⚡'}</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-[#1d1d1f] truncate">{dare.poolName}</p>
+            <p className="text-[10px] text-amber-700 counter">
+              {fmtSol(dare.pot, 3)} SOL pot{solPrice ? ` · ${fmtUsd(dare.pot * solPrice)}` : ''} · {dare.backerCount} {dare.backerCount === 1 ? 'backer' : 'backers'}
+            </p>
+          </div>
+          {open && (
+            <span className="text-[18px] font-black counter text-amber-600 tabular-nums">{countdown(left).split(' ')[0]}</span>
+          )}
+        </div>
+        {open && (
+          <div className="flex gap-2 mt-3">
+            {isTarget ? (
+              <button onClick={() => openGive({ causeId: dare.poolId, amountSol: dare.stake, dareId: dare.id })} className="flex-1 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-semibold py-2.5 rounded-lg text-[13px] transition-all duration-200">
+                Accept · give {fmtSol(dare.stake, 3)} SOL
+              </button>
+            ) : (
+              <button onClick={() => boost()} disabled={busy || !dare.darePda} className="flex-1 bg-white/80 hover:bg-white text-[#1d1d1f] font-semibold py-2.5 rounded-lg text-[12px] transition-all duration-200 border border-amber-200/60 disabled:opacity-50">
+                {busy ? 'Boosting…' : `⚡ Boost pot +${fmtSol(BOOST_SOL, 2)} SOL`}
+              </button>
+            )}
+            <button onClick={() => shareDare(dare)} className="px-3 bg-white/80 hover:bg-white rounded-lg border border-amber-200/60 text-[#86868b] hover:text-[#1d1d1f] transition-colors" aria-label="Share dare on X">
+              <Icon name="share" size={14} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {!compact && (
+        <div className="flex items-center justify-between mt-2.5 text-[11px] text-[#86868b]">
+          <span>Delivered or not, the pot goes to {dare.poolName}.</span>
+          {dare.resolveTxSignature ? <TxLink sig={dare.resolveTxSignature} label="Settlement" /> : dare.createTxSignature ? <TxLink sig={dare.createTxSignature} label="Stake tx" /> : null}
+        </div>
+      )}
+      {compact && (
+        <Link href={`/dares/${dare.id}`} className="block text-[11px] font-semibold text-amber-700 mt-2.5 hover:underline">
+          Open dare →
+        </Link>
+      )}
+    </article>
   )
 }

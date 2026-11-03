@@ -7,8 +7,6 @@ export interface CauseSummary {
   id: string
   name: string
   shortName: string
-  image: string
-  imageAlt: string
   emoji: string
   totalDonated: number
   vaultBalance: number
@@ -27,6 +25,8 @@ export interface ActivityRow {
   poolId: string
   poolName: string
   sourceChain: string | null
+  sourceAsset?: string | null
+  sourceAmount?: string | null
   signature: string
   timestamp: string
 }
@@ -68,8 +68,6 @@ export function normalizeCause(raw: Record<string, unknown>, campaign?: Campaign
     id,
     name: meta?.name ?? String(raw.name ?? id),
     shortName: meta?.shortName ?? String(raw.shortName ?? raw.name ?? id),
-    image: meta?.image ?? String(raw.image ?? ''),
-    imageAlt: meta?.imageAlt ?? String(raw.imageAlt ?? raw.name ?? id),
     emoji: meta?.emoji ?? String(raw.emoji ?? ''),
     totalDonated: num(raw.raisedSol, num(raw.totalDonated)),
     vaultBalance: num(raw.heldSol, num(raw.vaultBalance)),

@@ -3,6 +3,7 @@
  * server routes and the browser (no Anchor Provider needed).
  */
 import { PublicKey, SystemProgram, TransactionInstruction, Connection } from '@solana/web3.js'
+import { u64le, i64le } from './bytes'
 import { DONATIONS_PROGRAM, findPoolPDA, findVaultPDA, findCampaignPDA, findDarePDA, findDareVaultPDA } from './pda'
 
 const encoder = new TextEncoder()
@@ -19,16 +20,8 @@ export async function disc(name: string): Promise<Buffer> {
   return Buffer.from(h.subarray(0, 8))
 }
 
-function u64(n: bigint | number): Buffer {
-  const b = Buffer.alloc(8)
-  b.writeBigUInt64LE(BigInt(n))
-  return b
-}
-function i64(n: bigint | number): Buffer {
-  const b = Buffer.alloc(8)
-  b.writeBigInt64LE(BigInt(n))
-  return b
-}
+const u64 = u64le
+const i64 = i64le
 function str(s: string): Buffer {
   const bytes = Buffer.from(s, 'utf8')
   const len = Buffer.alloc(4)
@@ -53,6 +46,31 @@ export async function buildDonateIx(connection: Connection, poolId: string, dono
     { pubkey: vaultPda, isSigner: false, isWritable: true },
     { pubkey: recordPda, isSigner: false, isWritable: true },
     // Anchor optional account: pass the program id when absent.
+    { pubkey: campaignInfo ? campaignPda : DONATIONS_PROGRAM, isSigner: false, isWritable: !!campaignInfo },
+    { pubkey: donor, isSigner: true, isWritable: true },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ]
+  return { ix: new TransactionInstruction({ keys, programId: DONATIONS_PROGRAM, data }), recordPda, nonce, poolPda, vaultPda }
+}
+
+/**
+ * `donate_all(nonce, keep)` — gives everything the donor holds above `keep`.
+ * This is the step an Aurora Intents Connect execution runs from the donor's
+ * Solana intermediary after the solver pays out, so the exact amount does not
+ * need to be known when the intent is signed. `keep` must be 0 or at least the
+ * rent-exempt minimum (890,880 lamports).
+ */
+export async function buildDonateAllIx(connection: Connection, poolId: string, donor: PublicKey, keepLamports: number, nonce: bigint = BigInt(Date.now())) {
+  const [poolPda] = findPoolPDA(poolId)
+  const [vaultPda] = findVaultPDA(poolPda)
+  const [campaignPda] = findCampaignPDA(poolPda)
+  const [recordPda] = findDonationRecordPDA(poolPda, donor, nonce)
+  const campaignInfo = await connection.getAccountInfo(campaignPda)
+  const data = Buffer.concat([await disc('donate_all'), u64(nonce), u64(keepLamports)])
+  const keys = [
+    { pubkey: poolPda, isSigner: false, isWritable: true },
+    { pubkey: vaultPda, isSigner: false, isWritable: true },
+    { pubkey: recordPda, isSigner: false, isWritable: true },
     { pubkey: campaignInfo ? campaignPda : DONATIONS_PROGRAM, isSigner: false, isWritable: !!campaignInfo },
     { pubkey: donor, isSigner: true, isWritable: true },
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },

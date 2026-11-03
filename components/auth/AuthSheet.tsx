@@ -74,8 +74,8 @@ export function AuthSheet() {
     <Sheet open={authOpen} onClose={closeAuth} width="sm" hideClose={false}>
       {step === 'choose' && (
         <div className="pt-1">
-          <h3 className="font-display text-[30px] leading-[1.05] text-[#1d1d1f]">Start giving.</h3>
-          <p className="text-[14px] text-[#6e6e73] mt-2 leading-relaxed">A wallet is your account. Create one in a tap, or use one you already have.</p>
+          <h3 className="text-[24px] font-bold tracking-[-0.02em] text-[#1d1d1f]">Start giving.</h3>
+          <p className="text-[14px] text-[#86868b] mt-2 leading-relaxed">A wallet is your account. Create one in a tap, or use one you already have.</p>
 
           <button onClick={create} disabled={creating} className="mt-6 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group disabled:opacity-60">
             <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export function AuthSheet() {
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[15px] font-semibold">Create a Umanity wallet</span>
-                <span className="block text-[12.5px] text-[#6e6e73]">Ready instantly. Self-custodial, lives in this browser. Back it up any time.</span>
+                <span className="block text-[12.5px] text-[#86868b]">Ready instantly. Self-custodial, lives in this browser. Back it up any time.</span>
               </span>
               <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
             </div>
@@ -97,14 +97,14 @@ export function AuthSheet() {
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[15px] font-semibold">Connect a wallet</span>
-                <span className="block text-[12.5px] text-[#6e6e73]">Phantom, Solflare, Backpack and any Wallet Standard wallet.</span>
+                <span className="block text-[12.5px] text-[#86868b]">Phantom, Solflare, Backpack and any Wallet Standard wallet.</span>
               </span>
               <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
             </div>
           </button>
 
           <div className="flex items-center justify-between mt-5">
-            <button onClick={() => setStep('import')} className="text-[12.5px] text-[#6e6e73] hover:text-[#1d1d1f] underline underline-offset-2">
+            <button onClick={() => setStep('import')} className="text-[12.5px] text-[#86868b] hover:text-[#1d1d1f] underline underline-offset-2">
               Import a secret key
             </button>
             {!isMainnet && <Pill tone="gray">Devnet</Pill>}
@@ -114,11 +114,11 @@ export function AuthSheet() {
 
       {step === 'import' && (
         <div className="pt-1">
-          <button onClick={() => setStep('choose')} className="text-[12.5px] text-[#6e6e73] hover:text-[#1d1d1f] inline-flex items-center gap-1 mb-3">
+          <button onClick={() => setStep('choose')} className="text-[12.5px] text-[#86868b] hover:text-[#1d1d1f] inline-flex items-center gap-1 mb-3">
             <Icon name="chevronLeft" size={14} /> Back
           </button>
           <h3 className="text-[22px] font-bold tracking-[-0.02em]">Import a wallet</h3>
-          <p className="text-[13px] text-[#6e6e73] mt-1">Paste a base58 secret key (Phantom export) or a JSON byte array. It is stored only in this browser.</p>
+          <p className="text-[13px] text-[#86868b] mt-1">Paste a base58 secret key (Phantom export) or a JSON byte array. It is stored only in this browser.</p>
           <textarea value={secret} onChange={(e) => setSecret(e.target.value)} rows={3} placeholder="4xk…  or  [12, 84, …]" className="input mt-4 font-mono !text-[12px]" />
           {error && <p className="text-[12.5px] text-[#c53030] mt-2">{error}</p>}
           <Btn full size="lg" className="mt-4" onClick={doImport} disabled={secret.trim().length < 40}>
@@ -129,8 +129,8 @@ export function AuthSheet() {
 
       {step === 'name' && (
         <div className="pt-1">
-          <h3 className="font-display text-[30px] leading-[1.05]">What should we call you?</h3>
-          <p className="text-[14px] text-[#6e6e73] mt-2">Your name appears next to your gifts. You can change it later.</p>
+          <h3 className="text-[24px] font-bold tracking-[-0.02em]">What should we call you?</h3>
+          <p className="text-[14px] text-[#86868b] mt-2">Your name appears next to your gifts. You can change it later.</p>
           <div className="space-y-3 mt-5">
             <Field label="Username">
               <div className="relative">

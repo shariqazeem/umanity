@@ -34,7 +34,8 @@ const MIGRATIONS_FOLDER = path.join(process.cwd(), 'drizzle')
 async function init(): Promise<Db> {
   const url = process.env.DATABASE_URL
   if (url) {
-    const client = postgres(url, { max: 10, prepare: false })
+    // Migrations re-run on every cold start; their "already exists" notices are noise.
+    const client = postgres(url, { max: 10, prepare: false, onnotice: () => {} })
     const db = drizzlePg(client, { schema })
     await migratePg(db, { migrationsFolder: MIGRATIONS_FOLDER })
     cache.driver = 'postgres'

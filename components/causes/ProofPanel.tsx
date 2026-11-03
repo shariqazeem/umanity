@@ -121,7 +121,7 @@ export function ProofPanel({ update, isAdmin, myVote, power, onVote, onExecute, 
       </div>
       {att && (
         <div className="mt-2.5">
-          <p className="text-[12.5px] text-[#6e6e73] leading-relaxed">{att.summary}</p>
+          <p className="text-[12.5px] text-[#86868b] leading-relaxed">{att.summary}</p>
           <div className="flex flex-wrap gap-1 mt-2">
             {att.checks.map((c) => (
               <span key={c.name} title={c.note} className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md ${c.passed ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-[#fff1f1] text-[#c53030]'}`}>
@@ -143,7 +143,7 @@ export function ProofPanel({ update, isAdmin, myVote, power, onVote, onExecute, 
             <p className="text-[13px] font-semibold flex items-center gap-2">
               <Icon name="vote" size={15} className="text-[#047857]" /> Donors decide: release {m ? `${m.percentage}%` : ''} for this delivery?
             </p>
-            <span className="text-[11.5px] text-[#6e6e73] num">
+            <span className="text-[11.5px] text-[#86868b] num">
               {active ? `closes in ${countdown(Math.max(0, Math.round((closesAt - now) / 1000)))}` : p.status === 'executed' ? 'decided' : 'voting ended'} · {fmtSol(p.escrowAmount, 3)} SOL
             </span>
           </div>
@@ -157,7 +157,7 @@ export function ProofPanel({ update, isAdmin, myVote, power, onVote, onExecute, 
                     <span className="text-[13px] font-semibold">{i === 0 ? 'Approve' : 'Not yet'}</span>
                     <span className="num text-[13px] font-bold">{r.percentage.toFixed(0)}%</span>
                   </div>
-                  <p className="relative text-[11px] text-[#6e6e73] mt-0.5 num">
+                  <p className="relative text-[11px] text-[#86868b] mt-0.5 num">
                     {r.voteCount} {r.voteCount === 1 ? 'vote' : 'votes'} · {r.totalWeight.toLocaleString()} power{mine ? ' · yours' : ''}
                   </p>
                 </button>
@@ -181,7 +181,7 @@ export function ProofPanel({ update, isAdmin, myVote, power, onVote, onExecute, 
                 Release on-chain
               </Btn>
             )}
-            {m?.status === 'approved' && !isAdmin && <span className="text-[11.5px] text-[#6e6e73]">Approved. The release transaction follows shortly.</span>}
+            {m?.status === 'approved' && !isAdmin && <span className="text-[11.5px] text-[#86868b]">Approved. The release transaction follows shortly.</span>}
             <span className="ml-auto text-[11px] text-[#aeaeb2] num">{power > 0 ? `You vote with ${power.toLocaleString()} power` : active ? 'Give to this cause to vote' : ''}</span>
           </div>
         </div>

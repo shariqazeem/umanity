@@ -44,7 +44,7 @@ export function UpdateCard({ update, fundedByViewer, ...proof }: Props) {
             {update.milestone && <span className="text-[11.5px] text-[#aeaeb2]">Milestone {update.milestone.index + 1}</span>}
           </div>
           <h3 className="text-[17px] font-bold tracking-[-0.02em] leading-snug">{update.title}</h3>
-          <p className="text-[12.5px] text-[#6e6e73] mt-1 flex items-center gap-1.5 flex-wrap">
+          <p className="text-[12.5px] text-[#86868b] mt-1 flex items-center gap-1.5 flex-wrap">
             {update.location && (
               <span className="inline-flex items-center gap-1">
                 <Icon name="pin" size={12} /> {update.location}
@@ -58,7 +58,7 @@ export function UpdateCard({ update, fundedByViewer, ...proof }: Props) {
         {update.amountSol > 0 && (
           <div className="text-right flex-shrink-0">
             <p className="num text-[18px] font-bold leading-none">{fmtSol(update.amountSol, 3)} SOL</p>
-            <p className="text-[11.5px] text-[#6e6e73] mt-1 num">{update.fiatAmount ? update.fiatAmount : solPrice ? fmtUsd(update.amountSol * solPrice) : ''}</p>
+            <p className="text-[11.5px] text-[#86868b] mt-1 num">{update.fiatAmount ? update.fiatAmount : solPrice ? fmtUsd(update.amountSol * solPrice) : ''}</p>
           </div>
         )}
       </div>
@@ -74,7 +74,7 @@ export function UpdateCard({ update, fundedByViewer, ...proof }: Props) {
             </a>
           ))}
           {!showAll && photos.length > 5 && (
-            <button onClick={() => setShowAll(true)} className="rounded-2xl border border-dashed border-black/[0.12] text-[13px] font-semibold text-[#6e6e73] hover:text-[#1d1d1f] h-[150px] sm:h-[165px]">
+            <button onClick={() => setShowAll(true)} className="rounded-2xl border border-dashed border-black/[0.12] text-[13px] font-semibold text-[#86868b] hover:text-[#1d1d1f] h-[150px] sm:h-[165px]">
               +{photos.length - 5} more
             </button>
           )}
@@ -98,7 +98,7 @@ export function UpdateCard({ update, fundedByViewer, ...proof }: Props) {
       )}
 
       {update.xPostUrl && (
-        <a href={update.xPostUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[12px] font-medium text-[#6e6e73] hover:text-[#1d1d1f] mt-3">
+        <a href={update.xPostUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[12px] font-medium text-[#86868b] hover:text-[#1d1d1f] mt-3">
           Posted on X <Icon name="arrowUpRight" size={12} />
         </a>
       )}
@@ -112,7 +112,7 @@ function DocRow({ d }: { d: MediaItem }) {
   const label = d.note || (d.kind === 'receipt' ? 'Receipt' : 'Document')
   const inner = (
     <>
-      <span className="w-8 h-8 rounded-lg bg-black/[0.04] text-[#6e6e73] flex items-center justify-center flex-shrink-0">
+      <span className="w-8 h-8 rounded-lg bg-black/[0.04] text-[#86868b] flex items-center justify-center flex-shrink-0">
         <Icon name="receipt" size={15} />
       </span>
       <span className="min-w-0 flex-1">

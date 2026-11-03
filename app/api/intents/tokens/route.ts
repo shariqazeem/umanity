@@ -14,7 +14,12 @@ export async function GET() {
       chains[id].tokens.push(t)
     }
     const list = Object.values(chains).sort((a, b) => (CHAIN_LABELS[a.id]?.order ?? 99) - (CHAIN_LABELS[b.id]?.order ?? 99))
-    for (const c of list) c.tokens.sort((a, b) => (['USDC', 'USDT', 'ETH', 'BTC', 'SOL', 'NEAR'].indexOf(a.symbol) + 100 || 999) - (['USDC', 'USDT', 'ETH', 'BTC', 'SOL', 'NEAR'].indexOf(b.symbol) + 100 || 999))
+    const PREFERRED = ['USDC', 'USDT', 'ETH', 'BTC', 'SOL', 'NEAR']
+    const rank = (sym: string) => {
+      const i = PREFERRED.indexOf(sym)
+      return i === -1 ? 999 : i
+    }
+    for (const c of list) c.tokens.sort((a, b) => rank(a.symbol) - rank(b.symbol) || a.symbol.localeCompare(b.symbol))
     return ok({ chains: list, chainCount: list.length, tokenCount: tokens.length, provider: intentsProvider(), feeBps: INTEGRATOR_FEE_BPS })
   } catch (e) {
     return fail(errorMessage(e), 502)

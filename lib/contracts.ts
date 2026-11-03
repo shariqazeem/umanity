@@ -179,5 +179,5 @@ export interface PublicProfile extends PublicUser {
   gifts: GiftView[]
   posts: FeedPost[]
   dares: DareView[]
-  causes: { poolId: string; name: string; emoji: string; image: string; amount: number }[]
+  causes: { poolId: string; name: string; emoji: string; amount: number }[]
 }

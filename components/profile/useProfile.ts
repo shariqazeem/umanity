@@ -78,7 +78,7 @@ async function loadLegacy(username: string, viewer: string | null): Promise<Publ
     dares: (dares?.dares ?? []).filter((d) => d.creator.username === p.username || d.targetHandle === p.username),
     causes: Array.from(byCause.entries()).map(([poolId, amount]) => {
       const c = getCause(poolId)
-      return { poolId, name: c?.name ?? poolId, emoji: c?.emoji ?? '', image: c?.image ?? '', amount }
+      return { poolId, name: c?.name ?? poolId, emoji: c?.emoji ?? '', amount }
     }),
   }
 }

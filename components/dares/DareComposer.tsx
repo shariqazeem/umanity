@@ -81,10 +81,10 @@ export function DareComposer({ open, onClose, onCreated, initialCause, initialAm
       <div className="pt-1">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-display text-[30px] leading-[1.05]">Dare a friend.</h3>
-            <p className="text-[13.5px] text-[#6e6e73] mt-1">You lock a stake. If they give, the pot goes to the cause. If they don&apos;t, it still does.</p>
+            <h3 className="text-[24px] font-bold tracking-[-0.02em]">⚡ Dare a friend</h3>
+            <p className="text-[13.5px] text-[#86868b] mt-1">You lock a stake. If they give, the pot goes to the cause. If they don&apos;t, it still does.</p>
           </div>
-          <button onClick={onClose} aria-label="Close" className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#6e6e73] hover:bg-black/[0.05]">
+          <button onClick={onClose} aria-label="Close" className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#86868b] hover:bg-black/[0.05]">
             ×
           </button>
         </div>
@@ -126,9 +126,7 @@ export function DareComposer({ open, onClose, onCreated, initialCause, initialAm
                   const on = c.id === poolId
                   return (
                     <button key={c.id} onClick={() => setPoolId(c.id)} className={`flex items-center gap-2 pl-1 pr-3 h-10 rounded-full border transition-all ${on ? 'border-[#1d1d1f] bg-[#1d1d1f] text-white' : 'border-black/[0.08] bg-white hover:border-black/30'}`}>
-                      <span className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-black/[0.05]">
-                        <Img src={c.image.replace('w=1600', 'w=96')} alt="" />
-                      </span>
+                      <span className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[15px] ${on ? 'bg-white/15' : 'bg-black/[0.04]'}`}>{c.emoji}</span>
                       <span className="text-[13px] font-semibold whitespace-nowrap">{c.shortName}</span>
                     </button>
                   )
@@ -147,7 +145,7 @@ export function DareComposer({ open, onClose, onCreated, initialCause, initialAm
                   </button>
                 ))}
               </div>
-              {!STAKES.includes(stake) && <p className="text-[11.5px] text-[#6e6e73] mt-1.5 num">Custom: {fmtSol(stake, 3)} SOL</p>}
+              {!STAKES.includes(stake) && <p className="text-[11.5px] text-[#86868b] mt-1.5 num">Custom: {fmtSol(stake, 3)} SOL</p>}
             </div>
             <div>
               <span className="text-[12.5px] font-semibold block mb-1.5">They have</span>
@@ -161,7 +159,7 @@ export function DareComposer({ open, onClose, onCreated, initialCause, initialAm
             </div>
           </div>
 
-          <div className="rounded-2xl bg-[#fafafa] border border-black/[0.06] p-3.5 text-[13px] text-[#6e6e73] leading-relaxed">
+          <div className="rounded-2xl bg-[#fafafa] border border-black/[0.06] p-3.5 text-[13px] text-[#86868b] leading-relaxed">
             You lock <span className="font-semibold text-[#1d1d1f] num">{fmtSol(stake, 3)} SOL</span>
             {solPrice ? <span className="num"> ({fmtUsd(stake * solPrice)})</span> : null} for {cause?.name}. Friends can boost the pot. When it settles, 1.5% keeps Umanity running and the rest reaches the cause.
           </div>

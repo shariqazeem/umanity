@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: process.cwd(),
   serverExternalPackages: ['@electric-sql/pglite', 'postgres', 'drizzle-orm'],
+  // The share cards read their fonts and the logo from disk at request time, and
+  // every server function may be the first to open the database, which applies
+  // the SQL in drizzle/ (read from disk, so the tracer cannot see it).
+  outputFileTracingIncludes: {
+    '/**': ['./drizzle/**'],
+    '/**/opengraph-image*': ['./lib/og/fonts/**', './public/logo.png'],
+    '/**/twitter-image*': ['./lib/og/fonts/**', './public/logo.png'],
+    '/opengraph-image': ['./lib/og/fonts/**', './public/logo.png'],
+    '/twitter-image': ['./lib/og/fonts/**', './public/logo.png'],
+  },
   turbopack: {},
   webpack: (config) => {
     config.resolve.fallback = { ...(config.resolve.fallback || {}), fs: false, path: false, os: false }

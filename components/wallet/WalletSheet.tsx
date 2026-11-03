@@ -32,7 +32,7 @@ export function WalletSheet() {
     <Sheet open={walletSheetOpen} onClose={close} width="sm" title="Wallet">
       {!signer ? (
         <div className="py-6 text-center">
-          <p className="text-[14px] text-[#6e6e73]">No wallet yet.</p>
+          <p className="text-[14px] text-[#86868b]">No wallet yet.</p>
         </div>
       ) : (
         <div>
@@ -46,7 +46,7 @@ export function WalletSheet() {
                 {!isMainnet && <Pill tone="gray">Devnet</Pill>}
               </div>
               <p className="num text-[26px] font-bold mt-1.5 leading-none">{balance == null ? '…' : `${fmtSol(balance, 3)} SOL`}</p>
-              <p className="text-[12px] text-[#6e6e73] mt-1 num">{solPrice && balance != null ? fmtUsd(balance * solPrice) : ''}</p>
+              <p className="text-[12px] text-[#86868b] mt-1 num">{solPrice && balance != null ? fmtUsd(balance * solPrice) : ''}</p>
             </div>
           </div>
 
@@ -56,7 +56,7 @@ export function WalletSheet() {
             <div className="flex items-center gap-2 mt-2.5">
               <CopyButton text={address} label="Copy" />
               <AccountLink address={address} label="View on Solscan" />
-              <button onClick={refreshBalance} className="ml-auto text-[#6e6e73] hover:text-[#1d1d1f]" title="Refresh balance">
+              <button onClick={refreshBalance} className="ml-auto text-[#86868b] hover:text-[#1d1d1f]" title="Refresh balance">
                 <Icon name="refresh" size={16} />
               </button>
             </div>
@@ -64,7 +64,7 @@ export function WalletSheet() {
 
           <div className="mt-4">
             <p className="eyebrow mb-2">Add funds</p>
-            <p className="text-[13px] text-[#6e6e73] leading-relaxed">Send SOL to the address above from any wallet or exchange. {isMainnet ? 'Or give directly from another chain: every cause accepts USDC, ETH, BTC and 200+ assets without touching this wallet.' : 'On devnet the treasury can top this wallet up for you.'}</p>
+            <p className="text-[13px] text-[#86868b] leading-relaxed">Send SOL to the address above from any wallet or exchange. {isMainnet ? 'Or give directly from another chain: every cause accepts USDC, ETH, BTC and 200+ assets without touching this wallet.' : 'On devnet the treasury can top this wallet up for you.'}</p>
             {!isMainnet && (
               <Btn tone="outline" size="md" className="mt-3" onClick={faucet} loading={busy} icon="bolt">
                 Get devnet SOL
@@ -75,7 +75,7 @@ export function WalletSheet() {
           {signer.kind === 'local' && local && (
             <div className="mt-5 pt-4 border-t border-black/[0.06]">
               <p className="eyebrow mb-2">Back up</p>
-              <p className="text-[13px] text-[#6e6e73] leading-relaxed">This wallet exists only in this browser. Save the secret key somewhere safe; it imports into Phantom, Solflare or Backpack.</p>
+              <p className="text-[13px] text-[#86868b] leading-relaxed">This wallet exists only in this browser. Save the secret key somewhere safe; it imports into Phantom, Solflare or Backpack.</p>
               {reveal ? (
                 <div className="mt-3 rounded-2xl bg-[#fff1f1] border border-[#fecaca] p-3">
                   <p className="num text-[12px] break-all text-[#7f1d1d]">{exportSecretBase58(local)}</p>
