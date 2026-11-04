@@ -1,7 +1,7 @@
 /**
  * An autonomous agent giving to a Umanity cause over x402 (USDC on Solana).
  *
- *   SOLANA_AGENT_SECRET='[...]' npx tsx scripts/x402-give.ts <causeId> <amountUsd> [agentName] [baseUrl]
+ *   SOLANA_AGENT_SECRET='[...]' npx tsx scripts/x402-give.ts <dropNumber> <amountUsd> [agentName] [baseUrl]
  *   npx tsx scripts/x402-give.ts clean-water 0.25 my-agent              # uses ~/.config/solana/devnet.json
  *
  * The agent needs devnet USDC (https://faucet.circle.com) and no SOL: the
@@ -22,12 +22,12 @@ function loadSecret(): Uint8Array {
 }
 
 async function main() {
-  const [causeId = 'orphan-care', amount = '0.10', agent = 'umanity-agent-script', base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'] = process.argv.slice(2)
+  const [drop = '1', amount = '1', agent = 'umanity-agent-script', base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'] = process.argv.slice(2)
   const signer = await createKeyPairSignerFromBytes(loadSecret())
   console.log(`agent wallet  ${signer.address}`)
 
   const url = `${base}/api/x402/give`
-  const body = JSON.stringify({ causeId, amountUsd: Number(amount), agent })
+  const body = JSON.stringify({ drop: Number(drop), amountUsd: Number(amount), agent })
 
   // 1. Ask without paying: the server states the price.
   const first = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })

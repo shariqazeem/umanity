@@ -1,0 +1,21 @@
+[package]
+name = "umanity"
+version = "3.0.0"
+description = "Umanity drops: USDC pots that unlock only after a delivery is proven, with refunds and a fixed 50/50 fee split"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "umanity"
+
+[features]
+default = ["no-idl"]
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+anchor-spl = "0.31.1"

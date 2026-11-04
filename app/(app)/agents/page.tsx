@@ -9,7 +9,8 @@ import { payWithX402 } from '@/lib/client/x402'
 import { useOrigin } from '@/lib/client/useOrigin'
 import { verifyReceipt } from '@/lib/receipt'
 import { explorerTx, IS_MAINNET } from '@/lib/solana/constants'
-import { CAUSES, getCause } from '@/lib/causes'
+import { pickNextDrop, useDrops } from '@/components/drops/hooks'
+import { usdText } from '@/lib/umanity/drops'
 
 interface Receipt {
   id: string
@@ -24,7 +25,7 @@ interface Receipt {
 
 type Step = { label: string; detail?: string; state: 'idle' | 'run' | 'ok' | 'err'; body?: string; link?: string }
 
-const AMOUNTS = [0.1, 0.5, 1, 5]
+const AMOUNTS = [1, 2, 5, 10]
 
 export default function AgentsPage() {
   const [receipts, setReceipts] = useState<Receipt[] | null>(null)
@@ -43,16 +44,18 @@ export default function AgentsPage() {
           <h2 className="text-2xl font-bold tracking-[-0.02em]">Agents</h2>
           <span className="pill bg-emerald-50 text-emerald-700 !text-[10px] font-bold">x402</span>
         </div>
-        <p className="text-[#86868b] text-sm max-w-xl">Any app, bot or AI agent can give with one HTTP request. The server answers 402, the agent pays in USDC on Solana, and the payment settles straight into the cause&apos;s escrow. No accounts, no keys, no checkout.</p>
+        <p className="text-[#86868b] text-sm max-w-xl">
+          Any app, bot or AI agent can fill a drop with one HTTP request. The server answers 402, the agent pays in USDC on Solana, and the money goes into the drop&apos;s pot with the agent&apos;s wallet as the backer. If the drop misses its date, the refund goes back to that wallet. No accounts, no keys, no checkout.
+        </p>
       </section>
 
       <Console onDone={load} />
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
-          { icon: '♡', title: 'Give', path: 'POST /api/x402/give', price: 'any amount', body: 'The payment is the gift. The response is a signed receipt with the settlement transaction.' },
-          { icon: '🤖', title: 'Audit a delivery', path: 'POST /api/x402/verify-milestone', price: '$0.01', body: 'The Impact Oracle reviews the receipts and photos; the verdict hash is written on-chain.' },
-          { icon: '⚡', title: 'Sponsor a dare', path: 'POST /api/x402/sponsor-dare', price: '$0.05', body: 'Brands and agents open a public dare without holding SOL.' },
+          { icon: '♡', title: 'Fill a drop', path: 'POST /api/x402/give', price: '$1 and up', body: 'The payment is the gift. It lands in the pot in the same request, and a signed receipt comes back.' },
+          { icon: '📋', title: 'See what is filling', path: 'GET /api/x402/give', price: 'free', body: 'Open drops, the room left in each pot, their dates, and how to pay.' },
+          { icon: '🧾', title: 'Check the receipts', path: 'GET /api/x402/receipts', price: 'free', body: 'Every paid call with its settlement transaction on Solana.' },
         ].map((e) => (
           <div key={e.title} className="card p-5">
             <div className="flex items-center justify-between mb-3">
@@ -113,25 +116,27 @@ export default function AgentsPage() {
 function Console({ onDone }: { onDone: () => void }) {
   const { signer, ensureSigner } = useUmanity()
   const origin = useOrigin()
-  const [causeId, setCauseId] = useState(CAUSES[0].id)
-  const [amount, setAmount] = useState(0.1)
+  const { data: drops } = useDrops()
+  const open = (drops ?? []).filter((d) => d.state === 'open' && !d.refundsOpen)
+  const [picked, setPicked] = useState<number | null>(null)
+  const drop = open.find((d) => d.id === picked) ?? pickNextDrop(drops)
+  const [amount, setAmount] = useState(1)
   const [steps, setSteps] = useState<Step[]>([])
   const [running, setRunning] = useState(false)
-  const cause = getCause(causeId)!
 
   const set = (i: number, patch: Partial<Step>) => setSteps((s) => s.map((x, j) => (j === i ? { ...x, ...patch } : x)))
 
   const run = async () => {
     const s = ensureSigner()
-    if (!s) return
+    if (!s || !drop) return
     setRunning(true)
-    const body = { causeId, amountUsd: amount, agent: 'umanity-console' }
+    const body = { drop: drop.id + 1, amountUsd: amount, agent: 'umanity-console' }
     setSteps([
       { label: `POST /api/x402/give`, detail: 'request without payment', state: 'run' },
       { label: '402 Payment Required', detail: 'server states price, asset, network and payTo', state: 'idle' },
       { label: 'Sign USDC transfer', detail: 'exact scheme · facilitator pays the fee', state: 'idle' },
       { label: 'Verify → settle on Solana', detail: 'retry with PAYMENT-SIGNATURE', state: 'idle' },
-      { label: '200 OK · receipt', detail: 'gift recorded, escrow credited', state: 'idle' },
+      { label: '200 OK · receipt', detail: 'gift in the pot, refunds go to your wallet', state: 'idle' },
     ])
     try {
       const first = await fetch('/api/x402/give', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -157,8 +162,8 @@ function Console({ onDone }: { onDone: () => void }) {
       }
       set(2, { state: 'ok', detail: 'signed in your wallet' })
       set(3, { state: 'ok', detail: res.settlement?.transaction ? `tx ${short(res.settlement.transaction, 6)}` : 'settled', body: res.settlement ? JSON.stringify(res.settlement, null, 2) : undefined })
-      const receipt = (res.data as { receipt?: Record<string, unknown> & { track?: string | null; proof?: { signer?: string } } } | undefined)?.receipt
-      const track = receipt?.track
+      const receipt = (res.data as { receipt?: Record<string, unknown> & { drop?: string | null; proof?: { signer?: string } } } | undefined)?.receipt
+      const track = receipt?.drop
       const signed = receipt ? verifyReceipt(receipt) : false
       set(4, {
         state: 'ok',
@@ -184,11 +189,12 @@ function Console({ onDone }: { onDone: () => void }) {
         <p className="text-xs font-medium text-emerald-600 uppercase tracking-widest mb-3">Live console</p>
         <div className="flex flex-col md:flex-row md:items-end gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-[#86868b] mb-1.5">Cause</p>
+            <p className="text-[11px] font-semibold text-[#86868b] mb-1.5">Drop</p>
             <div className="flex flex-wrap gap-1.5">
-              {CAUSES.map((c) => (
-                <button key={c.id} onClick={() => setCauseId(c.id)} className={`h-8 px-2.5 rounded-full text-[12px] font-medium transition-all ${c.id === causeId ? 'bg-[#1d1d1f] text-white' : 'bg-black/[0.04] text-[#525252] hover:bg-black/[0.07]'}`}>
-                  {c.emoji} {c.shortName}
+              {open.length === 0 && <p className="text-[12px] text-[#aeaeb2] h-8 flex items-center">No drop is filling right now.</p>}
+              {open.map((d) => (
+                <button key={d.id} onClick={() => setPicked(d.id)} className={`h-8 px-2.5 rounded-full text-[12px] font-medium transition-all ${d.id === drop?.id ? 'bg-[#1d1d1f] text-white' : 'bg-black/[0.04] text-[#525252] hover:bg-black/[0.07]'}`}>
+                  {d.emoji} #{d.id + 1} {d.title}
                 </button>
               ))}
             </div>
@@ -205,8 +211,8 @@ function Console({ onDone }: { onDone: () => void }) {
           </div>
         </div>
         <div className="flex items-center gap-3 mt-4">
-          <button onClick={run} disabled={running} className="btn-primary px-5 py-3 !text-[13px]">
-            {running ? 'Running…' : `▶ Pay ${fmtUsd(amount)} to ${cause.shortName} via x402`}
+          <button onClick={run} disabled={running || !drop} className="btn-primary px-5 py-3 !text-[13px]">
+            {running ? 'Running…' : drop ? `▶ Pay ${usdText(amount)} into Drop #${drop.id + 1} via x402` : 'No drop is filling'}
           </button>
           <p className="text-[11px] text-[#aeaeb2]">{signer ? 'Your wallet plays the agent.' : 'Sign in; your wallet plays the agent.'}</p>
         </div>
@@ -218,7 +224,7 @@ function Console({ onDone }: { onDone: () => void }) {
             <p>
               <span className="text-emerald-400">$</span> curl -X POST {origin}/api/x402/give \
             </p>
-            <p className="pl-4">-H &apos;content-type: application/json&apos; -d &apos;{`{"causeId":"${causeId}","amountUsd":${amount}}`}&apos;</p>
+            <p className="pl-4">-H &apos;content-type: application/json&apos; -d &apos;{`{"drop":${(drop?.id ?? 0) + 1},"amountUsd":${amount}}`}&apos;</p>
             <p className="mt-2">
               <span className="text-amber-300">HTTP/1.1 402 Payment Required</span>
             </p>
@@ -237,7 +243,7 @@ function Console({ onDone }: { onDone: () => void }) {
                 {s.body && <pre className="mt-1.5 ml-5 text-[11px] text-[#9ca3af] whitespace-pre-wrap break-all max-h-56 overflow-y-auto">{s.body}</pre>}
                 {s.link && (
                   <a href={s.link.replace(/^https?:\/\/[^/]+/, '')} className="inline-block mt-2 ml-5 text-[12px] font-semibold text-emerald-400 hover:underline">
-                    → Follow this gift from payment to delivery
+                    → Open the drop this gift is in
                   </a>
                 )}
               </li>
@@ -265,9 +271,9 @@ const pay = wrapFetchWithPayment(fetch, client)
 const res = await pay('${origin}/api/x402/give', {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ causeId: 'clean-water', amountUsd: 1, agent: 'my-agent' }),
+  body: JSON.stringify({ drop: 1, amountUsd: 5, agent: 'my-agent' }),
 })
-console.log(await res.json()) // { receipt: { settlement, escrow, certificate } }`,
+console.log(await res.json()) // { receipt: { gift, settlement, pot, rules, proof } }`,
     mcp: `// claude_desktop_config.json — give from Claude, Cursor or any MCP client
 {
   "mcpServers": {
@@ -281,10 +287,10 @@ console.log(await res.json()) // { receipt: { settlement, escrow, certificate } 
     }
   }
 }
-// tools: list_causes · give · get_cause · audit_delivery`,
+// tools: list_drops · get_drop · give`,
     curl: `curl -i -X POST ${origin}/api/x402/give \\
   -H 'content-type: application/json' \\
-  -d '{"causeId":"orphan-care","amountUsd":0.5}'
+  -d '{"drop":1,"amountUsd":5}'
 
 HTTP/1.1 402 Payment Required
 payment-required: <base64 JSON: scheme exact · network solana · asset USDC · payTo · amount>
@@ -314,7 +320,7 @@ payment-response: <base64 JSON: success · transaction · network · payer>`,
       <pre className="terminal p-4 overflow-x-auto text-[11.5px] leading-relaxed whitespace-pre">{code}</pre>
       <div className="flex items-center justify-between mt-3">
         <p className="text-[11px] text-[#86868b]">
-          Failed or refused payments are never charged: the server cancels the verified payment if the gift cannot be recorded. <Link href="/transparency" className="text-emerald-600 hover:underline">Every call is on the ledger →</Link>
+          A gift the drop can&apos;t take is refused before payment, so the agent is never charged for it. <Link href="/money" className="text-emerald-600 hover:underline">Every dollar is on Money →</Link>
         </p>
         <CopyButton text={code} />
       </div>

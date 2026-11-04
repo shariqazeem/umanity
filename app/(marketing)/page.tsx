@@ -5,11 +5,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { useStats } from '@/lib/client/hooks'
-import { apiGet, fmtSol, timeAgo } from '@/lib/client/api'
-import { getCause } from '@/lib/causes'
+import { apiGet, timeAgo } from '@/lib/client/api'
 import { Img } from '@/components/shared/ui'
-import type { FieldUpdateView } from '@/lib/contracts'
+import { useMoney } from '@/components/drops/hooks'
+import { dropHref } from '@/components/drops/DropParts'
+import { usdText } from '@/lib/umanity/drops'
+import type { HomeItem } from '@/lib/umanity/feed'
 
 const GITHUB = 'https://github.com/shariqazeem/umanity'
 
@@ -66,7 +67,7 @@ export default function Landing() {
             <div className="max-w-3xl animate-fade-up">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/40 text-[11px] font-semibold text-emerald-700 mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live on Solana {isMainnet ? 'Mainnet' : 'Devnet'} · gifts from 30+ chains
+                Live on Solana {isMainnet ? 'Mainnet' : 'Devnet'} · USDC pots · refunds by code
               </div>
 
               <h1 className="text-[clamp(2.8rem,8vw,6rem)] font-black tracking-[-0.04em] leading-[0.88] mb-8 text-[#1d1d1f]">
@@ -74,11 +75,11 @@ export default function Landing() {
                 <br />
                 <span className="text-[#d4d4d4] line-through decoration-[#e5e5e5] decoration-[3px]">on trust.</span>
                 <br />
-                <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">On proof.</span>
+                <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">On camera.</span>
               </h1>
 
               <p className="text-lg md:text-[22px] text-[#86868b] max-w-xl leading-[1.5] mb-10">
-                Give from any chain. Your gift waits in on-chain escrow until we deliver it by hand, film it, and the donors vote to release it. Charity you can verify, not just believe.
+                Every dollar waits in a pot on Solana until the delivery is filmed and checked. Miss the date and the program sends it back. Trade here, and half of every fee fills the next drop.
               </p>
 
               <div className="flex flex-col sm:flex-row items-start gap-3 mb-6">
@@ -86,15 +87,15 @@ export default function Landing() {
                   Open the app
                 </Link>
                 <Link href="/give" className="btn-secondary px-7 py-3.5 text-[14px] font-medium">
-                  ♡ Give 0.01 SOL
+                  ♡ Fill the next drop
                 </Link>
               </div>
 
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-[#aeaeb2]">
                 {[
-                  { label: 'Escrowed on-chain', icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z' },
-                  { label: 'Any chain', icon: 'M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18M12 3a15 15 0 000 18' },
-                  { label: 'Delivered by hand', icon: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' },
+                  { label: 'USDC pots on Solana', icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z' },
+                  { label: 'Refunds by code', icon: 'M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3' },
+                  { label: 'Filmed deliveries', icon: 'M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z' },
                   { label: 'Agents welcome', icon: 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z' },
                 ].map((item) => (
                   <span key={item.label} className="flex items-center gap-1.5">
@@ -119,20 +120,20 @@ export default function Landing() {
           <StatsRow />
         </div>
 
-        {/* ===== HOW A GIFT MOVES ===== */}
+        {/* ===== HOW A DROP WORKS ===== */}
         <section className="py-20 md:py-28 bg-white">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-14">
-              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">How a gift moves</p>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">From any wallet to a real hand.</h2>
-              <p className="text-[#86868b] text-base max-w-lg mx-auto">Four steps. Every one of them leaves a record you can check.</p>
+              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">How a drop works</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">One delivery. One pot. Rules in code.</h2>
+              <p className="text-[#86868b] text-base max-w-lg mx-auto">A drop is one real delivery with a shopping list, a place and a date. Every step leaves a record you can open.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
-                { n: '01', icon: '♡', title: 'Give', body: 'One tap with SOL, from any of 30+ chains through NEAR Intents, from a Blink on X, or from an AI agent over x402.' },
-                { n: '02', icon: '🔐', title: 'Escrow', body: "The gift lands in the cause's Anchor vault PDA on Solana, not a wallet. The program only lets it out as an approved milestone or a refund." },
-                { n: '03', icon: '🚚', title: 'Deliver & prove', body: 'The field team buys, delivers and films it in Pakistan. Photos and receipts are hashed; an AI oracle audits them.' },
-                { n: '04', icon: '🔓', title: 'Release', body: "The cause's donors vote. Only a yes moves the milestone out of escrow with release_milestone_funds." },
+                { n: '01', icon: '♡', title: 'Fill', body: 'Give USDC in one tap, from any chain, or from an AI agent over x402. Umanity pays the network fee.' },
+                { n: '02', icon: '🔐', title: 'Pot', body: "The money sits in the drop's own USDC pot, owned by the program. It can pay the drop's supplier or its backers, nobody else." },
+                { n: '03', icon: '🎥', title: 'Deliver and film', body: 'The team buys the goods, hands them over and films it. The proof is hashed onto Solana, then a review window runs.' },
+                { n: '04', icon: '🔓', title: 'Unlock or refund', body: 'After review the pot pays the supplier. If the drop misses its date, every backer gets their money back.' },
               ].map((s) => (
                 <div key={s.n} className="relative bg-white rounded-2xl p-6 border border-black/[0.05] hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-5">
@@ -147,16 +148,16 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ===== FOLLOW YOUR GIFT ===== */}
-        <FollowSection />
+        {/* ===== THE LOOP ===== */}
+        <LoopSection />
 
-        {/* ===== WHAT CRYPTO CHARITY GOT WRONG ===== */}
+        {/* ===== WHAT CRYPTO GIVING GOT WRONG ===== */}
         <section className="py-20 md:py-28 bg-[#fafafa]">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-14">
-              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">What crypto charity got wrong &rarr; What Umanity does</p>
+              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">What crypto giving got wrong &rarr; What Umanity does</p>
               <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Six fixes. One app.</h2>
-              <p className="text-[#86868b] text-base max-w-lg mx-auto">Built on the version that won Superteam and the Solana Graveyard Hackathon, rebuilt for any chain and for agents.</p>
+              <p className="text-[#86868b] text-base max-w-lg mx-auto">Built on the version that won Superteam and the Solana Graveyard Hackathon, rebuilt around real deliveries and real money flows.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {FIXES.map((r) => (
@@ -186,22 +187,22 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ===== DELIVERED BY HAND ===== */}
+        {/* ===== ON CAMERA ===== */}
         <FieldSection />
 
         {/* ===== TECH DEPTH ===== */}
         <section className="py-16 md:py-20 bg-[#1d1d1f] text-white">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-10">
-              <h2 className="text-2xl md:text-3xl font-bold tracking-[-0.02em] mb-2">Built for real impact</h2>
-              <p className="text-white/50 text-sm">Not a toy. Real on-chain infrastructure, real deliveries.</p>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-[-0.02em] mb-2">The rules live in code</h2>
+              <p className="text-white/50 text-sm">One Anchor program holds every pot and every fee. The Money tab reads it back.</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {[
-                { num: '18', label: 'On-chain instructions', sub: '2 Anchor programs, escrow + dares' },
-                { num: '30+', label: 'Chains to give from', sub: 'NEAR Intents via Aurora' },
-                { num: '3', label: 'Paid agent endpoints', sub: 'x402, USDC on Solana' },
-                { num: '6', label: 'Causes, 6 Blinks', sub: 'Give straight from X' },
+                { num: '18', label: 'On-chain instructions', sub: 'pots, proof, refunds, fee split' },
+                { num: '50/50', label: 'Every fee, split by code', sub: 'drops and Umanity' },
+                { num: '0.5%', label: 'Swap fee', sub: "below Phantom's 0.85%" },
+                { num: 'x402', label: 'Agents fill pots', sub: 'USDC on Solana, no keys' },
               ].map((s) => (
                 <div key={s.label} className="text-center py-4">
                   <p className="text-3xl md:text-4xl font-black counter mb-1">{s.num}</p>
@@ -216,8 +217,8 @@ export default function Landing() {
         {/* ===== CTA ===== */}
         <section className="py-20 md:py-28 bg-white">
           <div className="max-w-2xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Ready to make an impact?</h2>
-            <p className="text-[#86868b] text-base mb-8 max-w-md mx-auto">Browse without a wallet. Give in one tap. Watch your gift get delivered.</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Feed someone today.</h2>
+            <p className="text-[#86868b] text-base mb-8 max-w-md mx-auto">Browse without a wallet. Give in one tap. Watch the delivery it pays for.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/home" className="btn-primary px-7 py-3.5 text-[14px]">
                 Open the app
@@ -233,11 +234,11 @@ export default function Landing() {
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Image src="/logo.png" alt="Umanity" width={28} height={28} className="rounded-full" />
-              <span className="text-[11px] text-[#aeaeb2]">Crypto giving, on proof.</span>
+              <span className="text-[11px] text-[#aeaeb2]">Crypto giving, on camera.</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-5 text-[11px] text-[#aeaeb2]">
-              <Link href="/transparency" className="hover:text-[#86868b]">
-                Ledger
+              <Link href="/money" className="hover:text-[#86868b]">
+                Money
               </Link>
               <Link href="/agents" className="hover:text-[#86868b]">
                 Agents API
@@ -251,6 +252,9 @@ export default function Landing() {
               <span>&copy; 2026</span>
             </div>
           </div>
+          <p className="max-w-5xl mx-auto text-[10.5px] text-[#c7c7cc] mt-4 text-center sm:text-left">
+            Umanity is a crypto app, not a registered charity, and gifts are not tax-deductible. $UMANITY is not an investment and comes with no promise of returns.
+          </p>
         </footer>
       </main>
     </div>
@@ -260,65 +264,63 @@ export default function Landing() {
 const FIXES = [
   {
     dead: 'Donations disappear',
-    why: 'You give, a wallet receives it, and you never hear about it again.',
-    alive: 'Escrow until proof',
-    how: 'Gifts sit in Anchor vault PDAs. A milestone only releases after delivery proof and a donor vote. Every transfer is on Solscan.',
+    why: 'You send money to a wallet and never hear about it again.',
+    alive: 'Pots that pay after proof',
+    how: "Each drop's USDC sits in a pot owned by the program. It pays the drop's supplier only after the filmed proof clears review.",
     tag: 'Anchor',
-    stat: 'Program-owned vaults',
+    stat: 'Program-owned pots',
+  },
+  {
+    dead: 'Refunds never happen',
+    why: 'If the delivery falls through, the money quietly stays where it is.',
+    alive: 'Refunds by code',
+    how: 'Miss the date and the program opens refunds. Umanity sends them for you, and each one can only go back to the wallet that gave.',
+    tag: 'Refunds',
+    stat: 'Automatic after the date',
+  },
+  {
+    dead: 'Trust the annual report',
+    why: 'Stock photos and a promise. No way to check a single delivery.',
+    alive: 'Filmed, hashed proof',
+    how: 'Every delivery is filmed. The proof bundle (text, video, every file hash) is hashed onto Solana, so it can never be swapped later.',
+    tag: 'Proof',
+    stat: 'Hash checked on every page',
+  },
+  {
+    dead: 'Fees vanish into overhead',
+    why: 'Nobody can tell how much of a dollar reached anyone.',
+    alive: 'Fees split by code',
+    how: 'Gifts go 100% to drops. Every fee, from swaps or the $UMANITY pool, is split 50/50 by the program, and the Money tab traces each dollar.',
+    tag: 'Money tab',
+    stat: '50/50, on-chain',
   },
   {
     dead: 'Only SOL holders can give',
-    why: 'Most crypto sits on Base, Ethereum, Bitcoin or TON. Bridging to give is a chore nobody does.',
-    alive: 'Give from any chain',
-    how: 'One deposit address takes funds from 30+ chains. NEAR Intents solvers swap and settle straight into the Solana escrow.',
-    tag: 'Aurora Intents',
-    stat: '30+ chains, one address',
+    why: 'Most crypto sits on other chains, and agents have no way in.',
+    alive: 'Any wallet, any agent',
+    how: 'Give from other chains through Aurora Intents, or from an AI agent with one x402 request. The agent wallet is the backer, refunds included.',
+    tag: 'x402 · Aurora',
+    stat: 'No keys, no checkout',
   },
   {
-    dead: 'Trust the charity',
-    why: 'Annual reports, stock photos, a promise. No way to check a single delivery.',
-    alive: 'Proof of delivery',
-    how: 'The field team films every delivery and uploads receipts. An AI Impact Oracle audits them and its verdict is hashed on-chain.',
-    tag: 'AI Oracle',
-    stat: 'Verdict written on-chain',
-  },
-  {
-    dead: 'DAO theater',
-    why: 'Votes on things that do not matter, with nothing at stake.',
-    alive: 'Donors release the money',
-    how: 'Only the donors of a cause vote on its releases, weighted by what they gave. No yes, no money moves.',
-    tag: 'Governance',
-    stat: '1 SOL given = 1,000 votes',
-  },
-  {
-    dead: 'Giving is lonely',
-    why: 'A receipt email. No friends, no story, no reason to come back.',
-    alive: 'Giving is social',
-    how: 'A feed of gifts and deliveries, dares with real money on the line, streaks, a Guardian pass that grows, and Blinks for X.',
-    tag: 'Consumer',
-    stat: 'Dares settle on-chain',
-  },
-  {
-    dead: 'Humans only',
-    why: 'Agents now earn and spend money, and charity has no API for them.',
-    alive: 'Agents give too',
-    how: 'One HTTP request to the Give API: 402, pay USDC on Solana, get a receipt. An MCP server lets Claude give on your behalf.',
-    tag: 'x402',
-    stat: 'Pay-per-request, no keys',
+    dead: 'Tokens with no point',
+    why: 'Launch, pump, dump. Nothing happens in the real world.',
+    alive: 'A token that feeds people',
+    how: "$UMANITY trades on Meteora. Its trading fees go to the program, which sends half to drops. No team tokens. Not an investment.",
+    tag: '$UMANITY',
+    stat: 'Fees claimed by the program',
   },
 ]
 
 function StatsColumn() {
-  const stats = useStats(60_000)
-  const rows: [string, string][] = stats
-    ? [
-        [fmtSol(stats.totalDonations, 2), 'SOL given'],
-        [String(stats.totalGifts), 'Gifts'],
-        [fmtSol(stats.totalEscrowed, 2), 'SOL in escrow'],
-        [String(stats.crossChainCount + stats.x402Calls), 'Any-chain & agent gifts'],
-      ]
-    : []
-  if (!stats) return <div className="skeleton h-56" />
+  const { data: money } = useMoney(60_000)
+  if (!money) return <div className="skeleton h-56" />
+  const rows: [string, string][] = [
+    [usdText(money.totals.cameIn, 0), 'Given'],
+    [usdText(money.totals.inPots, 0), 'In pots now'],
+    [usdText(money.totals.unlocked, 0), 'Delivered'],
+    [usdText(money.fees.toDrops, 2), 'Fees to drops'],
+  ]
   return (
     <div className="space-y-5">
       {rows.map(([v, l]) => (
@@ -332,14 +334,14 @@ function StatsColumn() {
 }
 
 function StatsRow() {
-  const stats = useStats(60_000)
-  if (!stats) return null
+  const { data: money } = useMoney(60_000)
+  if (!money) return null
   return (
     <div className="flex items-center justify-center gap-10 px-6">
       {[
-        [fmtSol(stats.totalDonations, 2), 'SOL given'],
-        [String(stats.totalGifts), 'Gifts'],
-        [fmtSol(stats.totalEscrowed, 2), 'In escrow'],
+        [usdText(money.totals.cameIn, 0), 'Given'],
+        [usdText(money.totals.inPots, 0), 'In pots'],
+        [usdText(money.totals.unlocked, 0), 'Delivered'],
       ].map(([v, l]) => (
         <div key={l} className="text-center">
           <p className="text-2xl font-bold counter tracking-tight">{v}</p>
@@ -350,36 +352,28 @@ function StatsRow() {
   )
 }
 
-const JOURNEY = [
-  { icon: '♡', title: 'Given', body: 'Your wallet, chain or agent, with its transaction' },
-  { icon: '🔐', title: 'Escrowed', body: 'The vault it sits in, on Solscan' },
-  { icon: '🚚', title: 'Delivered', body: 'Photos of the hand-over it paid for' },
-  { icon: '🤖', title: 'Audited', body: "The oracle's verdict, its hash on-chain" },
-  { icon: '🗳️', title: 'Voted', body: "The cause's donors approve the proof" },
-  { icon: '🔓', title: 'Released', body: 'The release transaction' },
+const LOOP = [
+  { icon: '⇄', title: 'Trade', body: 'Swaps in the app pay 0.5%. $UMANITY trades pay its pool fee.' },
+  { icon: '⚖️', title: 'Split by code', body: 'The program sends half of every fee to the drops fund.' },
+  { icon: '🍲', title: 'Fill drops', body: 'The fund and your gifts fill pots for real deliveries.' },
+  { icon: '🎥', title: 'On camera', body: 'Every delivery is filmed and posted, here and on X.' },
 ]
 
-/** The tracker every gift gets; links to a real gift once one exists. */
-function FollowSection() {
-  const [example, setExample] = useState<string | null>(null)
-  useEffect(() => {
-    apiGet<{ activities?: { id: string; type: string }[] }>('/api/activity?limit=10')
-      .then((d) => setExample(d.activities?.find((a) => a.id.startsWith('don_'))?.id ?? null))
-      .catch(() => {})
-  }, [])
+/** Why using Umanity feeds people even when you are not giving. */
+function LoopSection() {
   return (
     <section className="py-20 md:py-28 bg-[#f5f5f7]">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
-          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mb-3">Follow your gift</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Every gift gets a tracking page.</h2>
-          <p className="text-[#86868b] text-base max-w-lg mx-auto">Like a parcel, from your wallet to the hand-over. Each step is a record you can open, and the link unfurls on X as a progress card.</p>
+          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mb-3">The loop</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Your trades feed people too.</h2>
+          <p className="text-[#86868b] text-base max-w-lg mx-auto">Gifts go 100% to drops. Everything else that earns a fee sends half of it there, and the program does the splitting.</p>
         </div>
         <div className="card p-6 md:p-8">
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-5">
-            {JOURNEY.map((s, i) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {LOOP.map((s, i) => (
               <div key={s.title} className="flex flex-col gap-3">
-                <div className={`h-1.5 rounded-full ${i < 2 ? 'bg-emerald-500' : i === 2 ? 'bg-amber-400' : 'bg-black/[0.06]'}`} />
+                <div className={`h-1.5 rounded-full ${i === 0 ? 'bg-[#1d1d1f]' : 'bg-emerald-500'}`} />
                 <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] flex items-center justify-center">{s.icon}</div>
                 <p className="text-[14px] font-bold">{s.title}</p>
                 <p className="text-[12px] text-[#86868b] leading-snug">{s.body}</p>
@@ -387,12 +381,15 @@ function FollowSection() {
             ))}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-black/[0.04]">
-            <p className="text-[12px] text-[#86868b]">Linked from the success screen, the feed, your profile and every agent receipt.</p>
-            {example && (
-              <Link href={`/gift/${example}`} className="btn-primary px-5 py-2.5 !text-[13px]">
-                Open a real one →
+            <p className="text-[12px] text-[#86868b]">Every split is a transaction you can open. So is every refund.</p>
+            <div className="flex gap-2">
+              <Link href="/trade" className="btn-secondary px-5 py-2.5 !text-[13px]">
+                Trade
               </Link>
-            )}
+              <Link href="/money" className="btn-primary px-5 py-2.5 !text-[13px]">
+                Follow the money →
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -400,13 +397,13 @@ function FollowSection() {
   )
 }
 
-/** Real deliveries only: hidden until the field team has posted one with photos. */
+/** Real proof only: hidden until a drop has filmed proof with photos. */
 function FieldSection() {
-  const [updates, setUpdates] = useState<FieldUpdateView[] | null>(null)
+  const [proofs, setProofs] = useState<Extract<HomeItem, { type: 'update' }>[] | null>(null)
   useEffect(() => {
-    apiGet<{ updates?: FieldUpdateView[] }>('/api/field/updates?limit=6')
-      .then((d) => setUpdates((d.updates ?? []).filter((u) => u.media?.some((m) => m.kind === 'photo')).slice(0, 3)))
-      .catch(() => setUpdates([]))
+    apiGet<{ items?: HomeItem[] }>('/api/feed/drops?limit=60')
+      .then((d) => setProofs((d.items ?? []).filter((i): i is Extract<HomeItem, { type: 'update' }> => i.type === 'update' && i.media.some((m) => m.kind === 'photo')).slice(0, 3)))
+      .catch(() => setProofs([]))
   }, [])
   return (
     <section className="py-20 md:py-28 bg-white">
@@ -416,33 +413,25 @@ function FieldSection() {
             <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">Real world, real hands</p>
             <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">We deliver it ourselves. On camera.</h2>
             <p className="text-[#86868b] text-base leading-relaxed mb-6">
-              Umanity&apos;s field team buys the meals, the medicine, the water filters and the vaccines, and hands them over in person in Karachi and interior Sindh. Every delivery is filmed, receipted and posted, here and on X, before a single lamport leaves escrow.
+              The team buys the food, the medicine, the water filters, and hands them over in person. Every delivery is filmed and posted, here and on X, before a single dollar leaves its pot.
             </p>
-            <div className="flex flex-wrap gap-2">
-              {['🎒 Orphan care', '🐾 Street animals', '🍚 Food packs', '💊 Medical help', '💧 Clean water', '⛺ Emergency relief'].map((c) => (
-                <span key={c} className="pill bg-[#f5f5f7] text-[#525252] !text-[11px]">
-                  {c}
-                </span>
-              ))}
-            </div>
-            <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="inline-block mt-6 text-[13px] font-semibold text-emerald-600 hover:underline">
+            <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="inline-block text-[13px] font-semibold text-emerald-600 hover:underline">
               Follow the deliveries on X →
             </a>
           </div>
           <div>
-            {updates && updates.length > 0 ? (
+            {proofs && proofs.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {updates.map((u) => {
+                {proofs.map((u) => {
                   const photo = u.media.find((m) => m.kind === 'photo')!
-                  const cause = getCause(u.poolId)
                   return (
-                    <Link key={u.id} href={`/causes/${u.poolId}#proof`} className="card-interactive overflow-hidden block">
+                    <Link key={u.id} href={dropHref(u.drop.id)} className="card-interactive overflow-hidden block">
                       <div className="aspect-[4/5] bg-black/[0.04]">
                         <Img src={photo.url} alt={u.title} />
                       </div>
                       <div className="p-3">
                         <p className="text-[10px] text-[#86868b]">
-                          {cause?.emoji} {u.poolName} · {timeAgo(u.deliveredAt ?? u.createdAt)}
+                          {u.drop.emoji} Drop #{u.drop.id + 1} · {timeAgo(u.at)}
                         </p>
                         <p className="text-[12px] font-semibold leading-snug mt-0.5 line-clamp-2">{u.title}</p>
                       </div>
@@ -455,10 +444,10 @@ function FieldSection() {
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">The proof standard</p>
                 <ul className="space-y-4">
                   {[
-                    ['📍', 'Where', 'Location of every hand-over, mapped'],
-                    ['🧾', 'What it cost', 'Wholesale receipts and invoices, hashed on upload'],
-                    ['🎥', 'Who received it', 'Photos and video of the delivery itself'],
-                    ['🤖', 'Checked', "The Impact Oracle's audit, its hash written on-chain"],
+                    ['🛒', 'What it bought', "The drop's shopping list, hashed on-chain when it opens"],
+                    ['🎥', 'Who received it', 'Video and photos of the hand-over itself'],
+                    ['🧾', 'What it cost', 'Receipts, each file hashed on upload'],
+                    ['⏱️', 'A review window', 'Proof goes on-chain first; the pot unlocks only after the window'],
                   ].map(([i, t, s]) => (
                     <li key={t} className="flex items-start gap-3">
                       <span className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">{i}</span>

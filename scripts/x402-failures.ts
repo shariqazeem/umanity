@@ -25,10 +25,10 @@ async function main() {
   const signer = await createKeyPairSignerFromBytes(Uint8Array.from(JSON.parse(secret)))
   const http = new x402HTTPClient(new x402Client().register('solana:*', new ExactSvmScheme(signer)).setSpendControls({ maxAmountPerPayment: '$5' }))
 
-  const bad = await fetch(base, { method: 'POST', headers: json, body: JSON.stringify({ causeId: 'nope', amountUsd: 1 }) })
+  const bad = await fetch(base, { method: 'POST', headers: json, body: JSON.stringify({ drop: 9999, amountUsd: 1 }) })
   console.log('1. invalid body      →', bad.status, (await bad.json()).error)
 
-  const body = JSON.stringify({ causeId: 'family-meals', amountUsd: 0.11, agent: 'failure-test' })
+  const body = JSON.stringify({ drop: 1, amountUsd: 1.11, agent: 'failure-test' })
   const unpaid = await fetch(base, { method: 'POST', headers: json, body })
   console.log('2. no payment        →', unpaid.status, unpaid.headers.get('payment-required') ? 'PAYMENT-REQUIRED present' : '')
 

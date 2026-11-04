@@ -428,6 +428,199 @@ export const fieldDeliveries = pgTable('field_deliveries', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+// ---------- Drops (program v3) ----------
+
+/** One line of a drop's shopping list. */
+export type DropItem = {
+  name: string
+  /** Price of one, in USD. */
+  unitUsd: number
+  qty: number
+  /** What one covers, e.g. "a family of five for a month". */
+  covers?: string
+}
+
+/**
+ * One real delivery. The chain holds the pot and its rules; this row holds
+ * the words and the shopping list. `meta` is the exact JSON whose sha256 is
+ * the drop's on-chain `meta_hash`, kept as text so anyone can re-hash it.
+ */
+export const drops = pgTable(
+  'drops',
+  {
+    /** On-chain drop id (the PDA seed). */
+    id: integer('id').notNull(),
+    cluster: text('cluster').notNull(),
+    address: text('address').notNull(),
+    title: text('title').notNull(),
+    place: text('place').notNull(),
+    story: text('story').notNull().default(''),
+    emoji: text('emoji').notNull().default('🍲'),
+    items: jsonb('items').$type<DropItem[]>().notNull(),
+    /** The unit amounts are shown in ("ration pack") and how many people one helps. */
+    unitName: text('unit_name').notNull(),
+    unitCents: integer('unit_usd_cents').notNull(),
+    peoplePerUnit: integer('people_per_unit').notNull().default(1),
+    meta: text('meta').notNull(),
+    metaHash: text('meta_hash').notNull(),
+    goalMicro: bigint('goal_micro', { mode: 'number' }).notNull(),
+    capMicro: bigint('cap_micro', { mode: 'number' }).notNull(),
+    deadline: timestamp('deadline', { withTimezone: true }).notNull(),
+    payee: text('payee').notNull(),
+    createdTx: text('created_tx'),
+    /** Mirror of the chain, refreshed by the indexer. */
+    state: text('state').notNull().default('open'),
+    potMicro: bigint('pot_micro', { mode: 'number' }).notNull().default(0),
+    givenMicro: bigint('given_micro', { mode: 'number' }).notNull().default(0),
+    fromFundMicro: bigint('from_fund_micro', { mode: 'number' }).notNull().default(0),
+    refundedMicro: bigint('refunded_micro', { mode: 'number' }).notNull().default(0),
+    unlockedMicro: bigint('unlocked_micro', { mode: 'number' }).notNull().default(0),
+    backers: integer('backers').notNull().default(0),
+    proofHash: text('proof_hash'),
+    proofAt: timestamp('proof_at', { withTimezone: true }),
+    unlockedAt: timestamp('unlocked_at', { withTimezone: true }),
+    unlockTx: text('unlock_tx'),
+    lastSyncedAt: timestamp('last_synced_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.cluster, t.id] })]
+)
+
+/** A gift into a drop's pot, whichever way it arrived. `ref` is the on-chain gift_ref (hex). */
+export const dropGifts = pgTable(
+  'drop_gifts',
+  {
+    ref: text('ref').primaryKey(),
+    cluster: text('cluster').notNull(),
+    dropId: integer('drop_id').notNull(),
+    /** Who a refund goes to. */
+    backer: text('backer').notNull(),
+    /** Whose USDC moved (the backer, or a relayer for x402, intents and welcome gifts). */
+    giver: text('giver').notNull(),
+    /** Address of the Umanity account the gift is credited to, when it differs from the backer. */
+    userId: text('user_id'),
+    amountMicro: bigint('amount_micro', { mode: 'number' }).notNull(),
+    /** wallet | welcome | x402 | intents | fund */
+    channel: text('channel').notNull(),
+    /** pending | confirmed | failed */
+    status: text('status').notNull().default('pending'),
+    signature: text('signature'),
+    sourceChain: text('source_chain'),
+    sourceAsset: text('source_asset'),
+    sourceAmount: text('source_amount'),
+    intentId: text('intent_id'),
+    anonymous: boolean('anonymous').notNull().default(false),
+    message: text('message'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('drop_gifts_signature_idx').on(t.signature),
+    index('drop_gifts_drop_idx').on(t.cluster, t.dropId),
+    index('drop_gifts_backer_idx').on(t.backer),
+    index('drop_gifts_user_idx').on(t.userId),
+  ]
+)
+
+/** Proof and updates posted by the field team for a drop. */
+export const dropUpdates = pgTable(
+  'drop_updates',
+  {
+    id: text('id').primaryKey(),
+    cluster: text('cluster').notNull(),
+    dropId: integer('drop_id').notNull(),
+    /** update | proof */
+    kind: text('kind').notNull().default('update'),
+    title: text('title').notNull(),
+    body: text('body').notNull().default(''),
+    media: jsonb('media').$type<MediaItem[]>().notNull(),
+    /** For proof: sha256 of the canonical proof bundle, as posted on-chain. */
+    proofHash: text('proof_hash'),
+    proofBundle: text('proof_bundle'),
+    proofTx: text('proof_tx'),
+    xPostUrl: text('x_post_url'),
+    postedBy: text('posted_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('drop_updates_drop_idx').on(t.cluster, t.dropId)]
+)
+
+/** Every program event, indexed from the chain. The Money page reads from here. */
+export const moneyEvents = pgTable(
+  'money_events',
+  {
+    /** `${signature}:${index}` */
+    id: text('id').primaryKey(),
+    cluster: text('cluster').notNull(),
+    signature: text('signature').notNull(),
+    slot: bigint('slot', { mode: 'number' }).notNull(),
+    blockTime: timestamp('block_time', { withTimezone: true }),
+    /** The event name, e.g. gave, unlocked, refunded, feesSplit. */
+    kind: text('kind').notNull(),
+    dropId: integer('drop_id'),
+    amountMicro: bigint('amount_micro', { mode: 'number' }),
+    /** Backer, payee or other main party. */
+    party: text('party'),
+    data: jsonb('data').$type<Record<string, unknown>>().notNull(),
+  },
+  (t) => [
+    index('money_events_kind_idx').on(t.cluster, t.kind),
+    index('money_events_drop_idx').on(t.cluster, t.dropId),
+    index('money_events_time_idx').on(t.blockTime),
+  ]
+)
+
+/** Swaps made in the Trade tab. The fee itself is on-chain in the program's fee inbox; this row is the history. */
+export const trades = pgTable(
+  'trades',
+  {
+    signature: text('signature').primaryKey(),
+    cluster: text('cluster').notNull(),
+    address: text('address').notNull(),
+    inputMint: text('input_mint').notNull(),
+    outputMint: text('output_mint').notNull(),
+    inAmount: text('in_amount').notNull(),
+    outAmount: text('out_amount').notNull(),
+    /** Dollar value when USDC is one side. */
+    usdMicro: bigint('usd_micro', { mode: 'number' }),
+    feeBps: integer('fee_bps').notNull().default(0),
+    feeMicro: bigint('fee_micro', { mode: 'number' }).notNull().default(0),
+    sponsored: boolean('sponsored').notNull().default(false),
+    /** pending | confirmed | failed */
+    status: text('status').notNull().default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('trades_address_idx').on(t.address), index('trades_time_idx').on(t.cluster, t.createdAt)]
+)
+
+/** What Umanity itself spends, with receipts. */
+export const spending = pgTable('spending', {
+  id: text('id').primaryKey(),
+  cluster: text('cluster').notNull(),
+  spentAt: timestamp('spent_at', { withTimezone: true }).notNull(),
+  amountMicro: bigint('amount_micro', { mode: 'number' }).notNull(),
+  /** goods | filming | travel | team | legal | infrastructure | other */
+  category: text('category').notNull(),
+  description: text('description').notNull(),
+  receiptUrl: text('receipt_url'),
+  txSignature: text('tx_signature'),
+  dropId: integer('drop_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+/** Small key-value state (indexer cursors). */
+export const syncState = pgTable('sync_state', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type Drop = typeof drops.$inferSelect
+export type DropGift = typeof dropGifts.$inferSelect
+export type DropUpdate = typeof dropUpdates.$inferSelect
+export type MoneyEvent = typeof moneyEvents.$inferSelect
+export type Spending = typeof spending.$inferSelect
+export type Trade = typeof trades.$inferSelect
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Post = typeof posts.$inferSelect

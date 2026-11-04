@@ -4,7 +4,7 @@
  * RPCs, which drop writes under rate limits). The SOL stays in the half-written
  * buffer; this fills it instead of paying for a new one.
  *
- *   npx tsx scripts/resume-buffer.ts <BUFFER_ADDRESS> [target/deploy/umanity_donations.so]
+ *   npx tsx scripts/resume-buffer.ts <BUFFER_ADDRESS> [target/deploy/umanity.so]
  *   solana program upgrade <BUFFER_ADDRESS> <PROGRAM_ID> --upgrade-authority <KEYPAIR>
  *
  * Find the buffer with `solana program show --buffers`. Only chunks that differ
@@ -39,7 +39,7 @@ async function retry<T>(label: string, fn: () => Promise<T>): Promise<T> {
 }
 
 async function main() {
-  const [bufferArg, soPath = 'target/deploy/umanity_donations.so'] = process.argv.slice(2)
+  const [bufferArg, soPath = 'target/deploy/umanity.so'] = process.argv.slice(2)
   if (!bufferArg) throw new Error('usage: resume-buffer.ts <BUFFER_ADDRESS> [program.so]')
   const buffer = new PublicKey(bufferArg)
   const program = fs.readFileSync(soPath)

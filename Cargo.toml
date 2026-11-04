@@ -1,11 +1,12 @@
 [workspace]
 members = [
-    "programs/risen-donations",
-    "programs/risen-tips"
+    "programs/umanity"
 ]
 resolver = "2"
 
 [profile.release]
+opt-level = "z"
+
 overflow-checks = true
 lto = "fat"
 codegen-units = 1

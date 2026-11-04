@@ -1,143 +1,128 @@
-# Umanity — Crypto giving, ~~on trust~~ on proof.
+# Umanity — Crypto giving, ~~on trust~~ on camera.
 
-Umanity is a giving network on Solana where a donation is not a black hole. A gift (from a Solana wallet, from 30+ other chains through NEAR Intents, from a Blink on X, or from an AI agent over x402) lands in a program-owned escrow vault. The Umanity field team buys what is needed and hands it over in person in Pakistan, films it and uploads the receipts. An AI Impact Oracle audits the proof, the donors of that cause vote, and only then does the program release the money. Every step leaves a record anyone can check, and every gift has a page that follows it from the wallet to the hand-over.
+Umanity is the app where your crypto feeds people, on camera. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot on Solana**. The pot pays the drop's supplier only after the delivery is filmed and the proof has cleared a review window. If the drop misses its date, the program opens refunds and Umanity sends every backer their money back. Trading in the app feeds the same pots: every fee, from swaps or from the $UMANITY pool, is split 50/50 by the program between drops and running Umanity.
 
-- **Live demo:** https://umanity.vercel.app (Solana devnet; no wallet needed to browse)
 - **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions won a **Superteam bounty** and the **Solana Graveyard Hackathon (Tapestry track)** as [umanity-social](https://github.com/shariqazeem/umanity-social).
-- **Programs (Solana devnet):** `umanity_donations` [`9JBsHF…Kiys1`](https://solscan.io/account/9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1?cluster=devnet) · `umanity_tips` [`DBzVAJ…xtau`](https://solscan.io/account/DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau?cluster=devnet)
-- **Built by** a solo founder in Karachi: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
-- **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work from 1 Nov is listed in [docs/ROADMAP.md](docs/ROADMAP.md))
+- **Program:** `umanity` [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
+- **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
+- **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)
 
 ---
 
 ## The problem
 
-1. **Donations disappear.** You give, a wallet receives it, and you never learn whether anything was delivered.
-2. **Crypto donors are stuck on other chains.** Most crypto sits on Base, Ethereum, Bitcoin or TON; bridging to give is a chore nobody does.
-3. **Agents now hold money and have no way to give.** There is no charity API an AI agent can pay without an account.
+1. **Donations disappear.** You send money to a wallet and never learn whether anything was delivered.
+2. **Refunds never happen.** When a delivery falls through, the money quietly stays where it is.
+3. **Fees vanish into overhead.** Nobody can tell how much of a dollar reached anyone.
+4. **Agents and other chains have no way in.** AI agents now hold money; most crypto sits off Solana.
 
-## What Umanity does
+## How a drop works
 
 ```
-give (wallet · any chain · Blink · agent)
-   │
-   ▼
-cause vault PDA on Solana  ──  nobody can move it alone
-   │
-   ▼
-field team delivers by hand, films it, uploads receipts (hashed on upload)
-   │
-   ▼
-Impact Oracle audits the proof (paid per call over x402) → verdict hash written on-chain
-   │
-   ▼
-the cause's donors vote → yes → release_milestone_funds → the money moves
+fill  (wallet · another chain · AI agent over x402 · fees from trading)
+  │
+  ▼
+the drop's USDC pot ── an associated token account of the drop's PDA, owned by the program
+  │
+  ├─ delivered and filmed ─► proof bundle hashed on-chain (post_proof) ─► review window ─► unlock ─► the drop's payee only
+  │
+  └─ date missed / called off ─► refunds open ─► each backer gets their own amount back (anyone can send it; Umanity does)
+```
+
+One fee rule: **gifts go 100% to drops; every fee is split 50/50 by the program** (half to the drops fund, which can only pay into pots, half to Umanity).
+
+```
+Trade tab swap (Jupiter, 0.5% when USDC is one side) ─┐
+$UMANITY pool trading fee (Meteora DBC, 1% in USDC) ──┼─► fee inbox (USDC account of the program's `fees` PDA)
+                                                      │        │ split_fees / sweep_meteora_fees (permissionless)
+                                                      │        ▼
+                                                      └──► 50% drops fund ─► fund_drop ─► pots      50% ops
 ```
 
 ---
+
+## The program (`programs/umanity/src/lib.rs`)
+
+18 instructions. The rules a backer relies on are enforced here, not in the app:
+
+| Area | Instructions | What the code guarantees |
+|---|---|---|
+| Setup | `init_config`, `set_admin`, `set_params`, `set_release_authority`, `lock_release_authority` | Only the program's upgrade authority can set it up. The unlock key can be handed over and then locked for good. Per-pot cap and review window are bounded. |
+| Drops | `create_drop`, `cancel_drop` | A drop fixes its payee, goal, cap, date (at most 120 days) and the sha256 of its description. |
+| Gifts | `give`, `open_backer`, `give_all` | Gifts are USDC into the drop's pot, capped. A backer record holds each backer's amount; the payer of a sponsored gift can differ from the backer. |
+| Proof and payout | `post_proof`, `unlock` | Proof must be posted before the date and restarts the review window. `unlock` needs the release key, a passed review, and pays the whole pot to the drop's payee only. |
+| Refunds | `refund`, `return_to_fund`, `close_backer` | Refunds open when a drop is called off, misses its date unproven, or is not unlocked within 7 days after its date. Anyone may send a refund; it can only go to that backer's own USDC account. |
+| Fees | `fund_drop`, `split_fees`, `sweep_meteora_fees` | Fees are split ops = ⌊half⌋, drops = the rest. The drops fund can only pay into pots. `sweep_meteora_fees` claims $UMANITY's Meteora DBC trading fees by CPI, with the `fees` PDA as the pool's fee claimer, and splits them in the same instruction. |
+
+Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFeesClaimed`, …) are indexed into the database by `lib/umanity/indexer.ts`; the Money tab reads every total back from the chain.
+
+**Tests:** `bash scripts/test-programs.sh` starts a local validator that clones Meteora's Dynamic Bonding Curve and Metaplex from mainnet, loads the program and runs 7 tests: setup only by the upgrade authority; caps and dates; fill → proof → review → unlock to the payee only; the 50/50 split, the fund paying into pots and refunds after a cancel; refunds after a missed date; a real $UMANITY DBC pool whose trading fees a stranger sweeps into the program (and an attack that points the inbox elsewhere fails); handing over and locking the unlock key.
 
 ## Try it (do X → see Y)
 
-Everything below runs on Solana devnet. No wallet is needed to browse.
-
-1. **Open `/home`.** See the original Umanity three-column app: live ticker, feed of gifts and deliveries, platform stats, top donors, recent activity. Totals (SOL given, gifts, escrow, released) are read from the program's own counters; the feed shows gifts the server re-verified on-chain. The live database started empty on 3 Nov 2026, so earlier devnet test gifts count in the totals but have no feed posts.
-2. **Press Sign in → Create a Umanity wallet.** See a self-custodial wallet created in your browser (backup with the secret key; importable into Phantom). On devnet the treasury tops it up.
-3. **Open Give → press the black circle (0.01 SOL).** See *Signing* → *Gift confirmed · +10 reward points*, with *Follow your gift →* and Solscan. The server re-read the transaction and recorded the vault's balance change; it never trusts an amount from the browser.
-4. **Press Follow your gift.** See `/gift/<tx>`: six steps (Given → Locked in escrow → Delivered → Audited → Voted → Released), each with its transaction, the vault address, and the delivery it funds. A shared link unfurls on X as a progress card.
-5. **Open Give → Give from another chain → Base · USDC · 25.** See a live NEAR Intents solver quote (on 28 Oct: "You send 25 USDC → cause receives ≈0.247 SOL, ~32 s"); the routing fee line appears once an Aurora key or a NEAR fee account is configured. Entering a refund address returns a real deposit address; the status tracks *pending → swapping → settled* and, on success, the server deposits the SOL into the cause's escrow (refunds and short deposits are shown as such).
-6. **Open Agents → ▶ Pay $0.10 to Orphan care via x402.** See the real flow step by step: `POST /api/x402/give` → **402 Payment Required** (decoded `PAYMENT-REQUIRED`) → your wallet signs a USDC transfer → the facilitator settles on Solana → **200** with a receipt whose **ed25519 signature is verified in your browser**, plus a link to follow the gift. (Devnet USDC: [faucet.circle.com](https://faucet.circle.com).)
-7. **In a terminal: `npm run x402:failures`.** See `400` for a bad body (never asked to pay) → `402` → `200` with the settlement tx → the same payment replayed is **refused**.
-8. **Claude as a donor: `AGENT_KEYPAIR_PATH=~/.config/solana/devnet.json npx tsx scripts/mcp-smoke.ts`.** See the MCP server's tools, the live causes, a $0.12 gift paid over x402, "Receipt signature: valid", and the gift's journey. Add `mcp/server.ts` to Claude Desktop (snippet on `/agents`) to do the same in conversation.
-9. **Open Govern.** See each delivery with its photos, the oracle verdict, *Audit this proof · $0.01* (another x402 call whose verdict hash is written on-chain with `attest_milestone`), the donor vote and the release transaction.
-10. **Open Ledger (`/transparency`).** See every vault's balance, releases with their transactions, deliveries, fees collected, programs and wallets.
-
-### Verified on devnet
-
-| What | Transaction |
-|---|---|
-| Agent gift over x402: USDC settlement → escrow deposit (donate + memo) | [`4DvDCe…oSZrm`](https://solscan.io/tx/4DvDCebFCJt64s9cXhsNCKMHiwo3RQZ5ajs1itfh7UmwDteLq59gQQUtcrj1ChNxVuWCyexg5pAj2SVtVxfoSZrm?cluster=devnet) → [`2SeD4o…ezVZ`](https://solscan.io/tx/2SeD4o42myUDdnfrDvWh6imo6eNLXXSbdM8oXMH5jp658X4fTUzwwzjYF6CH5kE4Y3yyGHGRhYKDPsVRFKbqezVZ?cluster=devnet) |
-| Gift made by Claude through the MCP server | [`5Ahayw…E87zX`](https://solscan.io/tx/5Ahaywhq4oD8J2V6k36xbBg41karrCgymEtc2M2GwLzrQmPfsi5vpCK1U6dpv4ibRJ8dmZqVRHv1MY3BfGVE87zX?cluster=devnet) → [`3ciY2r…WZoNQ`](https://solscan.io/tx/3ciY2r7MPzgZgn8x9tPPhT6RQhDyKxGaq7GhVJ8F9mYvLNVSAFWfMnHQLv3Uk7SwqtbAwxdiTby8Sa1LAeNWZoNQ?cluster=devnet) |
-| Wallet gift into escrow | [`5MD737…KGDb9`](https://solscan.io/tx/5MD737racDn3NMGuoGrCNzgVAPuPvwfvsJR6aQa2ZsReEHzt11hiejjJkb34kPBhm3ScoHM1ecR9ZcR7SqiKGDb9?cluster=devnet) |
-| Oracle audit paid over x402 | [`3cyBCC…xt6Te`](https://solscan.io/tx/3cyBCCJDQKtUwWUFHL3vPhfUur8xYMp2ywhPFk5pq28FVoJMZqHURKqhv44K6aNg597HgopT61qcXkh6JdYxt6Te?cluster=devnet) |
-| Verdict hash written on-chain (`attest_milestone`) | [`2KHdQu…MzwV`](https://solscan.io/tx/2KHdQugJ5d7gkGFgxYZZYnKN1TdvjUtDmFN15hV3PTCqxFsg8HX56emU3oTnby3oNrj7y6EVzpVhECWo2sLCMzwV?cluster=devnet) |
-| Escrow released after the donors approved (`release_milestone_funds`) | [`5gq4rz…hfqw`](https://solscan.io/tx/5gq4rzTHE4zQjsU8n3gA5PG47rZseiCdMfZJzBcfSZfQfybJod9DzkUGfLodmkgoZCaj9yidLQvhDqLQzvfohfqw?cluster=devnet) |
-| Program upgraded to v2.1: withdraw path removed, `donate_all` added; the deployed bytes hash the same as `target/deploy` (sha256 `9b67b2a3…`) | [`46ntcJ…WK6W`](https://solscan.io/tx/46ntcJjcKshk2WrWRU8iLzQ1nRvfbXGhVjpqPpk5k215LFbcrVmh1kFjRiaytypGWsQa6Jvyi9ASZgHaDwFRWK6W?cluster=devnet) |
-| A fresh account gives its whole balance with `donate_all` (what Intents Connect calls on arrival) | [`3dVnei…AacQM`](https://solscan.io/tx/3dVneidrfdu4HEq6r4JehqcrqtDp6YuyYSDD4zVMWQhk1L4v6X19AfxvT8AkghDTGL7v9Znq9Ax4kBhWds2AacQM?cluster=devnet) |
-
----
-
-## How Solana powers it
-
-- **Escrow is the program, not a promise.** `programs/risen-donations` (Anchor 0.31) keeps each cause in a pool PDA with a vault PDA. A gift writes a `DonationRecord` PDA. Vault debits are CPI transfers signed by the vault PDA, and there are exactly two ways out: `release_milestone_funds` (only to the campaign's registered recipient, only an approved milestone's share) and `claim_refund` (back to the donor after a missed deadline). v2.1, live on devnet, removed the old emergency `withdraw_from_pool`. The Anchor IDL is published on-chain, so Solana Explorer decodes every instruction by name.
-- **Milestones and votes.** Each cause has a campaign with three milestones. Crossing a threshold or posting a delivery opens a release vote for that cause's donors (1 SOL given = 1,000 voting power).
-- **Proof on-chain.** The oracle's verdict hash and confidence are written into the milestone account (`attest_milestone`).
-- **Dares settle on-chain.** `create_dare`, `boost_dare`, `settle_dare`: the pot always ends in the cause vault, minus a 1.5% fee enforced by the program.
-- **Blinks.** Every cause and every dare is a Solana Action (`/api/actions/donate/[cause]`, `/api/actions/dare/[id]`), so a gift can happen inside a post on X.
-- **Payments.** x402 settles USDC on Solana; the NEAR Intents solver pays out SOL on Solana; both are deposited into the cause vault with `donate` and a memo that names the original payment.
+1. **Open `/`.** See the landing page with live totals read from the program.
+2. **Open `/home`.** See the next drop with the black circle, and a feed of what happened to drops: gifts, filmed proof, unlocks, fee splits, missed dates. Each card links its transaction.
+3. **Sign in → Create a Umanity wallet → press the black circle.** Pick an amount in units ("1 ration pack, 5 people helped"), sign once. Umanity pays the network fee and the backer record's rent (`/api/drops/[id]/give`: the treasury signs the exact message first, so a giver cannot change it).
+4. **Open the drop page.** See the pot, the four steps with a transaction each, the shopping list, backers, the description checked against its on-chain hash, and the proof checked against `post_proof`.
+5. **Open Money.** See gifts → pots → unlocked / refunded, fees → split → drops fund / Umanity, every move with its transaction, and where each rule lives on-chain.
+6. **Open Trade.** Live Jupiter routes with Umanity's 0.5% fee shown as dollars to drops. On mainnet the swap is built with Jupiter Swap V2 `/build`, and the fee goes in the same transaction into the program's fee inbox. Wallets without SOL get the network fee paid, a few swaps a day.
+7. **Open For agents → ▶ Pay into a drop via x402.** `POST /api/x402/give {drop, amountUsd}` → **402** → the wallet signs a USDC transfer → the facilitator settles → the treasury gives the same USDC into the pot **with the agent's wallet as the backer**, so a missed date refunds the agent → **200** with an ed25519-signed receipt verified in the browser.
+8. **Team console (`/admin`, team wallets only).** Open a drop (description hashed on-chain), post updates, post proof (text, X post and every file's sha256, bundled and hashed onto Solana), unlock after review, call a drop off, refund everyone.
 
 ## Sponsor technology
 
-### x402 on Solana (`lib/x402/server.ts`, `app/api/x402/*`)
-- **Give API** — `POST /api/x402/give {causeId, amountUsd, agent?}`. The 402 is priced by the request; the payment is the gift. After settlement the treasury deposits the SOL equivalent into the cause vault (`donate` + memo `umanity:x402:<settlement>:<payer>`), the gift is recorded, and the response is an **ed25519-signed receipt** (`lib/receipt.ts`, signer published at `GET /api/x402/give`) with a `/gift/<id>` tracking link.
-- **Oracle audit** — `POST /api/x402/verify-milestone` ($0.01). The audit is computed before settlement and committed only after it.
-- **Sponsored dare** — `POST /api/x402/sponsor-dare` ($0.05), credited to the wallet that signed the payment, never to an address in the body.
-- **Failure handling** — invalid bodies get 400 before any 402; the payer and a replay key are read from the signed transfer; a replayed payment is refused (409 from our guard, or the facilitator rejects the spent transfer); a handler failure cancels the verified payment (never charged); facilitator outages answer 503 with `Retry-After`; a pending settlement answers 202. Facilitator: x402.org on devnet, PayAI on mainnet.
-- **Agents** — `scripts/x402-give.ts` (agent with a keypair), `scripts/x402-failures.ts`, and an **MCP server** (`mcp/server.ts`: `list_causes`, `recent_deliveries`, `give`, `follow_gift`) with per-gift and per-session caps.
+### x402 on Solana (`lib/x402/server.ts`, `app/api/x402/give/route.ts`)
+- The payment is the gift; the price is the request. A drop that cannot take the gift (closed, past its date, pot full) is refused with 400 before any 402, so an agent is never charged for it.
+- After settlement the treasury calls `give` with `backer = the paying wallet`. Refunds go to the agent automatically if the drop misses its date.
+- Receipts are ed25519-signed (`lib/receipt.ts`; signer published at `GET /api/x402/give`, which also lists the drops that are filling).
+- **MCP server** (`mcp/server.ts`): `list_drops`, `get_drop`, `give`, with per-gift and per-session caps, so Claude can fill a drop for you.
 
-### Aurora Intents / NEAR Intents (`lib/intents/*`, `app/api/intents/*`)
-- Live solver quotes for every supported chain and asset (keyless dry quotes), real deposit addresses, chain-aware deadlines, exact decimal amounts, the applied integrator fee (50 bps).
-- Status tracking with *incomplete deposit* (shortfall and deadline), *refunded*, and retried *failed*; a reconcile route (`/api/intents/reconcile`, cron) credits gifts even if the donor closed the tab. Settlement is claimed atomically so a gift is credited once.
-- With `AURORA_API_KEY` the same flow runs through Aurora's Swap API so the fee configured in the Aurora portal applies.
-- `donate_all(nonce, keep)` gives an account's whole balance minus `keep` in one instruction, because the amount that arrives is only known after the swap. That is the call Intents Connect makes on arrival. `npx tsx scripts/donate-all.ts clean-water 0.02` runs it on devnet with a fresh account and books the gift through `/api/donate/sync`.
+### Aurora Intents / NEAR Intents (`lib/intents/*`)
+- Live solver quotes from 30+ chains and deposit addresses. The planned v3 route settles into a pot: 1Click settles USDC on Solana, then `give`. With Intents Connect, `open_backer` + `give_all` give whatever arrived, because the amount is only known after the swap.
+
+### Meteora Dynamic Bonding Curve (`lib/token/curve.ts`, `scripts/launch-umanity.ts`)
+- $UMANITY: fixed 1B supply, every token sold on the curve (no presale, no team tokens, no vesting), USDC quote, fee taken in USDC, an anti-sniping fee that starts high and decays to 1% within a minute, graduation to a DAMM v2 pool with all liquidity permanently locked to the program's `fees` address. The pool's fee claimer is that PDA, so only `sweep_meteora_fees` can claim. **Not launched yet**; `npx tsx scripts/launch-umanity.ts plan` prints the exact parameters.
+
+### Jupiter (`lib/umanity/swap.ts`)
+- Swap V2 `/build` with `platformFeeBps=50` and `feeAccount` = the program's fee inbox. Jupiter takes no share on `/build`. Every build is simulated before it is returned; sponsored builds are refused if they would cost the treasury more than one token account's rent.
+
+### Keeper (`lib/umanity/keeper.ts`)
+- From page reads, at most every 5 minutes: claim $UMANITY fees from Meteora and split them, split the fee inbox once it holds $1, and refund the backers of drops that missed their date.
 
 ## Run it locally
 
 ```bash
 npm install
-cp .env.example .env.local      # devnet defaults; signers default to ~/.config/solana/devnet.json
-npm run bootstrap               # pools, campaigns and milestones on-chain (idempotent)
-npm run dev                     # http://localhost:3000  (Turbopack)
+cp .env.example .env.local     # devnet defaults; signers default to ~/.config/solana/devnet.json
+npm run dev                    # http://localhost:3000 (Turbopack)
 ```
 
-Without `DATABASE_URL` the app uses an embedded PGlite database under `.data/` (one process at a time; stop the dev server before running scripts). Migrations in `drizzle/` apply on start.
+Without `DATABASE_URL` the app uses an embedded PGlite database (one process at a time: never point a script at the data directory the dev server has open). Migrations in `drizzle/` apply on start.
 
-Useful scripts: `npm run x402:give -- clean-water 0.25 my-agent`, `npm run x402:failures`, `npm run mcp`, `npm run typecheck`.
+- Program tests: `bash scripts/test-programs.sh`
+- Set up a cluster: `npx tsx scripts/umanity-setup.ts init --ops <pubkey> [--release <pubkey>] [--max-pot 2000] [--review-hours 6]`
+- Open a drop from a file: `npx tsx scripts/umanity-setup.ts drop meta.json --goal 750 --cap 900 --deadline 2026-11-20T18:00:00Z --payee <pubkey>` (or use `/admin`)
+- Typecheck: `npm run typecheck`
 
-The public devnet RPC rate-limits quickly (HTTP 429). For demos set `NEXT_PUBLIC_SOLANA_RPC` to a dedicated endpoint (a free Helius or Triton devnet URL).
-
-## Deploy
-
-- **Ubuntu + Docker** (Postgres, app, Caddy with HTTPS): `cp .env.example .env`, set the signers, `DOMAIN` and `ADMIN_WALLETS`, then `docker compose up -d --build`.
-- **Vercel:** a Postgres `DATABASE_URL` (Neon or Supabase), `UMANITY_AUTHORITY_KEYPAIR` and `UMANITY_TREASURY_KEYPAIR` (JSON array or base58), `CRON_SECRET` (the cron in `vercel.json` calls `/api/intents/reconcile` daily, the most the Hobby plan allows), and a public Vercel Blob store connected to the project for proof media (`BLOB_READ_WRITE_TOKEN`). Run `npm run bootstrap` once with the production `DATABASE_URL` to mirror the chain into the new database.
-- **Mainnet:** deploy the program with the same program keypair, set `NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta` and a production RPC, run `npm run bootstrap`. The x402 facilitator switches to PayAI automatically. If `solana program deploy` stalls with "Max retries exceeded", the SOL stays in a half-written buffer: `npx tsx scripts/resume-buffer.ts <BUFFER>` fills only the missing chunks, then `solana program upgrade <BUFFER> <PROGRAM_ID>` finishes the deploy.
+The public devnet RPC rate-limits deploys and reads (HTTP 429). Set `NEXT_PUBLIC_SOLANA_RPC` to a dedicated endpoint. If a deploy stalls, `npx tsx scripts/resume-buffer.ts <BUFFER> target/deploy/umanity.so` fills only the missing chunks.
 
 ## Repository map
 
 ```
-programs/risen-donations/src/lib.rs   escrow, milestones, attestations, dares (14 instructions)
-programs/risen-tips/src/lib.rs        profiles and tips (4 instructions)
-app/(marketing)/page.tsx              landing
-app/(app)/                            feed, explore, give, govern, profile, agents, gift/[ref], causes/[id], dares/[id], blinks, transparency, admin
-app/api/                              64 routes: donate/sync, x402/*, intents/*, gifts/[ref], field/updates, governance/*, actions/* (Blinks)
-lib/x402/ · lib/receipt.ts            paid endpoints, signed receipts
-lib/intents/                          NEAR Intents / Aurora client, settlement + reconciliation
-lib/solana/                           PDAs, instruction builders, chain verification, escrow forwarding, authority ops
-lib/data/                             users, social, donations, governance, dares, deliveries, gift journeys
-mcp/server.ts                         MCP server: Claude can give and follow a gift
-components/                           the original Umanity design system, rebuilt
+programs/umanity/src/lib.rs        pots, proof, unlock, refunds, fee split, Meteora fee sweep (18 instructions)
+tests/umanity.test.ts              7 tests against a validator with Meteora DBC cloned from mainnet
+lib/umanity/                       program client, indexer, drops data, feed, swaps, keeper, team actions, profiles
+lib/token/curve.ts                 $UMANITY bonding curve settings
+app/(app)/                         home, trade, give, money, profile, drops/[n], agents, admin
+app/api/                           drops, feed, money, trade, x402, admin/drops, profile/drops
+mcp/server.ts                      MCP server: Claude can fill a drop
+scripts/                           test-programs.sh, umanity-setup.ts, launch-umanity.ts, resume-buffer.ts
 ```
 
 ## Honest status
 
-- **Who approves a release today:** donor votes are tallied off-chain and `approve_milestone` is signed by the Umanity authority key. That key cannot withdraw or redirect funds (releases go only to the registered recipient, one milestone share at a time), but it is still a single key. During the NEAR hackathon this moves to a NEAR policy contract with Chain Signatures and a TEE-run oracle, so no single key can approve a release (see [docs/ROADMAP.md](docs/ROADMAP.md)).
-- Programs and every flow above run on **devnet**. The mainnet program deployment (about 3 SOL of rent) is the next step; until then, a cross-chain gift settles on Solana mainnet and the devnet build credits the devnet escrow (the receipt says so).
-- Agent and cross-chain value is forwarded into the vault by the treasury in the same request. Paying USDC straight into a program-owned vault needs a token-vault upgrade to the program (planned).
-- The oracle is rule-based unless `ANTHROPIC_API_KEY` or `NEAR_AI_API_KEY` is set.
-- Persistent per-donor deposit addresses (Aurora Intents Deposits) and Intents Connect execute-on-arrival need an Aurora organisation key and the mainnet program.
-- MultiHopper discreet routing is not shipped; the client in `lib/multihopper/` is kept for a later, real integration.
-
-## Business
-
-Gifts carry no platform fee. Revenue comes from the rails around them: 1.5% on dare settlements (enforced on-chain), 50 bps on cross-chain gifts (integrator fee), paid API calls over x402 (audits, sponsored dares), and later sponsored causes and Guardian-tier perks. See [docs/ROADMAP.md](docs/ROADMAP.md).
+- **Clusters:** the program is live on **devnet** ([`UmauiNG…`](https://explorer.solana.com/address/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3?cluster=devnet)), set up with a $2,000 cap per pot and a 6-hour review window. An x402 agent gift went into a labelled test drop's pot there ([tx](https://explorer.solana.com/tx/3yif3WLC51VXb1nqeQxd8DNN3gQVCv4Z7zjKKJLgxAfE6AS3dZJH5zNjsxofxSBtFfM5nh5xViV3xjpVrBx6A6UZ?cluster=devnet)), and the agent got its USDC back when the drop was called off. Every flow above is also verified on a local validator with Meteora's real program cloned from mainnet, and swaps by mainnet simulation. The mainnet deploy comes next.
+- **Who can unlock a pot today:** the release key held by Umanity. It can only unlock a drop whose proof is on-chain and whose review window has passed, and only to that drop's payee; it cannot redirect or withdraw. During the NEAR hackathon unlocking moves behind a NEAR policy contract with Chain Signatures, and the release key can then be locked for good (`lock_release_authority`).
+- **Umanity is a crypto app, not a registered charity.** Gifts are not tax-deductible. $UMANITY is not an investment and comes with no promise of returns.
 
 MIT licence.

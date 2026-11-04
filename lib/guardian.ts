@@ -18,11 +18,11 @@ export interface GuardianState {
 }
 
 export const TIERS: { tier: GuardianTier; min: number; perks: string[]; rebate: number; boost: number }[] = [
-  { tier: 'Seed', min: 0, perks: ['Impact certificates', 'Vote on releases'], rebate: 0, boost: 1 },
-  { tier: 'Sprout', min: 250, perks: ['Create proposals', 'Dare friends', '5% dare fee rebate'], rebate: 500, boost: 1.1 },
-  { tier: 'Bloom', min: 1000, perks: ['Featured on leaderboard', '15% dare fee rebate', '1.25x dare points'], rebate: 1500, boost: 1.25 },
-  { tier: 'Guardian', min: 3000, perks: ['Field Fund council seat', '30% dare fee rebate', '1.5x dare points'], rebate: 3000, boost: 1.5 },
-  { tier: 'Sovereign', min: 10000, perks: ['Milestone oracle reviewer', '50% dare fee rebate', '2x dare points'], rebate: 5000, boost: 2 },
+  { tier: 'Seed', min: 0, perks: ['Points and streaks', 'Your name in drop credits'], rebate: 0, boost: 1 },
+  { tier: 'Sprout', min: 250, perks: ['Dare friends to match you', 'Your name in drop credits'], rebate: 500, boost: 1.1 },
+  { tier: 'Bloom', min: 1000, perks: ['On the top backers board', 'Dare friends to match you'], rebate: 1500, boost: 1.25 },
+  { tier: 'Guardian', min: 3000, perks: ['On the top backers board', 'Proof of every drop you backed'], rebate: 3000, boost: 1.5 },
+  { tier: 'Sovereign', min: 10000, perks: ['On the top backers board', 'Proof of every drop you backed'], rebate: 5000, boost: 2 },
 ]
 
 export function guardianScore(input: { rewardPoints: number; streakCurrent: number; donationCount: number; votes?: number }): number {

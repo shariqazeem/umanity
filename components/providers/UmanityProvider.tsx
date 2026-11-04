@@ -23,6 +23,8 @@ export interface Signer {
 }
 
 export interface GiveRequest {
+  /** A drop (program v3). When set, the drop give sheet opens instead of the cause flow. */
+  dropId?: number
   causeId?: string
   /** Pre-fill an amount in USD (presets are USD-first). */
   amountUsd?: number

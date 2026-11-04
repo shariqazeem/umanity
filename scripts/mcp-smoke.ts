@@ -14,11 +14,9 @@ async function main() {
   const tools = await client.listTools()
   console.log('tools:', tools.tools.map((t) => t.name).join(', '))
   const show = (r: unknown) => console.log(((r as { content: { text: string }[] }).content ?? []).map((c) => c.text).join('\n'), '\n')
-  show(await client.callTool({ name: 'list_causes', arguments: {} }))
-  const gift = await client.callTool({ name: 'give', arguments: { causeId: 'clean-water', amountUsd: 0.12, note: 'mcp-smoke-test' } })
-  show(gift)
-  const track = ((gift as { content: { text: string }[] }).content[0]?.text.match(/Follow it: (\S+)/) ?? [])[1]
-  if (track) show(await client.callTool({ name: 'follow_gift', arguments: { ref: track } }))
+  show(await client.callTool({ name: 'list_drops', arguments: {} }))
+  show(await client.callTool({ name: 'give', arguments: { amountUsd: 1, note: 'mcp-smoke-test' } }))
+  show(await client.callTool({ name: 'get_drop', arguments: { drop: 1 } }))
   await client.close()
 }
 

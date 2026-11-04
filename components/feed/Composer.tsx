@@ -7,7 +7,7 @@ import { apiSend } from '@/lib/client/api'
 import type { FeedPost } from '@/lib/data/social'
 
 /** The original composer card, plus the dare launcher. */
-export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => void; onDare: () => void }) {
+export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => void; onDare?: () => void }) {
   const { address, user, ensureSigner, toast } = useUmanity()
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
@@ -19,7 +19,7 @@ export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => v
           <span className="text-xs">✦</span>
         </div>
         <div className="flex-1">
-          <p className="text-[13px] font-medium">Sign in to post, dare and vote</p>
+          <p className="text-[13px] font-medium">Sign in to post, give and dare friends</p>
           <p className="text-[11px] text-[#86868b]">Browsing is open to everyone. A wallet takes one tap.</p>
         </div>
         <button onClick={() => ensureSigner()} className="btn-primary px-4 py-2 !text-[12px]">
@@ -52,9 +52,13 @@ export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => v
         <div className="flex-1 min-w-0">
           <textarea value={text} onChange={(e) => setText(e.target.value.slice(0, 500))} placeholder="Share your impact…" rows={2} className="input resize-none !text-sm" />
           <div className="flex justify-between items-center mt-2 gap-2">
-            <button onClick={onDare} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 text-[12px] font-semibold hover:bg-amber-100 transition-colors">
-              ⚡ Dare a friend
-            </button>
+            {onDare ? (
+              <button onClick={onDare} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 text-[12px] font-semibold hover:bg-amber-100 transition-colors">
+                ⚡ Dare a friend
+              </button>
+            ) : (
+              <span />
+            )}
             <div className="flex items-center gap-3">
               <span className="text-[11px] text-[#aeaeb2] counter">{text.length}/500</span>
               <button onClick={post} disabled={!text.trim() || busy} className="btn-primary px-5 py-2 !text-xs">

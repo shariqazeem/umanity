@@ -12,8 +12,7 @@ import { NAV, SECONDARY_NAV, isActive } from './nav'
 export function LeftNav() {
   const pathname = usePathname()
   const { signer, user, balance, isMainnet, openAuth, openWalletSheet } = useUmanity()
-  // Govern also owns /transparency in the bottom bar; on desktop the ledger has its own row.
-  const activeMain = (match: readonly string[]) => isActive(pathname, match.filter((m) => m !== '/transparency'))
+  const activeMain = (match: readonly string[]) => isActive(pathname, match)
 
   return (
     <aside className="hidden lg:flex w-[260px] flex-shrink-0 sticky top-0 h-[100dvh] flex-col border-r border-black/[0.04] px-3 py-5">

@@ -4,14 +4,15 @@ import { WalletProvider } from '@/components/wallet/WalletProvider'
 import { UmanityProvider } from '@/components/providers/UmanityProvider'
 import { Toasts } from '@/components/layout/Toasts'
 import { GiveSheet } from '@/components/give/GiveSheet'
+import { DropGiveSheet } from '@/components/drops/DropGiveSheet'
 import { AuthSheet } from '@/components/auth/AuthSheet'
 import { ProfileEditor } from '@/components/profile/ProfileEditor'
 import { WalletSheet } from '@/components/wallet/WalletSheet'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://umanity.xyz'
 
-const TAGLINE = 'Crypto giving, on proof.'
-const DESCRIPTION = 'Give from any chain, or from an AI agent over x402. Every gift waits in on-chain escrow on Solana until the field team delivers it by hand, films it, and the donors vote to release it.'
+const TAGLINE = 'Crypto giving, on camera.'
+const DESCRIPTION = 'Fill a drop: a real delivery with its own USDC pot on Solana. The pot pays out only after the delivery is filmed and checked, and refunds every backer if it misses its date. Trade in the app and half of every fee fills the next drop.'
 
 export const metadata: Metadata = {
   title: { default: `Umanity — ${TAGLINE}`, template: '%s · Umanity' },
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <UmanityProvider>
             {children}
             <GiveSheet />
+            <DropGiveSheet />
             <AuthSheet />
             <ProfileEditor />
             <WalletSheet />

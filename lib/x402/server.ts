@@ -50,7 +50,7 @@ export interface PaidRoute {
 }
 
 export const PAID_ROUTES: Record<string, PaidRoute> = {
-  give: { path: '/api/x402/give', price: 'dynamic', description: 'Give to a Umanity cause: the payment is the gift; returns a signed receipt and the escrow deposit' },
+  give: { path: '/api/x402/give', price: 'dynamic', description: 'Put USDC into a Umanity drop pot: the payment is the gift, your wallet is the backer (refunded if the drop misses its date), and a signed receipt comes back' },
   verifyMilestone: { path: '/api/x402/verify-milestone', price: PRICES.verifyMilestone, description: 'AI Impact Oracle: audit a milestone delivery and get a signed attestation' },
   sponsorDare: { path: '/api/x402/sponsor-dare', price: PRICES.sponsorDare, description: 'Create a sponsored Impact Dare (agents and sponsors)' },
 }
@@ -149,7 +149,7 @@ export interface Settlement {
 
 export interface X402Options<T> {
   /** Reject a bad request with 400 before the client is ever asked to pay. Return an error message or null. */
-  validate?: (body: T) => string | null
+  validate?: (body: T) => string | null | Promise<string | null>
   /**
    * Runs only after the payment settled on-chain. Use it for side effects that
    * must never happen for an unpaid request (recording a gift, writing an
@@ -176,7 +176,7 @@ export function withX402<T = Record<string, unknown>>(routeKey: keyof typeof PAI
     } catch {
       body = {} as T
     }
-    const invalid = opts.validate?.(body)
+    const invalid = await opts.validate?.(body)
     if (invalid) return NextResponse.json({ error: invalid }, { status: 400 })
 
     let server: x402HTTPResourceServer

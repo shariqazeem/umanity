@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
     config.resolve.fallback = { ...(config.resolve.fallback || {}), fs: false, path: false, os: false }
     return config
   },
+  // v2.1 screens (causes, votes, the SOL ledger) gave way to drops; old links land on their v3 home.
+  async redirects() {
+    return [
+      { source: '/transparency', destination: '/money', permanent: false },
+      { source: '/govern/:path*', destination: '/money', permanent: false },
+      { source: '/causes/:path*', destination: '/give', permanent: false },
+      { source: '/dares/:path*', destination: '/home', permanent: false },
+      { source: '/explore', destination: '/home', permanent: false },
+      { source: '/blinks', destination: '/agents', permanent: false },
+      { source: '/how-it-works', destination: '/?stay=1', permanent: false },
+    ]
+  },
   async headers() {
     return [
       {

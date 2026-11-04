@@ -2,7 +2,9 @@
   "name": "umanity",
   "version": "3.0.0",
   "private": true,
-  "engines": { "node": "22.x" },
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -25,8 +27,10 @@
     "@ai-sdk/react": "^3.0.99",
     "@coral-xyz/anchor": "^0.31.1",
     "@electric-sql/pglite": "^0.5.12",
+    "@meteora-ag/dynamic-bonding-curve-sdk": "2.0.0",
     "@modelcontextprotocol/sdk": "1.32.1",
     "@solana/kit": "^8.5.0",
+    "@solana/spl-token": "0.4.14",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",

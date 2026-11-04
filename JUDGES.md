@@ -1,28 +1,24 @@
 # For judges
 
-Live: **https://umanity.vercel.app**. Everything runs on Solana devnet; no wallet is needed to browse. The README's **Try it (do X → see Y)** is the full walkthrough. Shortest paths per track:
+The README's **Try it (do X → see Y)** is the full walkthrough. Below are the shortest path for each track. No wallet is needed to browse.
 
 ## Best Consumer App (5 minutes)
-1. `/home` → the feed, live ticker, stats, leaderboard.
-2. **Sign in → Create a Umanity wallet** (created in the browser, topped up on devnet).
-3. **Give → press the black circle** → *Gift confirmed* → **Follow your gift** → the six-step tracker with a transaction for each step.
-4. **Feed → ⚡ Dare a friend**, **Profile** → Living Guardian pass, streak, certificates, receipts.
-5. Paste a `/causes/<id>` or `/gift/<id>` link into X or a chat → the share card shows the live escrow or the gift's progress.
+1. `/` → landing with live totals from the program. `/home` → the next drop and its black circle, plus a feed of gifts, filmed proof, unlocks and fee splits, each with its transaction.
+2. **Sign in → Create a Umanity wallet → press the black circle** → pick "1 ration pack" → *$30 is in the pot*. Umanity paid the network fee.
+3. Open the drop → four steps with transactions; description and proof are checked against their on-chain hashes.
+4. **Money** → every dollar from gift or fee to pot, payout or refund. **Trade** → Jupiter swaps whose 0.5% fee lands in the program's fee inbox, half for drops. **Me** → drops backed, receipts, points, streak.
 
 ## Best Use of x402 (3 minutes)
-1. `/agents` → **▶ Pay $0.10 … via x402** → 402 → sign → settled → receipt with a verified ed25519 signature → follow the gift.
-2. `npm run x402:failures` → 400 (bad body, never asked to pay), 402, 200, replay refused.
-3. `AGENT_KEYPAIR_PATH=~/.config/solana/devnet.json npx tsx scripts/mcp-smoke.ts` → Claude's MCP tools give and follow a gift.
-4. Code: `lib/x402/server.ts` (verify → handler → settle → commit, replay guard, cancellation), `app/api/x402/give/route.ts`, `lib/receipt.ts`, `mcp/server.ts`.
+1. `/agents` → **▶ Pay into a drop via x402** → 402 → sign → settled → the USDC goes into the pot with your wallet as the backer → signed receipt, verified in the browser.
+2. `GET /api/x402/give` → the drops that are filling, the room in each pot, and how to pay.
+3. `mcp/server.ts` → Claude can `list_drops`, `get_drop`, and `give` with spend caps.
+4. Code: `app/api/x402/give/route.ts` (refused before payment if the drop can't take it; `give` with `backer = payer` after settlement), `lib/x402/server.ts`, `lib/receipt.ts`.
 
-## Aurora Intents (3 minutes)
-1. **Give → Give from another chain** → pick a chain and asset → live solver quote (the routing fee shows once an Aurora key is configured).
-2. Enter a refund address → real deposit address and QR → status *pending → swapping → settled → deposited into escrow*; short deposits and refunds are explained.
-3. Code: `lib/intents/oneclick.ts` (Aurora Swap API when `AURORA_API_KEY` is set, 1Click otherwise), `lib/intents/settle.ts` (atomic settlement, escrow forward, credit once), `app/api/intents/reconcile/route.ts`.
-4. `npx tsx scripts/donate-all.ts clean-water 0.02` → a fresh account gives its whole balance with `donate_all` (the instruction Intents Connect calls on arrival), ends at 0 lamports, and the server books the gift from the chain.
+## Aurora Intents
+- Cross-chain gifts settle as USDC on Solana and go into a pot with `give`; Intents Connect calls `open_backer` + `give_all` (whatever arrived). Code: `lib/intents/*`, `programs/umanity/src/lib.rs` (`give_all`).
 
-## Escrow and proof
-- `programs/risen-donations/src/lib.rs`: vaults, milestones, attestations, dares, refunds. v2.1 is live on devnet with no withdraw path, and its IDL is on-chain, so Explorer shows every instruction by name.
-- `/govern` → delivery proof, *Audit this proof · $0.01* (x402), donor vote, release transaction. `/transparency` → the public ledger.
+## The money rules (all tracks)
+- `programs/umanity/src/lib.rs`: 18 instructions; `bash scripts/test-programs.sh` runs 7 tests against Meteora's real DBC program cloned from mainnet.
+- Gifts go 100% to drops; fees split 50/50 by code; the drops fund can only pay into pots; refunds can only go to their backer; the unlock key can be locked for good.
 
-Programs (devnet): donations `9JBsHFy9rQhjcPiKkFzqxpUV9HZyZ1ZmE4AWXc1Kiys1`, tips `DBzVAJHgiyVWZMdj1Q2vHUfL1wW4nVag3AqJ5FKmxtau`.
+Program: `UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`.

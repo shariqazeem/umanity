@@ -26,8 +26,8 @@ export function GiveSheet() {
     if (give) setEpoch((e) => e + 1)
   }, [give])
   return (
-    <Sheet open={!!give} onClose={closeGive} width="md" hideClose>
-      {give && <GiveFlow key={epoch} req={give} onClose={closeGive} />}
+    <Sheet open={!!give && give.dropId == null} onClose={closeGive} width="md" hideClose>
+      {give && give.dropId == null && <GiveFlow key={epoch} req={give} onClose={closeGive} />}
     </Sheet>
   )
 }

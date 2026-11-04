@@ -7,23 +7,28 @@ import { Avatar } from '@/components/shared/ui'
 import { ProofOrb } from '@/components/shared/ProofOrb'
 import { DareCard } from '@/components/dares/DareCard'
 import { PostCard } from '@/components/feed/PostCard'
-import { apiGet, apiSend, fmtSol, fmtUsd, short, timeAgo } from '@/lib/client/api'
+import { apiGet, apiSend, fmtSol, short, timeAgo } from '@/lib/client/api'
 import { explorerTx } from '@/lib/solana/constants'
-import { getCause } from '@/lib/causes'
 import { TIERS } from '@/lib/guardian'
-import { chainLabel } from '@/components/feed/types'
 import { useProfile } from './useProfile'
+import { dropHref } from '@/components/drops/DropParts'
+import { pickNextDrop, useDrops } from '@/components/drops/hooks'
+import { usdText } from '@/lib/umanity/drops'
+import type { BackerProfile } from '@/lib/umanity/profile'
 import { shownName } from '@/lib/client/names'
-import type { PublicProfile, GiftView, CertView } from '@/lib/contracts'
+import type { PublicProfile, CertView } from '@/lib/contracts'
 
 type Tab = 'gifts' | 'certificates' | 'dares' | 'posts'
 
 export function ProfileView({ username, mode }: { username: string; mode: 'own' | 'public' }) {
-  const { address, solPrice, openProfileEditor, openWalletSheet, openGive, ensureSigner, toast } = useUmanity()
+  const { address, openProfileEditor, openWalletSheet, openGive, ensureSigner, toast } = useUmanity()
   const { profile, loading, error, reload, setProfile } = useProfile(username, address)
   const [tab, setTab] = useState<Tab>('gifts')
   const [isAdmin, setIsAdmin] = useState(false)
   const [streak, setStreak] = useState<{ currentStreak: number; longestStreak: number; donationDays: string[] } | null>(null)
+  const [backer, setBacker] = useState<BackerProfile | null>(null)
+  const { data: drops } = useDrops(60_000)
+  const next = pickNextDrop(drops)
   const own = mode === 'own'
 
   useEffect(() => {
@@ -35,6 +40,9 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
 
   useEffect(() => {
     if (!profile) return
+    apiGet<BackerProfile>(`/api/profile/drops?address=${profile.address}`)
+      .then((d) => setBacker(d.totals ? d : null))
+      .catch(() => setBacker(null))
     apiGet<{ donationDays?: string[]; currentStreak?: number; longestStreak?: number }>(`/api/streaks?address=${profile.address}`)
       .then((d) => setStreak({ currentStreak: d.currentStreak ?? 0, longestStreak: d.longestStreak ?? 0, donationDays: d.donationDays ?? [] }))
       .catch(() => setStreak(null))
@@ -57,7 +65,8 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   const isSelf = address === p.address
   const share = () => {
-    const text = own ? `My giving on @umanity_xyz: ${fmtSol(p.totalDonated, 2)} SOL, held in escrow until it is delivered by hand and proven.\n\n${origin}/u/${p.username}` : `@${p.username} on @umanity_xyz\n\n${origin}/u/${p.username}`
+    const given = backer?.totals.givenUsd ?? 0
+    const text = own && given > 0 ? `I've put ${usdText(given, 2)} into ${backer!.totals.drops} ${backer!.totals.drops === 1 ? 'drop' : 'drops'} on @umanity_xyz. Each pot pays out only after the delivery is filmed and checked.\n\n${origin}/u/${p.username}` : `@${p.username} on @umanity_xyz\n\n${origin}/u/${p.username}`
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener')
   }
   const invite = () => navigator.clipboard.writeText(`${origin}/?ref=${p.username}`).then(() => toast('Invite link copied. When they give, you both earn points.', 'ok'))
@@ -119,7 +128,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
               </button>
               {isAdmin && (
                 <Link href="/admin" className="btn-primary h-9 px-3.5 !text-[12.5px]">
-                  🚚 Field console
+                  🚚 Team console
                 </Link>
               )}
             </>
@@ -143,34 +152,46 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
         </div>
       </section>
 
-      <GuardianCard p={p} solPrice={solPrice} />
+      <GuardianCard p={p} backer={backer} />
 
       {/* Streak + causes */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StreakCard current={streak?.currentStreak ?? p.streakCurrent} longest={streak?.longestStreak ?? p.streakLongest} days={streak?.donationDays ?? []} />
         <div className="card p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-[15px]">Causes backed</h3>
-            {own && (
-              <button onClick={() => openGive()} className="btn-primary h-8 px-3 !text-[12px]">
+            <h3 className="font-bold text-[15px]">Drops backed</h3>
+            {own && next && (
+              <button onClick={() => openGive({ dropId: next.id })} className="btn-primary h-8 px-3 !text-[12px]">
                 ♡ Give
               </button>
             )}
           </div>
-          {p.causes.length === 0 ? (
-            <p className="text-[13px] text-[#86868b] leading-relaxed">{own ? 'Your first gift starts the pass, the streak and the certificates. 0.01 SOL is enough.' : 'No gifts yet.'}</p>
+          {!backer || backer.drops.length === 0 ? (
+            <p className="text-[13px] text-[#86868b] leading-relaxed">{own ? 'Your first gift starts the streak and the points. A dollar is enough, and it comes back if the drop misses its date.' : 'No gifts yet.'}</p>
           ) : (
             <ul className="space-y-2">
-              {p.causes.map((c) => (
-                <li key={c.poolId}>
-                  <Link href={`/causes/${c.poolId}`} className="flex items-center gap-3 px-2 py-1.5 -mx-2 rounded-xl hover:bg-black/[0.03]">
-                    <span className="w-9 h-9 rounded-xl bg-[#f5f5f7] flex items-center justify-center">{getCause(c.poolId)?.emoji ?? c.emoji}</span>
-                    <span className="flex-1 text-[13px] font-medium">{c.name}</span>
-                    <span className="text-[12px] font-semibold counter">{fmtSol(c.amount, 3)} SOL</span>
+              {backer.drops.map((d) => (
+                <li key={d.id}>
+                  <Link href={dropHref(d.id)} className="flex items-center gap-3 px-2 py-1.5 -mx-2 rounded-xl hover:bg-black/[0.03]">
+                    <span className="w-9 h-9 rounded-xl bg-[#f5f5f7] flex items-center justify-center">{d.emoji}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[13px] font-medium truncate">
+                        #{d.id + 1} {d.title}
+                      </span>
+                      <span className={`block text-[11px] ${d.refundsOpen ? 'text-amber-700' : d.state === 'unlocked' ? 'text-emerald-600' : 'text-[#86868b]'}`}>
+                        {d.refundedUsd > 0 ? `${usdText(d.refundedUsd, 2)} refunded` : d.refundsOpen ? 'Refunding' : d.state === 'unlocked' ? 'Delivered' : d.state === 'proven' ? 'Proof posted, checking' : 'Filling'}
+                      </span>
+                    </span>
+                    <span className="text-[12px] font-semibold counter">{usdText(d.amountUsd, 2)}</span>
                   </Link>
                 </li>
               ))}
             </ul>
+          )}
+          {backer && backer.totals.trades > 0 && (
+            <p className="text-[11.5px] text-[#86868b] mt-3 pt-3 border-t border-black/[0.04]">
+              {backer.totals.trades} {backer.totals.trades === 1 ? 'swap' : 'swaps'} · your fees sent <span className="font-semibold text-emerald-600">{usdText(backer.totals.feesToDropsUsd, 2)}</span> to drops
+            </p>
           )}
         </div>
       </section>
@@ -179,7 +200,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
       <div className="flex items-center gap-1.5 pt-2">
         {(
           [
-            ['gifts', `Receipts${p.gifts.length ? ` · ${p.gifts.length}` : ''}`],
+            ['gifts', `Receipts${backer?.gifts.length ? ` · ${backer.gifts.length}` : ''}`],
             ['certificates', `Certificates${p.certificates.length ? ` · ${p.certificates.length}` : ''}`],
             ['dares', `Dares${p.dares.length ? ` · ${p.dares.length}` : ''}`],
             ['posts', 'Posts'],
@@ -194,7 +215,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
         </button>
       </div>
 
-      {tab === 'gifts' && <Receipts gifts={p.gifts} solPrice={solPrice} />}
+      {tab === 'gifts' && <Receipts gifts={backer?.gifts ?? []} />}
       {tab === 'certificates' && <Certificates certs={p.certificates} owner={p.address} />}
       {tab === 'dares' && (p.dares.length === 0 ? <EmptyLine text="No dares yet." /> : <div className="space-y-2.5">{p.dares.map((d) => <DareCard key={d.id} dare={d} />)}</div>)}
       {tab === 'posts' && (p.posts.length === 0 ? <EmptyLine text="No posts yet." /> : <div className="space-y-2.5">{p.posts.filter((x) => x.type !== 'joined').map((x) => <PostCard key={x.id} post={x} />)}</div>)}
@@ -203,7 +224,8 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
 }
 
 /** The Living Guardian pass: a collectible that grows with giving, streaks and votes. */
-function GuardianCard({ p, solPrice }: { p: PublicProfile; solPrice: number | null }) {
+function GuardianCard({ p, backer }: { p: PublicProfile; backer: BackerProfile | null }) {
+  const given = backer?.totals.givenUsd ?? 0
   const g = p.guardian
   const idx = TIERS.findIndex((t) => t.tier === g.tier)
   return (
@@ -220,14 +242,15 @@ function GuardianCard({ p, solPrice }: { p: PublicProfile; solPrice: number | nu
             @{p.username} · <span className="font-mono">{short(p.address)}</span>
           </p>
         </div>
-        <ProofOrb totalDonated={p.totalDonated} engagement={p.donationCount} size="lg" />
+        {/* The orb's tiers were set in SOL; a hundred dollars is about one. */}
+        <ProofOrb totalDonated={given / 100} engagement={p.donationCount} size="lg" />
       </div>
 
       <div className="relative grid grid-cols-4 gap-3 mt-6">
         {[
-          ['Given', `${fmtSol(p.totalDonated, 2)}`, solPrice ? fmtUsd(p.totalDonated * solPrice) : 'SOL'],
-          ['Gifts', String(p.donationCount), `${p.causes.length} causes`],
-          ['Votes', String(p.votes), 'on releases'],
+          ['Given', usdText(given, given % 1 ? 2 : 0), 'in USDC'],
+          ['Gifts', String(backer?.totals.gifts ?? 0), `${backer?.totals.drops ?? 0} drops`],
+          ['Delivered', usdText(backer?.totals.deliveredUsd ?? 0, 0), 'proven on camera'],
           ['Score', g.score.toLocaleString(), g.nextTier ? `${g.pointsToNext} to ${g.nextTier}` : 'max tier'],
         ].map(([l, v, s]) => (
           <div key={l} className="min-w-0">
@@ -302,34 +325,31 @@ function StreakCard({ current, longest, days }: { current: number; longest: numb
   )
 }
 
-function Receipts({ gifts, solPrice }: { gifts: GiftView[]; solPrice: number | null }) {
-  if (gifts.length === 0) return <EmptyLine text="No gifts yet. Every gift shows up here with its on-chain receipt." />
+const VIA: Record<string, string> = { wallet: 'Your wallet', welcome: 'Welcome gift', x402: 'Agent · x402', intents: 'Another chain', fund: 'Drops fund' }
+
+function Receipts({ gifts }: { gifts: BackerProfile['gifts'] }) {
+  if (gifts.length === 0) return <EmptyLine text="No gifts yet. Every gift shows up here with its transaction." />
   return (
     <div className="card divide-y divide-black/[0.04]">
-      {gifts.map((g) => {
-        const cause = getCause(g.poolId)
-        const via = g.route === 'intents' ? `from ${chainLabel(g.sourceChain) ?? 'another chain'}` : g.route === 'x402' ? 'via x402' : g.route === 'multihopper' ? 'private route' : g.route === 'blink' ? 'via Blink' : 'Solana'
-        return (
-          <div key={g.id} className="flex items-center gap-3 px-4 py-3 hover:bg-black/[0.015] transition-colors">
-            <span className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">{cause?.emoji ?? '💚'}</span>
-            <Link href={`/gift/${g.id}`} className="flex-1 min-w-0 group">
-              <p className="text-[13px] font-semibold truncate group-hover:underline">{g.poolName}</p>
-              <p className="text-[11px] text-[#86868b]">
-                {via} · {timeAgo(g.createdAt)} · <span className="text-emerald-600 font-medium">follow →</span>
-              </p>
-            </Link>
-            <div className="text-right">
-              <p className="text-[13px] font-bold counter">{fmtSol(g.amount, 3)} SOL</p>
-              {solPrice && <p className="text-[10px] text-[#aeaeb2] counter">{fmtUsd(g.amount * solPrice)}</p>}
-            </div>
-            {g.signature && !g.signature.startsWith('x402_') && (
-              <a href={explorerTx(g.signature)} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 font-medium hover:underline">
-                Solscan ↗
-              </a>
-            )}
-          </div>
-        )
-      })}
+      {gifts.map((g) => (
+        <div key={g.ref} className="flex items-center gap-3 px-4 py-3 hover:bg-black/[0.015] transition-colors">
+          <span className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">{g.emoji}</span>
+          <Link href={dropHref(g.dropId)} className="flex-1 min-w-0 group">
+            <p className="text-[13px] font-semibold truncate group-hover:underline">
+              #{g.dropId + 1} {g.title}
+            </p>
+            <p className="text-[11px] text-[#86868b]">
+              {VIA[g.channel] ?? 'Gift'} · {timeAgo(g.at)}
+            </p>
+          </Link>
+          <p className="text-[13px] font-bold counter">{usdText(g.amountUsd, 2)}</p>
+          {g.signature && (
+            <a href={explorerTx(g.signature)} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 font-medium hover:underline">
+              Solscan ↗
+            </a>
+          )}
+        </div>
+      ))}
     </div>
   )
 }

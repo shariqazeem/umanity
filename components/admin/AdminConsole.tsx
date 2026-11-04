@@ -1,18 +1,14 @@
 'use client'
 
-import { useState } from 'react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Btn, Card, Icon, Skeleton, Pill } from '@/components/shared/ui'
 import { short } from '@/lib/client/api'
 import { useAdmin } from './useAdmin'
-import { DeliveryForm } from './DeliveryForm'
-import { PastDeliveries } from './PastDeliveries'
-import { BootstrapCard } from './BootstrapCard'
+import { DropsConsole } from './DropsConsole'
 
 export function AdminConsole() {
   const { signer, openAuth, isMainnet } = useUmanity()
   const { isAdmin, error } = useAdmin()
-  const [refreshKey, setRefreshKey] = useState(0)
 
   if (!signer) {
     return (
@@ -22,7 +18,7 @@ export function AdminConsole() {
             <Icon name="lock" size={20} />
           </span>
           <h1 className="text-[22px] font-bold tracking-[-0.02em] mt-5">Field team console</h1>
-          <p className="text-[14px] text-[#86868b] mt-2">Sign in with a field-team wallet to post deliveries.</p>
+          <p className="text-[14px] text-[#86868b] mt-2">Sign in with a team wallet to run drops.</p>
           <Btn size="lg" className="mt-6" onClick={openAuth}>
             Sign in
           </Btn>
@@ -57,12 +53,12 @@ export function AdminConsole() {
   }
 
   return (
-    <div className="max-w-[1040px] mx-auto">
+    <div className="max-w-[760px] mx-auto">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
-          <p className="eyebrow mb-2">Field team console</p>
-          <h1 className="text-2xl font-bold tracking-[-0.02em]">Post a delivery.</h1>
-          <p className="text-[14px] text-[#86868b] mt-3 max-w-[560px]">Photos, receipts and a plain account of what was bought and for whom. Donors see it on the cause page, in their feed, and as a notification that their gift arrived.</p>
+          <p className="eyebrow mb-2">Team console</p>
+          <h1 className="text-2xl font-bold tracking-[-0.02em]">Run the drops.</h1>
+          <p className="text-[14px] text-[#86868b] mt-3 max-w-[560px]">Open a drop, post updates while it fills, post the filmed proof when it is delivered, and unlock it after review. If a drop can&apos;t happen, call it off and everyone is refunded.</p>
         </div>
         <div className="flex items-center gap-2">
           <Pill tone="green" dot>
@@ -71,15 +67,7 @@ export function AdminConsole() {
           {!isMainnet && <Pill tone="gray">Devnet</Pill>}
         </div>
       </div>
-      <div className="grid lg:grid-cols-[1fr_360px] gap-5 items-start">
-        <Card className="p-5 sm:p-6">
-          <DeliveryForm signer={signer} onPosted={() => setRefreshKey((k) => k + 1)} />
-        </Card>
-        <div className="space-y-4 lg:sticky lg:top-24">
-          <PastDeliveries refreshKey={refreshKey} />
-          <BootstrapCard signer={signer} />
-        </div>
-      </div>
+      <DropsConsole signer={signer} />
     </div>
   )
 }

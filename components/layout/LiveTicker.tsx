@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { apiGet, fmtSol } from '@/lib/client/api'
-import { chainLabel, type ActivityRow } from '@/components/feed/types'
+import { apiGet } from '@/lib/client/api'
+import { activityLine } from '@/components/drops/activity'
+import type { HomeItem } from '@/lib/umanity/feed'
 
 /** The original live strip: only real, recorded activity; hidden until there is some. */
 export function LiveTicker() {
@@ -11,10 +12,10 @@ export function LiveTicker() {
   useEffect(() => {
     let alive = true
     const load = () =>
-      apiGet<{ activities?: ActivityRow[] }>('/api/activity?limit=12')
+      apiGet<{ items?: HomeItem[] }>('/api/feed/drops?limit=16')
         .then((d) => {
           if (!alive) return
-          setItems((d.activities ?? []).slice(0, 12).map(describe))
+          setItems((d.items ?? []).filter((i) => i.type !== 'post').slice(0, 12).map(activityLine).filter(Boolean))
         })
         .catch(() => {})
     load()
@@ -42,21 +43,4 @@ export function LiveTicker() {
       </div>
     </div>
   )
-}
-
-function describe(a: ActivityRow): string {
-  const amt = `${fmtSol(a.amount, a.amount < 0.1 ? 3 : 2)} SOL`
-  switch (a.type) {
-    case 'intent':
-    case 'intent_settled':
-      return `🌐 ${a.username ? `@${a.username}` : 'Someone'} gave ${amt} from ${chainLabel(a.sourceChain) ?? 'another chain'} to ${a.poolName}`
-    case 'discreet':
-      return `🛡️ A private gift of ${amt} reached ${a.poolName}`
-    case 'payout':
-      return `✅ ${amt} released from ${a.poolName} escrow`
-    case 'agent':
-      return `🤖 An agent gave ${a.sourceAmount ? `$${a.sourceAmount} USDC` : amt} to ${a.poolName} via x402`
-    default:
-      return `💚 @${a.username} gave ${amt} to ${a.poolName}`
-  }
 }

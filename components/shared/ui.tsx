@@ -15,6 +15,7 @@ const ICONS: Record<string, string> = {
   gift: 'M20 12v9H4v-9M2 7h20v5H2zM12 7v14M12 7s-1.5-5-4.5-5a2.5 2.5 0 0 0 0 5zM12 7s1.5-5 4.5-5a2.5 2.5 0 0 1 0 5z',
   user: 'M20 21a8 8 0 0 0-16 0M12 13a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9z',
   check: 'm5 12.5 4.5 4.5L19 7.5',
+  swap: 'M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7',
   x: 'M6 6l12 12M18 6 6 18',
   arrowRight: 'M5 12h14m-6-6 6 6-6 6',
   arrowUpRight: 'M7 17 17 7M8 7h9v9',
