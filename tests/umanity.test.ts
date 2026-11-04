@@ -126,9 +126,11 @@ function give(drop: PublicKey, giver: Keypair, amount: number, backer = giver.pu
     .rpc();
 }
 
-function unlock(drop: PublicKey, signer: Keypair) {
+async function unlock(drop: PublicKey, signer: Keypair, proof?: number[]) {
+  // By default, approve the proof the drop holds now.
+  const proofHash = proof ?? (await program.account.drop.fetch(drop)).proofHash;
   return program.methods
-    .unlock()
+    .unlock(proofHash)
     .accountsPartial({
       ...common(),
       drop,
@@ -271,13 +273,17 @@ test("gifts fill a pot; proof, review, then unlock to the payee only", async () 
   await program.methods.postProof(hash("proof")).accountsPartial({ config: configPda, drop, admin: admin.publicKey }).rpc();
   await rejects(give(drop, alice, 1), "DropClosed");
   await rejects(unlock(drop, releaser), "InReview");
+  // Posting again replaces the proof and restarts the review window.
+  await program.methods.postProof(hash("proof, re-filmed")).accountsPartial({ config: configPda, drop, admin: admin.publicKey }).rpc();
 
   d = await program.account.drop.fetch(drop);
   await waitPast(d.proofAt.toNumber() + REVIEW_SECS);
+  // An unlock approved for the first proof can't pay out on the new one.
+  await rejects(unlock(drop, releaser, hash("proof")), "ProofChanged");
   await rejects(unlock(drop, stranger), "Unauthorized");
   await rejects(
     program.methods
-      .unlock()
+      .unlock(hash("proof, re-filmed"))
       .accountsPartial({ ...common(), drop, pot, payee: stranger.publicKey, payeeUsdc: ata(stranger.publicKey), releaseAuthority: releaser.publicKey })
       .preInstructions([ataIx(stranger.publicKey)])
       .signers([releaser])

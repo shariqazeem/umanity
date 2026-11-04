@@ -283,11 +283,14 @@ pub mod umanity {
         Ok(())
     }
 
-    /// Pays the whole pot to the drop's payee.
-    pub fn unlock(ctx: Context<Unlock>) -> Result<()> {
+    /// Pays the whole pot to the drop's payee. `proof_hash` names the proof
+    /// this unlock was approved for; if the proof has been replaced since,
+    /// the unlock fails, so an approval can never pay out on other proof.
+    pub fn unlock(ctx: Context<Unlock>, proof_hash: [u8; 32]) -> Result<()> {
         let now = Clock::get()?.unix_timestamp;
         let drop = &mut ctx.accounts.drop;
         require!(drop.state == PROVEN, UmanityError::NotProven);
+        require!(drop.proof_hash == proof_hash, UmanityError::ProofChanged);
         require!(now >= drop.proof_at + ctx.accounts.config.review_secs, UmanityError::InReview);
         require!(now <= drop.deadline + UNLOCK_GRACE_SECS, UmanityError::UnlockWindowClosed);
         let amount = ctx.accounts.pot.amount;
@@ -995,4 +998,6 @@ pub enum UmanityError {
     DropNotFinished,
     #[msg("Math overflow")]
     MathOverflow,
+    #[msg("The drop's proof has changed since this unlock was approved")]
+    ProofChanged,
 }

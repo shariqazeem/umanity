@@ -3107,7 +3107,9 @@
     {
       "name": "unlock",
       "docs": [
-        "Pays the whole pot to the drop's payee."
+        "Pays the whole pot to the drop's payee. `proof_hash` names the proof",
+        "this unlock was approved for; if the proof has been replaced since,",
+        "the unlock fails, so an approval can never pay out on other proof."
       ],
       "discriminator": [
         101,
@@ -3361,7 +3363,17 @@
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "proof_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -3640,6 +3652,11 @@
       "code": 6017,
       "name": "MathOverflow",
       "msg": "Math overflow"
+    },
+    {
+      "code": 6018,
+      "name": "ProofChanged",
+      "msg": "The drop's proof has changed since this unlock was approved"
     }
   ],
   "types": [

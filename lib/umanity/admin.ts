@@ -102,7 +102,9 @@ export async function unlockDrop(conn: Connection, dropId: number) {
   if (!drop || !config) throw new Error('No such drop')
   const signer = [getAuthorityKeypair(), getTreasuryKeypair()].find((k) => k?.publicKey.toBase58() === config.releaseAuthority)
   if (!signer) throw new Error(`Unlocking needs the release key ${config.releaseAuthority}, which this server does not hold`)
-  return send(conn, signer, await unlockIxs(conn, { dropId, payee: new PublicKey(drop.payee), releaseAuthority: signer.publicKey, payer: signer.publicKey }))
+  if (!drop.proofHash) throw new Error('This drop has no proof yet')
+  const proofHash = Uint8Array.from(Buffer.from(drop.proofHash, 'hex'))
+  return send(conn, signer, await unlockIxs(conn, { dropId, payee: new PublicKey(drop.payee), releaseAuthority: signer.publicKey, payer: signer.publicKey, proofHash }))
 }
 
 export async function cancelDrop(conn: Connection, dropId: number) {

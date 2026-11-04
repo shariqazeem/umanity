@@ -3113,7 +3113,9 @@ export type Umanity = {
     {
       "name": "unlock",
       "docs": [
-        "Pays the whole pot to the drop's payee."
+        "Pays the whole pot to the drop's payee. `proof_hash` names the proof",
+        "this unlock was approved for; if the proof has been replaced since,",
+        "the unlock fails, so an approval can never pay out on other proof."
       ],
       "discriminator": [
         101,
@@ -3367,7 +3369,17 @@ export type Umanity = {
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "proofHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -3646,6 +3658,11 @@ export type Umanity = {
       "code": 6017,
       "name": "mathOverflow",
       "msg": "Math overflow"
+    },
+    {
+      "code": 6018,
+      "name": "proofChanged",
+      "msg": "The drop's proof has changed since this unlock was approved"
     }
   ],
   "types": [

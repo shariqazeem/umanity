@@ -260,10 +260,11 @@ export async function refundIxs(connection: Connection, a: { dropId: number; bac
   return [createAssociatedTokenAccountIdempotentInstruction(a.payer, usdcAccount(a.backer), a.backer, USDC), ix]
 }
 
-export async function unlockIxs(connection: Connection, a: { dropId: number; payee: PublicKey; releaseAuthority: PublicKey; payer: PublicKey }) {
+/** `proofHash` is the proof the unlock was approved for; the program refuses if the drop's proof has changed. */
+export async function unlockIxs(connection: Connection, a: { dropId: number; payee: PublicKey; releaseAuthority: PublicKey; payer: PublicKey; proofHash: Uint8Array }) {
   const drop = dropAddress(a.dropId)
   const ix = await umanityProgram(connection)
-    .methods.unlock()
+    .methods.unlock(Array.from(a.proofHash))
     .accountsPartial({
       config: CONFIG,
       drop,

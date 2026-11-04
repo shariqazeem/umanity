@@ -50,13 +50,13 @@ $UMANITY pool trading fee (Meteora DBC, 1% in USDC) ──┼─► fee inbox (U
 | Setup | `init_config`, `set_admin`, `set_params`, `set_release_authority`, `lock_release_authority` | Only the program's upgrade authority can set it up. The unlock key can be handed over and then locked for good. Per-pot cap and review window are bounded. |
 | Drops | `create_drop`, `cancel_drop` | A drop fixes its payee, goal, cap, date (at most 120 days) and the sha256 of its description. |
 | Gifts | `give`, `open_backer`, `give_all` | Gifts are USDC into the drop's pot, capped. A backer record holds each backer's amount; the payer of a sponsored gift can differ from the backer. |
-| Proof and payout | `post_proof`, `unlock` | Proof must be posted before the date and restarts the review window. `unlock` needs the release key, a passed review, and pays the whole pot to the drop's payee only. |
+| Proof and payout | `post_proof`, `unlock` | Proof must be posted before the date; posting again replaces it and restarts the review window. `unlock` needs the release key and a passed review, must name the proof it was approved for (it fails if that proof was replaced), and pays the whole pot to the drop's payee only. |
 | Refunds | `refund`, `return_to_fund`, `close_backer` | Refunds open when a drop is called off, misses its date unproven, or is not unlocked within 7 days after its date. Anyone may send a refund; it can only go to that backer's own USDC account. |
 | Fees | `fund_drop`, `split_fees`, `sweep_meteora_fees` | Fees are split ops = ⌊half⌋, drops = the rest. The drops fund can only pay into pots. `sweep_meteora_fees` claims $UMANITY's Meteora DBC trading fees by CPI, with the `fees` PDA as the pool's fee claimer, and splits them in the same instruction. |
 
 Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFeesClaimed`, …) are indexed into the database by `lib/umanity/indexer.ts`; the Money tab reads every total back from the chain.
 
-**Tests:** `bash scripts/test-programs.sh` starts a local validator that clones Meteora's Dynamic Bonding Curve and Metaplex from mainnet, loads the program and runs 7 tests: setup only by the upgrade authority; caps and dates; fill → proof → review → unlock to the payee only; the 50/50 split, the fund paying into pots and refunds after a cancel; refunds after a missed date; a real $UMANITY DBC pool whose trading fees a stranger sweeps into the program (and an attack that points the inbox elsewhere fails); handing over and locking the unlock key.
+**Tests:** `bash scripts/test-programs.sh` starts a local validator that clones Meteora's Dynamic Bonding Curve and Metaplex from mainnet, loads the program and runs 7 tests: setup only by the upgrade authority; caps and dates; fill → proof → review → unlock to the payee only (an unlock approved for replaced proof fails); the 50/50 split, the fund paying into pots and refunds after a cancel; refunds after a missed date; a real $UMANITY DBC pool whose trading fees a stranger sweeps into the program (and an attack that points the inbox elsewhere fails); handing over and locking the unlock key.
 
 ## Try it (do X → see Y)
 
@@ -125,4 +125,4 @@ scripts/                           test-programs.sh, umanity-setup.ts, launch-um
 - **Who can unlock a pot today:** the release key held by Umanity. It can only unlock a drop whose proof is on-chain and whose review window has passed, and only to that drop's payee; it cannot redirect or withdraw. During the NEAR hackathon unlocking moves behind a NEAR policy contract with Chain Signatures, and the release key can then be locked for good (`lock_release_authority`).
 - **Umanity is a crypto app, not a registered charity.** Gifts are not tax-deductible. $UMANITY is not an investment and comes with no promise of returns.
 
-MIT licence.
+MIT licence ([LICENSE](LICENSE)).
