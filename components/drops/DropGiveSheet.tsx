@@ -104,8 +104,21 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
         <div className="w-14 h-14 rounded-full border-2 border-white/20 flex items-center justify-center mx-auto mb-4 text-emerald-400 text-2xl">✓</div>
         <p className="text-[20px] font-bold">{usdText(phase.amount)} is in the pot</p>
         <p className="text-white/60 text-[13.5px] mt-1.5 max-w-xs mx-auto">
-          That&apos;s {plural(Math.floor(units + 1e-9) || 0, drop.unit.name)} for {drop.place}. If it isn&apos;t delivered and proven by {dayText(drop.deadline)}, it comes back to you.
+          {(() => {
+            const given = amountInUnits(phase.amount, drop.unit)
+            return given.whole >= 1 ? `That's ${plural(given.whole, drop.unit.name)} for ${drop.place}.` : `That's ${Math.round(given.units * 100)}% of a ${drop.unit.name} for ${drop.place}.`
+          })()}{' '}
+          If it isn&apos;t delivered and proven by {dayText(drop.deadline)}, it comes back to you.
         </p>
+        <div className="flex items-center gap-1.5 mt-6 max-w-xs mx-auto text-left" aria-label="In the pot, step 1 of 3">
+          {['In the pot', 'Filmed', 'Delivered'].map((label, i) => (
+            <div key={label} className="flex-1 min-w-0">
+              <div className={`h-1 rounded-full ${i === 0 ? 'bg-emerald-400' : 'bg-white/15'}`} />
+              <p className={`text-[11px] mt-1.5 ${i === 0 ? 'text-white font-semibold' : 'text-white/40'}`}>{label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-white/45 text-[12px] mt-3">Follow it in Me. It moves when the delivery is filmed.</p>
         <div className="flex items-center justify-center gap-4 mt-6 text-[12.5px]">
           <button onClick={share} className="font-semibold text-emerald-400 hover:text-emerald-300">
             Share on X

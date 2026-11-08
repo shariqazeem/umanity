@@ -5,7 +5,7 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import { dropGifts, drops, getDb, moneyEvents, trades } from '@/lib/db'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
-import { freshen } from './data'
+import { dropView, freshen } from './data'
 import { refundsOpen } from './program'
 
 export async function backerProfile(address: string) {
@@ -45,7 +45,7 @@ export async function backerProfile(address: string) {
     const d = byId.get(id)
     if (!d) return []
     const state = d.state as 'open' | 'proven' | 'unlocked' | 'cancelled'
-    return [{ id, title: d.title, emoji: d.emoji, state, refundsOpen: refundsOpen({ state, deadline: Math.floor(d.deadline.getTime() / 1000) }), ...x }]
+    return [{ id, title: d.title, emoji: d.emoji, state, refundsOpen: refundsOpen({ state, deadline: Math.floor(d.deadline.getTime() / 1000) }), drop: dropView(d), ...x }]
   })
   const t = tradeRows[0] ?? { n: 0, usd: '0', fees: '0' }
   return {

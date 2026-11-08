@@ -254,3 +254,53 @@ export function ChainFacts({ drop }: { drop: DropDetail }) {
     </dl>
   )
 }
+
+type TicketDrop = Pick<DropView, 'id' | 'title' | 'emoji' | 'place' | 'state' | 'refundsOpen' | 'deadline' | 'unit'>
+
+/** Where a gift is: in the pot, filmed, delivered, or refunded. Also used on the dark done screen. */
+export function giftStage(drop: Pick<DropView, 'state' | 'refundsOpen'>, refundedUsd = 0) {
+  if (drop.refundsOpen || refundedUsd > 0) return { steps: ['In the pot', refundedUsd > 0 ? 'Refunded' : 'Refunding'], done: refundedUsd > 0 ? 2 : 1, refund: true }
+  const done = drop.state === 'unlocked' ? 3 : drop.state === 'proven' ? 2 : 1
+  return { steps: ['In the pot', 'Filmed', 'Delivered'], done, refund: false }
+}
+
+/** A gift as a ticket that follows its drop to the delivery video, or back to the giver. */
+export function GiftTicket({ drop, amountUsd, refundedUsd = 0 }: { drop: TicketDrop; amountUsd: number; refundedUsd?: number }) {
+  const stage = giftStage(drop, refundedUsd)
+  const { whole } = amountInUnits(amountUsd, drop.unit)
+  const line = stage.refund
+    ? refundedUsd > 0
+      ? `${usdText(refundedUsd, 2)} came back to your wallet.`
+      : drop.state === 'cancelled'
+        ? 'Called off before delivery. Your money is on its way back.'
+        : 'It missed its date. Your money is on its way back.'
+    : drop.state === 'unlocked'
+      ? 'Delivered and filmed.'
+      : drop.state === 'proven'
+        ? 'The delivery is filmed and being checked.'
+        : `Pays on filmed proof. Refunded if it misses ${dayText(drop.deadline)}.`
+  return (
+    <Link href={dropHref(drop.id)} className="card p-4 block hover:border-black/[0.1] transition-colors">
+      <div className="flex items-center gap-3">
+        <span className="w-11 h-11 rounded-[14px] bg-[#f5f5f7] flex items-center justify-center text-[20px] flex-shrink-0">{drop.emoji}</span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-[14px] font-semibold truncate">{drop.title}</span>
+          <span className="block text-[12px] text-[#86868b] truncate">
+            {usdText(amountUsd, amountUsd % 1 ? 2 : 0)}
+            {whole > 0 ? ` · ${plural(whole, drop.unit.name)}` : ''} · {drop.place}
+          </span>
+        </span>
+        <StatePill drop={drop} />
+      </div>
+      <div className="flex items-center gap-1.5 mt-3.5" aria-label={`${stage.steps[stage.done - 1]}, step ${stage.done} of ${stage.steps.length}`}>
+        {stage.steps.map((label, i) => (
+          <div key={label} className="flex-1 min-w-0">
+            <div className={`h-1 rounded-full ${i < stage.done ? (stage.refund && i > 0 ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-black/[0.06]'}`} />
+            <p className={`text-[11px] mt-1.5 truncate ${i < stage.done ? 'text-[#1d1d1f] font-semibold' : 'text-[#aeaeb2]'}`}>{label}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-[12px] text-[#525252] mt-2">{line}</p>
+    </Link>
+  )
+}

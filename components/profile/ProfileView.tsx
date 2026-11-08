@@ -10,7 +10,7 @@ import { apiGet, apiSend, fmtSol, short, timeAgo } from '@/lib/client/api'
 import { explorerTx } from '@/lib/solana/constants'
 import { TIERS } from '@/lib/guardian'
 import { useProfile } from './useProfile'
-import { dropHref } from '@/components/drops/DropParts'
+import { GiftTicket, dropHref } from '@/components/drops/DropParts'
 import { pickNextDrop, useDrops } from '@/components/drops/hooks'
 import { usdText } from '@/lib/umanity/drops'
 import type { BackerProfile } from '@/lib/umanity/profile'
@@ -23,6 +23,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
   const { address, openProfileEditor, openWalletSheet, openGive, ensureSigner, toast } = useUmanity()
   const { profile, loading, error, reload, setProfile } = useProfile(username, address)
   const [tab, setTab] = useState<Tab>('gifts')
+  const [showAllDrops, setShowAllDrops] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [streak, setStreak] = useState<{ currentStreak: number; longestStreak: number; donationDays: string[] } | null>(null)
   const [backer, setBacker] = useState<BackerProfile | null>(null)
@@ -163,24 +164,16 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
           {!backer || backer.drops.length === 0 ? (
             <p className="text-[13px] text-[#86868b] leading-relaxed">{own ? 'Your first gift starts the streak and the points. A dollar is enough, and it comes back if the drop misses its date.' : 'No gifts yet.'}</p>
           ) : (
-            <ul className="space-y-2">
-              {backer.drops.map((d) => (
-                <li key={d.id}>
-                  <Link href={dropHref(d.id)} className="flex items-center gap-3 px-2 py-1.5 -mx-2 rounded-xl hover:bg-black/[0.03]">
-                    <span className="w-9 h-9 rounded-xl bg-[#f5f5f7] flex items-center justify-center">{d.emoji}</span>
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-[13px] font-medium truncate">
-                        #{d.id + 1} {d.title}
-                      </span>
-                      <span className={`block text-[11px] ${d.refundsOpen ? 'text-amber-700' : d.state === 'unlocked' ? 'text-emerald-600' : 'text-[#86868b]'}`}>
-                        {d.refundedUsd > 0 ? `${usdText(d.refundedUsd, 2)} refunded` : d.refundsOpen ? 'Refunding' : d.state === 'unlocked' ? 'Delivered' : d.state === 'proven' ? 'Proof posted, checking' : 'Filling'}
-                      </span>
-                    </span>
-                    <span className="text-[12px] font-semibold counter">{usdText(d.amountUsd, 2)}</span>
-                  </Link>
-                </li>
+            <div className="space-y-2.5">
+              {(showAllDrops ? backer.drops : backer.drops.slice(0, 3)).map((d) => (
+                <GiftTicket key={d.id} drop={d.drop} amountUsd={d.amountUsd} refundedUsd={d.refundedUsd} />
               ))}
-            </ul>
+              {backer.drops.length > 3 && (
+                <button onClick={() => setShowAllDrops((v) => !v)} className="w-full text-center text-[12.5px] font-semibold text-[#1d1d1f] py-2 rounded-xl hover:bg-black/[0.03]">
+                  {showAllDrops ? 'Show fewer' : `${backer.drops.length - 3} more ${backer.drops.length - 3 === 1 ? 'drop' : 'drops'}`}
+                </button>
+              )}
+            </div>
           )}
           {backer && backer.totals.trades > 0 && (
             <p className="text-[11.5px] text-[#86868b] mt-3 pt-3 border-t border-black/[0.04]">

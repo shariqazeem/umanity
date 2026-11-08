@@ -42,7 +42,7 @@ export async function freshen(opts: { wait?: boolean } = {}) {
 
 export type DropView = ReturnType<typeof dropView>
 
-function dropView(d: Drop) {
+export function dropView(d: Drop) {
   const meta = JSON.parse(d.meta) as DropMeta
   const potUsd = d.potMicro / 1e6
   const goalUsd = d.goalMicro / 1e6
