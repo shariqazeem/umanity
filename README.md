@@ -81,7 +81,7 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 - Live solver quotes from 30+ chains and deposit addresses. The planned v3 route settles into a pot: 1Click settles USDC on Solana, then `give`. With Intents Connect, `open_backer` + `give_all` give whatever arrived, because the amount is only known after the swap.
 
 ### Meteora Dynamic Bonding Curve (`lib/token/curve.ts`, `scripts/launch-umanity.ts`)
-- $UMANITY: fixed 1B supply, every token sold on the curve (no presale, no team tokens, no vesting), USDC quote, fee taken in USDC, an anti-sniping fee that starts high and decays to 1% within a minute, graduation to a DAMM v2 pool with all liquidity permanently locked to the program's `fees` address. The pool's fee claimer is that PDA, so only `sweep_meteora_fees` can claim. **Not launched yet**; `npx tsx scripts/launch-umanity.ts plan` prints the exact parameters.
+- $UMANITY: fixed 1B supply with no presale, no team tokens and no vesting. Part of the supply is sold on the curve; the rest seeds the DAMM v2 pool at graduation, and all of that pool's liquidity is permanently locked to the program's `fees` address. USDC quote, fee taken in USDC, and an anti-sniping fee that starts high and decays to 1% within a minute. The pool's fee claimer is that PDA, so only `sweep_meteora_fees` can claim. **Not launched yet**; `npx tsx scripts/launch-umanity.ts plan` prints the exact parameters.
 
 ### Jupiter (`lib/umanity/swap.ts`)
 - Swap V2 `/build` with `platformFeeBps=50` and `feeAccount` = the program's fee inbox. Jupiter takes no share on `/build`. Every build is simulated before it is returned; sponsored builds are refused if they would cost the treasury more than one token account's rent.

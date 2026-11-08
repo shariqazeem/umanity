@@ -1,9 +1,9 @@
 /**
  * $UMANITY launch settings for Meteora's Dynamic Bonding Curve.
  *
- * Fair launch: every token is sold on the curve (no presale, no team
- * allocation, no vesting), the supply is fixed, and fees are taken in USDC
- * only. The config's fee claimer is the Umanity program's `fees` address, so
+ * Fair launch: no presale, no team allocation and no vesting. Part of the
+ * fixed supply is sold on the curve and the rest seeds the DAMM v2 pool at
+ * graduation; fees are taken in USDC only. The config's fee claimer is the Umanity program's `fees` address, so
  * the program's `sweep_meteora_fees` is the only way to claim them, and it
  * splits every claim 50/50 between the drops fund and ops. At graduation all
  * liquidity is locked permanently to the same address.
