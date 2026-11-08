@@ -37,7 +37,7 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
             <LiveTicker />
           </div>
           <div className={`px-4 sm:px-5 pt-4 pb-28 lg:pb-12 ${wide ? '' : 'max-w-[680px] mx-auto lg:max-w-none'}`}>
-            <div className="entrance-reveal">{children}</div>
+            {children}
           </div>
         </main>
 

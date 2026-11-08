@@ -7,8 +7,8 @@ import { useRouter } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { apiGet, timeAgo } from '@/lib/client/api'
 import { Img } from '@/components/shared/ui'
-import { useMoney } from '@/components/drops/hooks'
-import { dropHref } from '@/components/drops/DropParts'
+import { pickNextDrop, useDrops, useMoney } from '@/components/drops/hooks'
+import { DropMeter, StatePill, dayText, dropHref } from '@/components/drops/DropParts'
 import { usdText } from '@/lib/umanity/drops'
 import type { HomeItem } from '@/lib/umanity/feed'
 
@@ -63,7 +63,7 @@ export default function Landing() {
         {/* ===== HERO ===== */}
         <section className="relative min-h-[100dvh] flex items-center">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/40 via-white to-white" />
-          <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-16 w-full">
+          <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-16 w-full lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-14 lg:items-center">
             <div className="max-w-3xl animate-fade-up">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/40 text-[11px] font-semibold text-emerald-700 mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -78,8 +78,8 @@ export default function Landing() {
                 <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">On camera.</span>
               </h1>
 
-              <p className="text-lg md:text-[22px] text-[#86868b] max-w-xl leading-[1.5] mb-10">
-                Every dollar waits in a pot on Solana until the delivery is filmed and checked. Miss the date and the program sends it back. Trade here, and half of every fee fills the next drop.
+              <p className="text-lg md:text-[22px] text-[#86868b] max-w-xl leading-[1.45] mb-10 [text-wrap:balance]">
+                Your dollars wait in a pot on Solana until the delivery is filmed. Late? The program sends them back.
               </p>
 
               <div className="flex flex-col sm:flex-row items-start gap-3 mb-6">
@@ -108,17 +108,13 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="hidden lg:block absolute right-6 top-1/2 -translate-y-1/2">
-              <div className="card-glass p-6 w-[220px]">
-                <StatsColumn />
-              </div>
+            <div className="mt-10 lg:mt-0">
+              <HeroDrop />
             </div>
           </div>
         </section>
 
-        <div className="lg:hidden border-y border-black/[0.04] bg-white/80 py-6">
-          <StatsRow />
-        </div>
+        <StatsRow />
 
         {/* ===== HOW A DROP WORKS ===== */}
         <section className="py-20 md:py-28 bg-white">
@@ -333,11 +329,49 @@ function StatsColumn() {
   )
 }
 
+/** The live next drop: a stranger sees the product working, not a description of it. */
+function HeroDrop() {
+  const { data: drops } = useDrops()
+  const { openGive } = useUmanity()
+  if (!drops) return <div className="skeleton h-[320px] !rounded-[24px]" />
+  const drop = pickNextDrop(drops)
+  if (!drop) {
+    return (
+      <div className="card-glass p-6 lg:w-[220px] lg:ml-auto">
+        <StatsColumn />
+      </div>
+    )
+  }
+  return (
+    <div className="card p-6 md:p-7 !rounded-[24px] shadow-elevated">
+      <div className="flex items-center gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">Filling now · {dayText(drop.deadline)}</p>
+        <StatePill drop={drop} />
+      </div>
+      <Link href={dropHref(drop.id)} className="flex items-start gap-3 mt-3 group">
+        <span className="w-11 h-11 rounded-[14px] bg-[#f5f5f7] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</span>
+        <span className="min-w-0">
+          <span className="block text-[18px] font-bold tracking-tight leading-snug group-hover:underline [text-wrap:balance]">{drop.title}</span>
+          <span className="block text-[12.5px] text-[#86868b] mt-0.5 truncate">{drop.place}</span>
+        </span>
+      </Link>
+      <div className="mt-5">
+        <DropMeter drop={drop} size="sm" />
+      </div>
+      <button onClick={() => openGive({ dropId: drop.id })} className="btn-primary w-full py-3.5 mt-5 !text-[15px]">
+        ♡ Give to this drop
+      </button>
+      <p className="text-[11.5px] text-[#86868b] text-center mt-2.5">Pays on filmed proof. Refunded if it misses {dayText(drop.deadline)}.</p>
+    </div>
+  )
+}
+
+/** Live totals under the hero, once there is something real to count. */
 function StatsRow() {
   const { data: money } = useMoney(60_000)
-  if (!money) return null
+  if (!money || money.totals.cameIn <= 0) return null
   return (
-    <div className="flex items-center justify-center gap-10 px-6">
+    <div className="flex items-center justify-center gap-10 px-6 py-6 border-y border-black/[0.04] bg-white/80">
       {[
         [usdText(money.totals.cameIn, 0), 'Given'],
         [usdText(money.totals.inPots, 0), 'In pots'],

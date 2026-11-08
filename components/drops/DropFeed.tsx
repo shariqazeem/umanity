@@ -74,9 +74,12 @@ export function DropFeed() {
 
       {!address && !next && <GuestIntro />}
 
-      <div className="mb-3">
-        <Composer onPosted={(post: FeedPost) => setItems((it) => [{ type: 'post', id: `post_${post.id}`, at: post.createdAt, post }, ...(it ?? [])])} onDare={dare} />
-      </div>
+      {/* Guests read the feed; the header already offers Sign in. */}
+      {address && (
+        <div className="mb-3">
+          <Composer onPosted={(post: FeedPost) => setItems((it) => [{ type: 'post', id: `post_${post.id}`, at: post.createdAt, post }, ...(it ?? [])])} onDare={dare} />
+        </div>
+      )}
 
       <div className="flex gap-1.5 mb-3 overflow-x-auto no-scrollbar">
         {FILTERS.map((f) => (

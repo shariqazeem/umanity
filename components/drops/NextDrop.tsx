@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useUmanity } from '@/components/providers/UmanityProvider'
+import { Icon } from '@/components/shared/ui'
 import { amountInUnits, plural, usdText } from '@/lib/umanity/drops'
 import { pickNextDrop, useDrops } from './hooks'
 import { DropMeter, StatePill, dayText, dropHref } from './DropParts'
@@ -42,17 +43,19 @@ export function NextDrop() {
           <div className="mt-5">
             <DropMeter drop={drop} />
           </div>
-          <p className="text-[11.5px] text-[#86868b] mt-3">
-            Pays out only after the delivery is filmed and checked. Missed date? Everyone gets their money back.
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-[12px] text-[#525252]">
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="camera" size={14} className="text-emerald-600" /> Pays on filmed proof
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="refresh" size={14} className="text-emerald-600" /> Refunded if it misses {dayText(drop.deadline)}
+            </span>
             {delivered.length > 0 && (
-              <>
-                {' '}
-                <Link href={dropHref(delivered[0].id)} className="font-semibold text-[#1d1d1f] hover:underline">
-                  Watch the last drop →
-                </Link>
-              </>
+              <Link href={dropHref(delivered[0].id)} className="font-semibold text-[#1d1d1f] hover:underline">
+                Watch the last drop →
+              </Link>
             )}
-          </p>
+          </div>
         </div>
         <div className="flex justify-center">
           <button onClick={() => openGive({ dropId: drop.id })} className="btn-primary w-44 h-44 md:w-48 md:h-48 !rounded-full flex flex-col items-center justify-center gap-1 hover:!shadow-2xl hover:!shadow-black/20">
