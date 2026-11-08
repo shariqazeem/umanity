@@ -94,7 +94,11 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 - Swap V2 `/build` with `platformFeeBps=50` and `feeAccount` = the program's fee inbox. Jupiter takes no share on `/build`. Every build is simulated before it is returned; sponsored builds are refused if they would cost the treasury more than one token account's rent.
 
 ### Keeper (`lib/umanity/keeper.ts`)
-- From page reads (at most every 5 minutes) and a daily cron (`/api/keeper`): claim $UMANITY fees from Meteora and split them, split the fee inbox once it holds $1, refund the backers of drops that missed their date, and settle cross-chain gifts whose givers closed the tab.
+- From page reads (at most every 5 minutes) and a daily cron (`/api/keeper`): claim $UMANITY fees from Meteora and split them, split the fee inbox once it holds $1, refund the backers of drops that missed their date, and settle cross-chain gifts whose givers closed the tab. The cron also moves guarded drops along: it checks new proofs and releases approved ones.
+
+### The NEAR guard (`near/guard/`, `lib/near/`): see [NEAR.md](NEAR.md)
+- The key that unlocks a pot is a key only a NEAR contract can use, through Chain Signatures. The guard signs an unlock only after two things. First, an AI inside a TEE (NEAR AI Cloud) checks the proof against the promise, and the guard verifies the TEE's signature on-chain. Second, a council the owner cannot change gets a review window to veto. Even then, the only thing it signs is that one unlock.
+- Live on NEAR testnet (`guard.umanity.testnet`). Verified end to end: NEAR's testnet MPC network signed a real Umanity unlock that a Solana validator accepted.
 
 ## Run it locally
 
@@ -123,13 +127,15 @@ lib/token/curve.ts                 $UMANITY bonding curve settings
 app/(app)/                         home, trade, give, money, profile, drops/[n], agents, admin
 app/api/                           drops (+ intents), feed, money, trade, x402, keeper, admin/drops, profile/drops
 mcp/server.ts                      MCP server: Claude can fill a drop
-scripts/                           test-programs.sh, umanity-setup.ts, launch-umanity.ts, resume-buffer.ts
+near/guard/                        the NEAR guard contract: TEE verdicts, council, Solana message checker, Chain Signatures (39 tests)
+lib/near/                          the guard's server side: NEAR AI check, verdicts, guarded release
+scripts/                           test-programs.sh, guard-e2e.sh, near-attest.ts, umanity-setup.ts, launch-umanity.ts, resume-buffer.ts
 ```
 
 ## Honest status
 
 - **Clusters:** the program is live on **devnet** ([`UmauiNG…`](https://explorer.solana.com/address/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3?cluster=devnet)), set up with a $2,000 cap per pot and a 6-hour review window. An x402 agent gift went into a labelled test drop's pot there ([tx](https://explorer.solana.com/tx/3yif3WLC51VXb1nqeQxd8DNN3gQVCv4Z7zjKKJLgxAfE6AS3dZJH5zNjsxofxSBtFfM5nh5xViV3xjpVrBx6A6UZ?cluster=devnet)), and the agent got its USDC back when the drop was called off. Every flow above is also verified on a local validator with Meteora's real program cloned from mainnet, and swaps by mainnet simulation. The mainnet deploy comes next.
-- **Who can unlock a pot today:** the release key held by Umanity. It can only unlock a drop whose proof is on-chain and whose review window has passed, and only to that drop's payee; it cannot redirect or withdraw. During the NEAR hackathon unlocking moves behind a NEAR policy contract with Chain Signatures, and the release key can then be locked for good (`lock_release_authority`).
+- **Who can unlock a pot today:** on devnet, the release key held by Umanity. It can only unlock a drop whose proof is on-chain and whose review window has passed, and only to that drop's payee; it cannot redirect or withdraw. The NEAR guard that replaces it is live on NEAR testnet and verified end to end ([NEAR.md](NEAR.md)). On mainnet, the release key will be the guard's from the start and then locked for good (`lock_release_authority`). Until then, Umanity does not claim that nobody can move a pot alone.
 - **Umanity is a crypto app, not a registered charity.** Gifts are not tax-deductible. $UMANITY is not an investment and comes with no promise of returns.
 
 MIT licence ([LICENSE](LICENSE)).
