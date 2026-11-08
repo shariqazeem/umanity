@@ -6,11 +6,12 @@ import { useConnection } from '@solana/wallet-adapter-react'
 import { apiGet } from '@/lib/client/api'
 import { usdcAccount } from '@/lib/umanity/usdc'
 import type { DropDetail, DropView, MoneySummary } from '@/lib/umanity/data'
+import { useSeed } from './seed'
 
-/** Polls a JSON endpoint while the tab is visible. */
-function usePoll<T>(path: string | null, pick: (j: Record<string, unknown>) => T | null, everyMs: number) {
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
+/** Polls a JSON endpoint while the tab is visible, starting from what the server rendered when there is a seed. */
+function usePoll<T>(path: string | null, pick: (j: Record<string, unknown>) => T | null, everyMs: number, initial: T | null = null) {
+  const [data, setData] = useState<T | null>(initial)
+  const [loading, setLoading] = useState(initial == null)
   const [error, setError] = useState<string | null>(null)
   const load = useCallback(async () => {
     if (!path) return
@@ -37,7 +38,8 @@ function usePoll<T>(path: string | null, pick: (j: Record<string, unknown>) => T
 }
 
 export function useDrops(everyMs = 15_000) {
-  return usePoll<DropView[]>('/api/drops', (j) => (j.drops as DropView[]) ?? [], everyMs)
+  const seed = useSeed()
+  return usePoll<DropView[]>('/api/drops', (j) => (j.drops as DropView[]) ?? [], everyMs, seed.drops ?? null)
 }
 
 export function useDrop(id: number | null, everyMs = 10_000) {
@@ -45,7 +47,8 @@ export function useDrop(id: number | null, everyMs = 10_000) {
 }
 
 export function useMoney(everyMs = 20_000) {
-  return usePoll<MoneySummary>('/api/money', (j) => j as unknown as MoneySummary, everyMs)
+  const seed = useSeed()
+  return usePoll<MoneySummary>('/api/money', (j) => j as unknown as MoneySummary, everyMs, seed.money ?? null)
 }
 
 /** The open drop closest to its date, the one the Give button fills. */

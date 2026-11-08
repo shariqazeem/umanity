@@ -14,6 +14,7 @@ import { amountInUnits, helpedText, plural, usdText } from '@/lib/umanity/drops'
 import type { FeedDrop, FeedWho, HomeItem } from '@/lib/umanity/feed'
 import type { FeedPost } from '@/lib/data/social'
 import { pickNextDrop, useDrops } from './hooks'
+import { useSeed } from './seed'
 import { dropHref } from './DropParts'
 
 const FILTERS = [
@@ -35,7 +36,8 @@ export function DropFeed() {
   const { address } = useUmanity()
   const { data: drops } = useDrops()
   const next = pickNextDrop(drops)
-  const [items, setItems] = useState<HomeItem[] | null>(null)
+  const seed = useSeed()
+  const [items, setItems] = useState<HomeItem[] | null>(seed.feed ?? null)
   const [failed, setFailed] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
 
@@ -72,7 +74,7 @@ export function DropFeed() {
         <p className="text-[#86868b] text-[13px]">Every gift, delivery and payout, as it happens on Solana.</p>
       </div>
 
-      {!address && !next && <GuestIntro />}
+      {!address && drops && !next && <GuestIntro />}
 
       {/* Guests read the feed; the header already offers Sign in. */}
       {address && (
