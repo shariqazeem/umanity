@@ -112,4 +112,10 @@ Written 8 Nov 2026, the day the founder asked for a mainnet-only, finished produ
 | P5 Mainnet alignment | 9 Nov |
 | P6 States and details | 10 Nov |
 
-**Status:** plan written; P1 starts now.
+**Status (8 Nov, evening):**
+- **P1 done.** No page-level fades. The landing leads with the live drop. Home, the landing, Give, the drop page and the right rail arrive server-rendered with real data, and the chain catch-up runs after the response (warm Home first byte is about 0.6 s).
+- **P2 done.** The wallet is sealed with a passkey (PRF) or a passcode. It unlocks at the start of the tap that signs and drops after 15 idle minutes or a reload. Tested on localhost with a passcode: create, mismatch, reload, wrong passcode, unlock, backup, lock, forget. The passkey path is covered by tests of its key derivation; it still needs one try on a real device.
+- **P3 done.** Gift tickets show on the done screen and in Me.
+- **P4 done.** The drop page's promise pills, Give in one line, Trade in one line, and no v2.1 words.
+- **P5:** every devnet-only label already hides on mainnet. What's left is the mainnet config (RPC, x402 facilitator, Aurora key) and the program deploy.
+- **P6 in progress:** finger-sized touch on chips and server-seeded pages are done. Next: a sweep of the empty and error states.
