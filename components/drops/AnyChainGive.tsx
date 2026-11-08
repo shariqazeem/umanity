@@ -180,7 +180,7 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
               const c = byId.get(t.assetId)?.chain
               const active = asset === t.assetId
               return (
-                <button key={t.assetId} onClick={() => setAsset(t.assetId)} className={`rounded-full px-3 py-1.5 text-[12px] font-semibold border transition-all ${active ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white border-black/[0.08] hover:border-black/[0.2]'}`}>
+                <button key={t.assetId} onClick={() => setAsset(t.assetId)} className={`hit rounded-full h-9 px-3 text-[12px] font-semibold border transition-all ${active ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white border-black/[0.08] hover:border-black/[0.2]'}`}>
                   {t.symbol}
                   <span className={active ? 'text-white/60' : 'text-[#86868b]'}> · {c?.label}</span>
                 </button>

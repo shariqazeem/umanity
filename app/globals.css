@@ -724,6 +724,16 @@ input[type='number']::-webkit-outer-spin-button {
   animation: riseIn 0.5s var(--ease-spring) 0.1s backwards;
 }
 
+/* A small chip keeps its look but takes a finger-sized touch: the hit area reaches past its edges. */
+.hit {
+  position: relative;
+}
+.hit::before {
+  content: '';
+  position: absolute;
+  inset: -6px -2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-stagger > *, .animate-fade-up, .animate-in, .entrance-reveal, .entrance-reveal-delayed, .heart-pop {
     animation: none !important;

@@ -232,7 +232,7 @@ export function MoneyRules({ drop, reviewHours }: { drop: DropView; reviewHours:
             key={r.key}
             onClick={() => setOpen((o) => (o === r.key ? '' : r.key))}
             aria-expanded={open === r.key}
-            className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-[12.5px] font-medium border transition-colors ${open === r.key ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#1d1d1f] border-black/[0.08] hover:border-black/[0.2]'}`}
+            className={`hit inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-[12.5px] font-medium border transition-colors ${open === r.key ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#1d1d1f] border-black/[0.08] hover:border-black/[0.2]'}`}
           >
             <Icon name={r.icon} size={14} className={open === r.key ? 'text-emerald-400' : 'text-emerald-600'} />
             {r.label}

@@ -83,9 +83,10 @@ export function DropFeed() {
         </div>
       )}
 
-      <div className="flex gap-1.5 mb-3 overflow-x-auto no-scrollbar">
+      {/* Room inside the scroller for the chips' larger touch areas, so nothing clips or scrolls vertically. */}
+      <div className="flex gap-1.5 mb-1.5 overflow-x-auto no-scrollbar py-1.5 -mt-1.5 px-0.5 -mx-0.5">
         {FILTERS.map((f) => (
-          <button key={f.key} onClick={() => setFilter(f.key)} className={`px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors ${filter === f.key ? 'bg-[#1d1d1f] text-white' : 'bg-white border border-black/[0.04] text-[#86868b] hover:text-[#1d1d1f]'}`}>
+          <button key={f.key} onClick={() => setFilter(f.key)} className={`hit h-9 px-3.5 rounded-full text-[12.5px] font-medium whitespace-nowrap transition-colors ${filter === f.key ? 'bg-[#1d1d1f] text-white' : 'bg-white border border-black/[0.04] text-[#86868b] hover:text-[#1d1d1f]'}`}>
             {f.label}
           </button>
         ))}
