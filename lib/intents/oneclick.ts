@@ -181,6 +181,12 @@ export function intentsProvider() {
   return provider()
 }
 
+/** The integrator fee actually charged: Aurora applies the fee set on its key; direct 1Click only when a fee account is configured. */
+export function appliedFeeBps() {
+  if (provider() === 'aurora') return INTEGRATOR_FEE_BPS
+  return process.env.INTENTS_FEE_RECIPIENT ? INTEGRATOR_FEE_BPS : 0
+}
+
 /** Solana destination assets on NEAR Intents (mainnet). */
 export const SOLANA_DEST_ASSETS = {
   SOL: 'nep141:sol.omft.near',

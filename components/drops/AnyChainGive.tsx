@@ -209,7 +209,8 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
                   <span className="text-[12.5px] font-semibold text-[#86868b]"> on {preview.asset.chainLabel}{preview.amountInUsd ? ` · about ${usdText(Number(preview.amountInUsd), 2)}` : ''}</span>
                 </p>
                 <p className="text-[12.5px] text-[#525252] mt-1">
-                  {usdText(preview.amountUsd, preview.amountUsd % 1 ? 2 : 0)} lands in the pot{preview.timeEstimate ? `, usually in about ${Math.max(1, Math.round(preview.timeEstimate / 60))} min` : ''}. Includes a {(preview.feeBps / 100).toFixed(1)}% cross-chain fee.
+                  {usdText(preview.amountUsd, preview.amountUsd % 1 ? 2 : 0)} lands in the pot{preview.timeEstimate ? `, usually in about ${Math.max(1, Math.round(preview.timeEstimate / 60))} min` : ''}.{' '}
+                  {preview.feeBps > 0 ? `The price includes the swap and a ${(preview.feeBps / 100).toFixed(1)}% Umanity fee.` : 'The price includes the swap and network costs.'}
                 </p>
               </>
             ) : previewError ? (

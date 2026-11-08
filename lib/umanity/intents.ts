@@ -17,7 +17,7 @@ import { ComputeBudgetProgram, type Connection, PublicKey, Transaction } from '@
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction } from '@solana/spl-token'
 import { and, eq, isNotNull, isNull } from 'drizzle-orm'
 import { dropGifts, getDb, intents, type Intent } from '@/lib/db'
-import { CHAIN_LABELS, deadlineMinutesFor, getQuote, getStatus, getTokens, INTEGRATOR_FEE_BPS, SOLANA_DEST_ASSETS, type StatusResponse } from '@/lib/intents/oneclick'
+import { appliedFeeBps, CHAIN_LABELS, deadlineMinutesFor, getQuote, getStatus, getTokens, SOLANA_DEST_ASSETS, type StatusResponse } from '@/lib/intents/oneclick'
 import { claimIntentSuccess, createIntentRecord, getIntent, updateIntent } from '@/lib/data/intents'
 import { ensureUser } from '@/lib/data/users'
 import { getTreasuryKeypair } from '@/lib/solana/server-signer'
@@ -139,7 +139,7 @@ export async function quoteDropGift(conn: Connection, o: { dropId: number; origi
       depositAddress: q.quote.depositAddress,
       depositMemo: q.quote.depositMemo ?? null,
       quote: q as unknown as Record<string, unknown>,
-      integratorFeeBps: INTEGRATOR_FEE_BPS,
+      integratorFeeBps: appliedFeeBps(),
       targetMicro: Number(micro),
     })
     intentId = row.id
@@ -156,7 +156,7 @@ export async function quoteDropGift(conn: Connection, o: { dropId: number; origi
     deadline: q.quote.deadline ?? null,
     timeEstimate: q.quote.timeEstimate ?? null,
     asset: { id: token.assetId, symbol: token.symbol, chain: token.blockchain, chainLabel: CHAIN_LABELS[token.blockchain]?.label ?? token.blockchain },
-    feeBps: INTEGRATOR_FEE_BPS,
+    feeBps: appliedFeeBps(),
   }
 }
 

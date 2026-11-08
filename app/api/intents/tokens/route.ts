@@ -1,5 +1,5 @@
 import { ok, fail, errorMessage } from '@/lib/api'
-import { getTokens, CHAIN_LABELS, intentsProvider, INTEGRATOR_FEE_BPS } from '@/lib/intents/oneclick'
+import { getTokens, CHAIN_LABELS, intentsProvider, appliedFeeBps } from '@/lib/intents/oneclick'
 
 export const runtime = 'nodejs'
 
@@ -20,7 +20,7 @@ export async function GET() {
       return i === -1 ? 999 : i
     }
     for (const c of list) c.tokens.sort((a, b) => rank(a.symbol) - rank(b.symbol) || a.symbol.localeCompare(b.symbol))
-    return ok({ chains: list, chainCount: list.length, tokenCount: tokens.length, provider: intentsProvider(), feeBps: INTEGRATOR_FEE_BPS })
+    return ok({ chains: list, chainCount: list.length, tokenCount: tokens.length, provider: intentsProvider(), feeBps: appliedFeeBps() })
   } catch (e) {
     return fail(errorMessage(e), 502)
   }
