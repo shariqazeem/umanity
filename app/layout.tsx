@@ -7,6 +7,7 @@ import { DropGiveSheet } from '@/components/drops/DropGiveSheet'
 import { AuthSheet } from '@/components/auth/AuthSheet'
 import { ProfileEditor } from '@/components/profile/ProfileEditor'
 import { WalletSheet } from '@/components/wallet/WalletSheet'
+import { UnlockSheet } from '@/components/wallet/UnlockSheet'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://umanity.xyz'
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthSheet />
             <ProfileEditor />
             <WalletSheet />
+            <UnlockSheet />
             <Toasts />
           </UmanityProvider>
         </WalletProvider>

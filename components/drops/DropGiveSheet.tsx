@@ -29,7 +29,7 @@ export function DropGiveSheet() {
 }
 
 function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?: number; onClose: () => void }) {
-  const { signer, ensureSigner, toast } = useUmanity()
+  const { signer, ensureSigner, ensureUnlocked, toast } = useUmanity()
   const { data: drop, reload } = useDrop(dropId, 30_000)
   const { usd: balance, refresh } = useUsdcBalance(signer?.publicKey ?? null)
   const [amount, setAmount] = useState<number>(presetUsd ?? 0)
@@ -66,6 +66,8 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
   const submit = async () => {
     const s = ensureSigner()
     if (!s || !valid) return
+    // Unlock first, inside the tap: the prepared transaction must not wait on a passcode.
+    if (!(await ensureUnlocked(`Unlock to give ${usdText(value, value % 1 ? 2 : 0)} to ${drop.title}`))) return
     setPhase({ kind: 'signing' })
     try {
       const prep = await apiSend<{ ref?: string; tx?: string; error?: string }>(`/api/drops/${dropId}/give`, {

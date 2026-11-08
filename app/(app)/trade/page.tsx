@@ -40,7 +40,7 @@ function useBalance(owner: PublicKey | null, token: TradeToken | undefined) {
 }
 
 export default function TradePage() {
-  const { isMainnet, signer, ensureSigner, toast } = useUmanity()
+  const { isMainnet, signer, ensureSigner, ensureUnlocked, toast } = useUmanity()
   const [from, setFrom] = useState('USDC')
   const [to, setTo] = useState('SOL')
   const [amount, setAmount] = useState('20')
@@ -72,6 +72,7 @@ export default function TradePage() {
   const swap = async () => {
     const s = ensureSigner()
     if (!s || !fromToken || !toToken || !ok) return
+    if (!(await ensureUnlocked('Unlock to swap'))) return
     setPhase({ kind: 'working', step: 'Finding the best route…' })
     try {
       const raw = BigInt(Math.round(n * 10 ** fromToken.decimals)).toString()

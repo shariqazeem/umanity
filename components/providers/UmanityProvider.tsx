@@ -2,14 +2,31 @@
 
 /**
  * App-wide session: the active signer (a connected wallet or the Umanity
- * wallet kept in the browser), the resolved profile, balance and SOL price,
- * plus the global sheets (give, sign-in, profile editor) any screen can open.
+ * wallet kept in the browser, sealed with a passkey or a passcode), the
+ * resolved profile, balance and SOL price, plus the global sheets (give,
+ * sign-in, unlock, profile editor) any screen can open.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
-import { PublicKey, Transaction, VersionedTransaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
-import { loadLocalWallet, createLocalWallet, importLocalWallet, forgetLocalWallet, type LocalWallet } from '@/lib/client/wallet'
+import { PublicKey, Transaction, VersionedTransaction, LAMPORTS_PER_SOL, type Keypair } from '@solana/web3.js'
+import {
+  forgetWallet as forgetStoredWallet,
+  isUnlocked,
+  keypairFromSecret,
+  loadWallet,
+  lockWallet,
+  newKeypair,
+  passkeysAvailable,
+  protectWallet,
+  revealSecret,
+  setUnlocker,
+  unlockWithPasskey,
+  unprotectedKeypair,
+  type UmanityWallet,
+  type Vault,
+  type WalletMethod,
+} from '@/lib/client/wallet'
 import { apiSend } from '@/lib/client/api'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
 import type { PublicUser } from '@/lib/data/users'
@@ -37,6 +54,12 @@ export interface GiveRequest {
 
 export type Toast = { id: number; msg: string; kind: 'ok' | 'err' | 'info'; action?: { label: string; href: string } }
 
+/** How the wallet is being protected: Face ID or another passkey, or a passcode. */
+export type Protect = { passkey: true } | { passcode: string }
+
+/** What the unlock sheet is asking for. */
+export type UnlockPrompt = { mode: 'unlock'; vault: Vault; reason: string } | { mode: 'protect'; reason: string }
+
 interface Ctx {
   signer: Signer | null
   address: string | null
@@ -46,9 +69,24 @@ interface Ctx {
   solPrice: number | null
   network: 'devnet' | 'mainnet-beta'
   isMainnet: boolean
-  local: LocalWallet | null
-  createWallet: () => Promise<{ ok: boolean; funded: boolean; error?: string }>
-  importWallet: (secret: string) => { ok: boolean; error?: string }
+  local: UmanityWallet | null
+  /** passkey | passcode | unprotected (an old wallet that still needs locking) */
+  walletMethod: WalletMethod | null
+  walletLocked: boolean
+  /** Whether this browser can lock a wallet with a passkey; null until known. */
+  canUsePasskeys: boolean | null
+  /** Address of a wallet made or imported but not locked yet. */
+  pendingWallet: string | null
+  startNewWallet: () => string
+  startImport: (secret: string) => { ok: boolean; error?: string }
+  /** Locks the pending wallet (or an old unprotected one) and makes it the active wallet. */
+  protectWallet: (how: Protect) => Promise<{ ok: boolean; error?: string }>
+  /** Resolves true once the wallet can sign: unlocked, locked-in, or an external wallet. */
+  ensureUnlocked: (reason?: string) => Promise<boolean>
+  lockNow: () => void
+  revealSecretKey: () => Promise<string | null>
+  unlockPrompt: UnlockPrompt | null
+  answerUnlock: (ok: boolean) => void
   forgetWallet: () => void
   connectWallet: () => void
   disconnectWallet: () => Promise<void>
@@ -86,7 +124,14 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
   const wallet = useWallet()
   const walletModal = useWalletModal()
   const { connection } = useConnection()
-  const [local, setLocal] = useState<LocalWallet | null>(null)
+  const [local, setLocal] = useState<UmanityWallet | null>(null)
+  const [vault, setVault] = useState<Vault | null>(null)
+  const [pendingWallet, setPendingWallet] = useState<string | null>(null)
+  const pending = useRef<Keypair | null>(null)
+  const [canUsePasskeys, setCanUsePasskeys] = useState<boolean | null>(null)
+  const [unlockPrompt, setUnlockPrompt] = useState<UnlockPrompt | null>(null)
+  const unlockWaiter = useRef<((ok: boolean) => void) | null>(null)
+  const [, setLockTick] = useState(0)
   const [user, setUser] = useState<PublicUser | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
   const [balance, setBalance] = useState<number | null>(null)
@@ -98,7 +143,10 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
   const toastId = useRef(0)
 
   useEffect(() => {
-    setLocal(loadLocalWallet())
+    const found = loadWallet()
+    setLocal(found?.wallet ?? null)
+    setVault(found?.vault ?? null)
+    passkeysAvailable().then(setCanUsePasskeys)
   }, [])
 
   // SOL price, best effort, refreshed every 5 minutes.
@@ -203,38 +251,115 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
     }
   }, [signer, refreshBalance])
 
-  const createWallet = useCallback(async () => {
-    const w = loadLocalWallet() ?? createLocalWallet()
-    setLocal(w)
-    try {
-      localStorage.setItem('umanity.entered', '1')
-    } catch {
-      /* ignore */
-    }
-    if (IS_MAINNET) return { ok: true, funded: false }
-    // On devnet the treasury tops the new wallet up so the first gift is one tap away.
-    try {
-      const r = await apiSend<{ success: boolean; funded?: boolean; error?: string; user?: PublicUser }>('/api/wallet/faucet', { address: w.publicKey.toBase58() })
-      if (r.user) setUser(r.user)
-      setTimeout(refreshBalance, 1500)
-      return { ok: true, funded: !!r.funded, error: r.success ? undefined : r.error }
-    } catch (e) {
-      return { ok: true, funded: false, error: e instanceof Error ? e.message : 'Funding failed' }
-    }
-  }, [refreshBalance])
+  /** A fresh keypair, held in memory until it is locked with a passkey or passcode. */
+  const startNewWallet = useCallback(() => {
+    const kp = newKeypair()
+    pending.current = kp
+    setPendingWallet(kp.publicKey.toBase58())
+    return kp.publicKey.toBase58()
+  }, [])
 
-  const importWallet = useCallback((secret: string) => {
+  const startImport = useCallback((secret: string) => {
     try {
-      setLocal(importLocalWallet(secret))
+      const kp = keypairFromSecret(secret)
+      pending.current = kp
+      setPendingWallet(kp.publicKey.toBase58())
       return { ok: true }
     } catch (e) {
       return { ok: false, error: e instanceof Error ? e.message : 'Invalid key' }
     }
   }, [])
 
+  const protect = useCallback(async (how: Protect) => {
+    const kp = pending.current ?? unprotectedKeypair()
+    if (!kp) return { ok: false, error: 'There is no wallet to lock' }
+    try {
+      const r = await protectWallet(kp, how)
+      pending.current = null
+      setPendingWallet(null)
+      setVault(r.vault)
+      setLocal(r.wallet)
+      setLockTick((t) => t + 1)
+      try {
+        localStorage.setItem('umanity.entered', '1')
+      } catch {
+        /* ignore */
+      }
+      // Devnet only: the treasury tops a new wallet up so trying the app is one tap.
+      if (!IS_MAINNET) apiSend('/api/wallet/faucet', { address: kp.publicKey.toBase58() }).then(() => setTimeout(refreshBalance, 1500)).catch(() => null)
+      return { ok: true }
+    } catch (e) {
+      const err = e as Error & { name?: string }
+      if (err?.name === 'NotAllowedError' || err?.name === 'AbortError') return { ok: false, error: 'Cancelled' }
+      return { ok: false, error: err?.message || 'Could not lock the wallet' }
+    }
+  }, [refreshBalance])
+
+  /** Opens the unlock sheet and waits for the person to unlock (true) or cancel (false). */
+  const askUnlock = useCallback((prompt: UnlockPrompt) => {
+    unlockWaiter.current?.(false)
+    setUnlockPrompt(prompt)
+    return new Promise<boolean>((resolve) => {
+      unlockWaiter.current = resolve
+    })
+  }, [])
+
+  const answerUnlock = useCallback((ok: boolean) => {
+    setUnlockPrompt(null)
+    setLockTick((t) => t + 1)
+    unlockWaiter.current?.(ok)
+    unlockWaiter.current = null
+  }, [])
+
+  const ensureUnlocked = useCallback(
+    async (reason = 'Unlock your wallet to continue') => {
+      // Connected wallets (Phantom and friends) ask for themselves.
+      if (wallet.publicKey && wallet.signTransaction) return true
+      if (!local) return false
+      if (local.method === 'unprotected') return askUnlock({ mode: 'protect', reason: 'Lock your wallet before it holds real money' })
+      if (isUnlocked()) return true
+      if (!vault) return false
+      if (vault.method === 'passkey') {
+        // Straight to Face ID while the tap that started this still counts; the sheet is the fallback.
+        try {
+          await unlockWithPasskey(vault)
+          setLockTick((t) => t + 1)
+          return true
+        } catch {
+          return askUnlock({ mode: 'unlock', vault, reason })
+        }
+      }
+      return askUnlock({ mode: 'unlock', vault, reason })
+    },
+    [wallet.publicKey, wallet.signTransaction, local, vault, askUnlock],
+  )
+
+  // A signature that finds the wallet locked (it idled out mid-flow) asks the same way.
+  useEffect(() => {
+    setUnlocker(() => ensureUnlocked())
+    return () => setUnlocker(null)
+  }, [ensureUnlocked])
+
+  const lockNow = useCallback(() => {
+    lockWallet()
+    setLockTick((t) => t + 1)
+  }, [])
+
+  const revealSecretKey = useCallback(async () => {
+    if (!(await ensureUnlocked('Unlock to see your secret key'))) return null
+    try {
+      return await revealSecret()
+    } catch {
+      return null
+    }
+  }, [ensureUnlocked])
+
   const forgetWallet = useCallback(() => {
-    forgetLocalWallet()
+    forgetStoredWallet()
+    pending.current = null
+    setPendingWallet(null)
     setLocal(null)
+    setVault(null)
     setUser(null)
     setBalance(null)
   }, [])
@@ -283,8 +408,18 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
     network: SOLANA_CLUSTER,
     isMainnet: IS_MAINNET,
     local,
-    createWallet,
-    importWallet,
+    walletMethod: local?.method ?? null,
+    walletLocked: !!local && local.method !== 'unprotected' && !isUnlocked(),
+    canUsePasskeys,
+    pendingWallet,
+    startNewWallet,
+    startImport,
+    protectWallet: protect,
+    ensureUnlocked,
+    lockNow,
+    revealSecretKey,
+    unlockPrompt,
+    answerUnlock,
     forgetWallet,
     connectWallet,
     disconnectWallet,

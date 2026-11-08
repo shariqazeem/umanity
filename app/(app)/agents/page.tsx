@@ -114,7 +114,7 @@ export default function AgentsPage() {
 
 /** Runs the real flow step by step: unpaid request → 402 → wallet signs → settlement → receipt. */
 function Console({ onDone }: { onDone: () => void }) {
-  const { signer, ensureSigner } = useUmanity()
+  const { signer, ensureSigner, ensureUnlocked } = useUmanity()
   const origin = useOrigin()
   const { data: drops } = useDrops()
   const open = (drops ?? []).filter((d) => d.state === 'open' && !d.refundsOpen)
@@ -129,6 +129,7 @@ function Console({ onDone }: { onDone: () => void }) {
   const run = async () => {
     const s = ensureSigner()
     if (!s || !drop) return
+    if (!(await ensureUnlocked(`Unlock to pay ${amount} USDC as the agent`))) return
     setRunning(true)
     const body = { drop: drop.id + 1, amountUsd: amount, agent: 'umanity-console' }
     setSteps([

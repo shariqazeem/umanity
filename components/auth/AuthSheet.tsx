@@ -1,20 +1,21 @@
 'use client'
 
 /**
- * Sign-in. Two doors: create a Umanity wallet in one tap, or connect Phantom,
- * Solflare, Backpack and friends. Then an optional name. Nothing blocks.
+ * Sign-in. Two doors: create a Umanity wallet in one tap (then lock it with
+ * Face ID or a passcode), or connect Phantom, Solflare, Backpack and friends.
+ * Then an optional name.
  */
 import { useEffect, useState } from 'react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { Sheet, Btn, Icon, Field, Pill } from '@/components/shared/ui'
+import { Sheet, Btn, Icon, Field } from '@/components/shared/ui'
+import { ProtectChoice } from '@/components/wallet/UnlockSheet'
 import { apiSend } from '@/lib/client/api'
 import type { PublicUser } from '@/lib/data/users'
 
 export function AuthSheet() {
-  const { authOpen, closeAuth, signer, user, createWallet, connectWallet, importWallet, toast, refreshUser, isMainnet } = useUmanity()
-  const [step, setStep] = useState<'choose' | 'name' | 'import'>('choose')
+  const { authOpen, closeAuth, signer, user, startNewWallet, connectWallet, startImport, toast, refreshUser } = useUmanity()
+  const [step, setStep] = useState<'choose' | 'import' | 'protect' | 'name'>('choose')
   const [busy, setBusy] = useState(false)
-  const [creating, setCreating] = useState(false)
   const [secret, setSecret] = useState('')
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -24,7 +25,7 @@ export function AuthSheet() {
   // (unless the account already has a claimed handle).
   useEffect(() => {
     if (!authOpen) return
-    if (signer && step !== 'name') {
+    if (signer && step !== 'name' && step !== 'protect') {
       if (user?.handleClaimed) closeAuth()
       else setStep('name')
     }
@@ -39,23 +40,24 @@ export function AuthSheet() {
     }
   }, [authOpen])
 
-  const create = async () => {
-    setCreating(true)
-    setStep('name')
-    const r = await createWallet()
-    setCreating(false)
-    if (!r.ok) {
-      setStep('choose')
-      return toast(r.error || 'Could not create a wallet', 'err')
-    }
-    if (!isMainnet) toast(r.funded ? 'Wallet created and topped up with devnet SOL.' : 'Wallet created.', 'ok')
+  const create = () => {
+    startNewWallet()
+    setStep('protect')
   }
 
   const doImport = () => {
-    const r = importWallet(secret)
+    const r = startImport(secret)
     if (!r.ok) return setError(r.error || 'Invalid key')
     setSecret('')
-    setStep('name')
+    setError('')
+    setStep('protect')
+  }
+
+  const locked = () => {
+    if (user?.handleClaimed) {
+      toast('Wallet locked and ready.', 'ok')
+      closeAuth()
+    } else setStep('name')
   }
 
   const saveName = async () => {
@@ -77,14 +79,14 @@ export function AuthSheet() {
           <h3 className="text-[24px] font-bold tracking-[-0.02em] text-[#1d1d1f]">Start giving.</h3>
           <p className="text-[14px] text-[#86868b] mt-2 leading-relaxed">A wallet is your account. Create one in a tap, or use one you already have.</p>
 
-          <button onClick={create} disabled={creating} className="mt-6 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group disabled:opacity-60">
+          <button onClick={create} className="mt-6 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group disabled:opacity-60">
             <div className="flex items-center gap-3">
               <span className="w-11 h-11 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center">
                 <Icon name="bolt" size={20} />
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[15px] font-semibold">Create a Umanity wallet</span>
-                <span className="block text-[12.5px] text-[#86868b]">Ready instantly. Self-custodial, lives in this browser. Back it up any time.</span>
+                <span className="block text-[12.5px] text-[#86868b]">Ready in a tap, locked with Face ID or a passcode. Yours alone.</span>
               </span>
               <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
             </div>
@@ -103,11 +105,10 @@ export function AuthSheet() {
             </div>
           </button>
 
-          <div className="flex items-center justify-between mt-5">
+          <div className="mt-5">
             <button onClick={() => setStep('import')} className="text-[12.5px] text-[#86868b] hover:text-[#1d1d1f] underline underline-offset-2">
               Import a secret key
             </button>
-            {!isMainnet && <Pill tone="gray">Devnet</Pill>}
           </div>
         </div>
       )}
@@ -118,12 +119,18 @@ export function AuthSheet() {
             <Icon name="chevronLeft" size={14} /> Back
           </button>
           <h3 className="text-[22px] font-bold tracking-[-0.02em]">Import a wallet</h3>
-          <p className="text-[13px] text-[#86868b] mt-1">Paste a base58 secret key (Phantom export) or a JSON byte array. It is stored only in this browser.</p>
+          <p className="text-[13px] text-[#86868b] mt-1">Paste a secret key exported from Phantom, or a Solana CLI key file. You lock it next; it never leaves this device unsealed.</p>
           <textarea value={secret} onChange={(e) => setSecret(e.target.value)} rows={3} placeholder="4xk…  or  [12, 84, …]" className="input mt-4 font-mono !text-[12px]" />
           {error && <p className="text-[12.5px] text-[#c53030] mt-2">{error}</p>}
           <Btn full size="lg" className="mt-4" onClick={doImport} disabled={secret.trim().length < 40}>
             Import
           </Btn>
+        </div>
+      )}
+
+      {step === 'protect' && (
+        <div className="pt-1">
+          <ProtectChoice onDone={locked} />
         </div>
       )}
 
