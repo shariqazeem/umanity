@@ -4,8 +4,10 @@ Umanity is the app where your crypto feeds people, on camera. Money goes into **
 
 - **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions won a **Superteam bounty** and the **Solana Graveyard Hackathon (Tapestry track)** as [umanity-social](https://github.com/shariqazeem/umanity-social).
 - **Program:** `umanity` [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
+- **Live demo:** https://umanity.vercel.app (Solana devnet). Drop #3 is a labelled devnet demo you can give to with free test USDC from [faucet.circle.com](https://faucet.circle.com) (pick Solana Devnet); it is called off and refunded by the program after judging.
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
 - **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)
+- **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps and the token tooling, was written from 27 Oct on, inside Encode's 12 Oct to 8 Nov window.
 
 ---
 
@@ -66,8 +68,9 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 4. **Open the drop page.** See the pot, the four steps with a transaction each, the shopping list, backers, the description checked against its on-chain hash, and the proof checked against `post_proof`.
 5. **Open Money.** See gifts → pots → unlocked / refunded, fees → split → drops fund / Umanity, every move with its transaction, and where each rule lives on-chain.
 6. **Open Trade.** Live Jupiter routes with Umanity's 0.5% fee shown as dollars to drops. On mainnet the swap is built with Jupiter Swap V2 `/build`, and the fee goes in the same transaction into the program's fee inbox. Wallets without SOL get the network fee paid, a few swaps a day.
-7. **Open For agents → ▶ Pay into a drop via x402.** `POST /api/x402/give {drop, amountUsd}` → **402** → the wallet signs a USDC transfer → the facilitator settles → the treasury gives the same USDC into the pot **with the agent's wallet as the backer**, so a missed date refunds the agent → **200** with an ed25519-signed receipt verified in the browser.
-8. **Team console (`/admin`, team wallets only).** Open a drop (description hashed on-chain), post updates, post proof (text, X post and every file's sha256, bundled and hashed onto Solana), unlock after review, call a drop off, refund everyone.
+7. **Give from another chain (mainnet).** In the give sheet, **Or pay from 30+ chains** → pick what you hold (USDC on Base, ETH, BTC, NEAR…) → see the exact price → get a one-off deposit address → send → the status follows it from deposit to swap to **in the pot**, with the Solana transaction. On devnet the same sheet shows live prices only, because NEAR Intents has no test network.
+8. **Open For agents → ▶ Pay into a drop via x402.** `POST /api/x402/give {drop, amountUsd}` → **402** → the wallet signs a USDC transfer → the facilitator settles → the treasury gives the same USDC into the pot **with the agent's wallet as the backer**, so a missed date refunds the agent → **200** with an ed25519-signed receipt verified in the browser.
+9. **Team console (`/admin`, team wallets only).** Open a drop (description hashed on-chain), post updates, post proof (text, X post and every file's sha256, bundled and hashed onto Solana), unlock after review, call a drop off, refund everyone.
 
 ## Sponsor technology
 
@@ -77,8 +80,12 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 - Receipts are ed25519-signed (`lib/receipt.ts`; signer published at `GET /api/x402/give`, which also lists the drops that are filling).
 - **MCP server** (`mcp/server.ts`): `list_drops`, `get_drop`, `give`, with per-gift and per-session caps, so Claude can fill a drop for you.
 
-### Aurora Intents / NEAR Intents (`lib/intents/*`)
-- Live solver quotes from 30+ chains and deposit addresses. The planned v3 route settles into a pot: 1Click settles USDC on Solana, then `give`. With Intents Connect, `open_backer` + `give_all` give whatever arrived, because the amount is only known after the swap.
+### Aurora Intents (`lib/umanity/intents.ts`, `components/drops/AnyChainGive.tsx`)
+- **The friction it removes:** a drop takes USDC on Solana, but most people hold money elsewhere. The give sheet's "pay from another chain" uses the Swap API (1Click on NEAR Intents) to take any of 200+ assets on 30+ chains.
+- **Exact-output quotes:** the giver asks for $30 in the pot; the quote says what to send (`POST /api/drops/[id]/intents`). A live quote opens a one-off deposit address (QR, optional memo, expiry).
+- **Settlement into the pot:** the solver delivers USDC to Umanity's treasury on Solana; the treasury then calls `give` into the drop's pot **with the giver's Umanity wallet as the backer**, so a missed date refunds them like any other gift. If the pot filled or closed while the swap ran, what no longer fits goes to the giver's own USDC account in the same transaction.
+- **Refunds and retries:** a failed swap is refunded on the origin chain by NEAR Intents; an incomplete deposit is shown with what's missing. The settling transaction's signature is stored before it is sent and one ref lock allows a single settler, so the browser's polling (`GET /api/drops/intents/[intent]`), the keeper and the daily cron can never pay twice.
+- **Fees:** with an Aurora API key the request goes through Aurora's proxy and the integrator fee set in Aurora Studio applies; the sheet shows only the fee really charged. Program support for contract-level composability is ready (`open_backer` + `give_all` give whatever arrived) for Intents Connect.
 
 ### Meteora Dynamic Bonding Curve (`lib/token/curve.ts`, `scripts/launch-umanity.ts`)
 - $UMANITY: fixed 1B supply with no presale, no team tokens and no vesting. Part of the supply is sold on the curve; the rest seeds the DAMM v2 pool at graduation, and all of that pool's liquidity is permanently locked to the program's `fees` address. USDC quote, fee taken in USDC, and an anti-sniping fee that starts high and decays to 1% within a minute. The pool's fee claimer is that PDA, so only `sweep_meteora_fees` can claim. **Not launched yet**; `npx tsx scripts/launch-umanity.ts plan` prints the exact parameters.
@@ -87,7 +94,7 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 - Swap V2 `/build` with `platformFeeBps=50` and `feeAccount` = the program's fee inbox. Jupiter takes no share on `/build`. Every build is simulated before it is returned; sponsored builds are refused if they would cost the treasury more than one token account's rent.
 
 ### Keeper (`lib/umanity/keeper.ts`)
-- From page reads, at most every 5 minutes: claim $UMANITY fees from Meteora and split them, split the fee inbox once it holds $1, and refund the backers of drops that missed their date.
+- From page reads (at most every 5 minutes) and a daily cron (`/api/keeper`): claim $UMANITY fees from Meteora and split them, split the fee inbox once it holds $1, refund the backers of drops that missed their date, and settle cross-chain gifts whose givers closed the tab.
 
 ## Run it locally
 
@@ -111,10 +118,10 @@ The public devnet RPC rate-limits deploys and reads (HTTP 429). Set `NEXT_PUBLIC
 ```
 programs/umanity/src/lib.rs        pots, proof, unlock, refunds, fee split, Meteora fee sweep (18 instructions)
 tests/umanity.test.ts              7 tests against a validator with Meteora DBC cloned from mainnet
-lib/umanity/                       program client, indexer, drops data, feed, swaps, keeper, team actions, profiles
+lib/umanity/                       program client, indexer, drops data, feed, swaps, cross-chain gifts, keeper, team actions, profiles
 lib/token/curve.ts                 $UMANITY bonding curve settings
 app/(app)/                         home, trade, give, money, profile, drops/[n], agents, admin
-app/api/                           drops, feed, money, trade, x402, admin/drops, profile/drops
+app/api/                           drops (+ intents), feed, money, trade, x402, keeper, admin/drops, profile/drops
 mcp/server.ts                      MCP server: Claude can fill a drop
 scripts/                           test-programs.sh, umanity-setup.ts, launch-umanity.ts, resume-buffer.ts
 ```
