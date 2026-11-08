@@ -6,6 +6,7 @@ import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar } from '@/components/shared/ui'
 import { ProofOrb } from '@/components/shared/ProofOrb'
 import { useMoney } from '@/components/drops/hooks'
+import { useSeed } from '@/components/drops/seed'
 import { apiGet, short, timeAgo } from '@/lib/client/api'
 import { guardianFor } from '@/lib/guardian'
 import { usdText } from '@/lib/umanity/drops'
@@ -102,7 +103,8 @@ const LB_TABS = [
 ] as const
 
 function LeaderboardWidget() {
-  const [rows, setRows] = useState<TopBacker[] | null>(null)
+  const seed = useSeed()
+  const [rows, setRows] = useState<TopBacker[] | null>(seed.backers ?? null)
   const [tab, setTab] = useState<(typeof LB_TABS)[number]['key']>('usd')
   useEffect(() => {
     apiGet<{ backers?: TopBacker[] }>('/api/backers')
@@ -158,7 +160,8 @@ function LeaderboardWidget() {
 }
 
 function ActivityWidget() {
-  const [rows, setRows] = useState<HomeItem[] | null>(null)
+  const seed = useSeed()
+  const [rows, setRows] = useState<HomeItem[] | null>(seed.feed ? seed.feed.filter((i) => i.type !== 'post').slice(0, 12) : null)
   useEffect(() => {
     let alive = true
     const load = () =>
