@@ -9,6 +9,7 @@ import { explorerTx } from '@/lib/solana/constants'
 import { amountInUnits, helpedText, plural, usdText } from '@/lib/umanity/drops'
 import { useDrop, useUsdcBalance } from './hooks'
 import { dayText, dropHref } from './DropParts'
+import { AnyChainGive } from './AnyChainGive'
 
 type Phase = { kind: 'pick' } | { kind: 'signing' } | { kind: 'done'; signature: string; amount: number } | { kind: 'error'; message: string }
 
@@ -35,6 +36,7 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
   const [custom, setCustom] = useState('')
   const [anonymous, setAnonymous] = useState(false)
   const [phase, setPhase] = useState<Phase>({ kind: 'pick' })
+  const [anyChain, setAnyChain] = useState(false)
 
   const presets = useMemo(() => {
     if (!drop) return []
@@ -130,6 +132,22 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
         </button>
       </div>
 
+      {anyChain ? (
+        <div className="mt-5">
+          <AnyChainGive
+            dropId={dropId}
+            amountUsd={value}
+            onBack={() => setAnyChain(false)}
+            onDone={(signature, inPot, returned) => {
+              if (returned) toast(`${usdText(returned, 2)} didn't fit in the pot, so it went to your wallet`, 'info')
+              setPhase({ kind: 'done', signature, amount: inPot })
+              refresh()
+              reload()
+            }}
+          />
+        </div>
+      ) : (
+      <>
       <div className="grid grid-cols-2 gap-2 mt-5">
         {presets.map((p) => {
           const active = !custom && amount === p.usd
@@ -185,13 +203,23 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
           <button onClick={refresh} className="btn-secondary w-full mt-2 py-2.5 !text-[13px]">
             I&apos;ve added USDC
           </button>
+          <button onClick={() => setAnyChain(true)} disabled={!valid} className="btn-primary w-full mt-2 py-2.5 !text-[13px]">
+            Pay from another chain instead
+          </button>
         </div>
       ) : (
         <button onClick={submit} disabled={!valid || phase.kind === 'signing'} className="btn-primary w-full py-3.5 mt-5 !text-[15px]">
           {phase.kind === 'signing' ? 'Confirm in your wallet…' : signer ? `Give ${valid ? usdText(value, value % 1 ? 2 : 0) : ''}` : 'Sign in to give'}
         </button>
       )}
+      {!short && (
+        <button onClick={() => setAnyChain(true)} disabled={!valid} className="block w-full text-center text-[12.5px] font-semibold text-[#1d1d1f] mt-3 hover:underline disabled:opacity-40 disabled:no-underline">
+          Or pay from 30+ chains: ETH, BTC, USDC on Base…
+        </button>
+      )}
       <p className="text-[11px] text-[#aeaeb2] text-center mt-3">Umanity pays the network fee. Comes back to you if the drop isn&apos;t proven by {dayText(drop.deadline)}.</p>
+      </>
+      )}
     </div>
   )
 }

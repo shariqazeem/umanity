@@ -2,9 +2,10 @@
  * Keeps money moving without anyone pressing a button. Once the fee inbox
  * holds a dollar it is split (half to drops, half to Umanity); once
  * $UMANITY's Meteora pool owes a dollar in trading fees they are claimed and
- * split in the same step; and when a drop misses its date its backers are
- * refunded. All three are permissionless instructions; the treasury only pays
- * the network fee. Runs from page reads, at most every few minutes per server
+ * split in the same step; when a drop misses its date its backers are
+ * refunded; and cross-chain gifts that arrived while nobody was watching are
+ * put into their pots. The first three are permissionless instructions where
+ * the treasury only pays the network fee. Runs from page reads, at most every few minutes per server
  * process. Server-only.
  */
 import { ComputeBudgetProgram, type Connection, PublicKey, Transaction, type TransactionInstruction } from '@solana/web3.js'
@@ -16,6 +17,7 @@ import { drops, getDb } from '@/lib/db'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { FEE_INBOX, fetchConfig, refundsOpen, splitFeesIxs, sweepMeteoraFeesIxs, tokenBalance } from './program'
 import { refundBackers } from './admin'
+import { reconcileDropIntents } from './intents'
 
 const EVERY_MS = 5 * 60_000
 const MIN_MICRO = 1_000_000n
@@ -39,6 +41,7 @@ export async function keepFeesMoving(conn: Connection) {
   }
   if (!ixs.length && (await tokenBalance(conn, FEE_INBOX).catch(() => 0n)) >= MIN_MICRO) ixs = await splitFeesIxs(conn, { ops, payer: payer.publicKey })
   await refundMissedDrops(conn)
+  await reconcileDropIntents(conn).catch((e) => console.warn('[keeper] cross-chain gifts failed:', (e as Error).message))
   if (!ixs.length) return null
 
   const tx = new Transaction()

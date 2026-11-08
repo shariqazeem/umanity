@@ -24,7 +24,9 @@ export interface IntentsToken {
 export interface QuoteRequest {
   originAsset: string
   destinationAsset: string
-  amount: string // smallest units of origin asset
+  /** Smallest units: of the origin asset for EXACT_INPUT, of the destination asset for EXACT_OUTPUT. */
+  amount: string
+  swapType?: 'EXACT_INPUT' | 'EXACT_OUTPUT'
   recipient: string
   refundTo: string
   dry?: boolean
@@ -141,7 +143,7 @@ export async function getQuote(req: QuoteRequest): Promise<QuoteResponse> {
   const deadline = new Date(Date.now() + (req.deadlineMinutes ?? 40) * 60_000).toISOString()
   const body: Record<string, unknown> = {
     dry: req.dry ?? true,
-    swapType: 'EXACT_INPUT',
+    swapType: req.swapType ?? 'EXACT_INPUT',
     slippageTolerance: req.slippageTolerance ?? 100,
     originAsset: req.originAsset,
     depositType: 'ORIGIN_CHAIN',
