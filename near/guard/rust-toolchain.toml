@@ -1,0 +1,4 @@
+# The guard builds with its own Rust (near-sdk 5.30 needs 1.95); the Anchor program keeps its own.
+[toolchain]
+channel = "1.95.0"
+targets = ["wasm32-unknown-unknown"]
