@@ -50,6 +50,13 @@
       "when": 1794107780578,
       "tag": "0006_drop_intents",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794117799405,
+      "tag": "0007_drop_updates_guard",
+      "breakpoints": true
     }
   ]
 }

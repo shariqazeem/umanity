@@ -4,9 +4,10 @@
 //! The release key that NEAR holds can unlock a Umanity pot, so the guard must
 //! only ever sign one shape of message: a legacy message whose instructions are
 //! compute-budget settings plus exactly one `unlock(proof_hash)` of the
-//! Umanity program, for a drop the guard knows, naming the proof the guard
-//! approved, with the release key as a read-only signer that does not pay
-//! fees. Anything else is refused before any signature is requested.
+//! Umanity program, for a drop the guard knows, with the release key as a
+//! read-only signer that does not pay fees. The checker returns the proof the
+//! unlock names, and the guard signs only if that proof has an approved,
+//! unvetoed verdict. Anything else is refused before any signature is requested.
 
 /// Anchor's discriminator for `unlock`: sha256("global:unlock")[..8].
 pub const UNLOCK_DISCRIMINATOR: [u8; 8] = [101, 155, 40, 21, 158, 189, 56, 203];
@@ -15,6 +16,9 @@ pub const UNLOCK_DISCRIMINATOR: [u8; 8] = [101, 155, 40, 21, 158, 189, 56, 203];
 pub const COMPUTE_BUDGET_PROGRAM: [u8; 32] = [
     3, 6, 70, 111, 229, 33, 23, 50, 255, 236, 173, 186, 114, 195, 155, 231, 188, 140, 229, 187, 197, 247, 18, 107, 44, 67, 155, 58, 64, 0, 0, 0,
 ];
+
+/// The most the MPC network signs for Ed25519, and the size of a Solana packet.
+pub const MAX_MESSAGE: usize = 1232;
 
 /// `unlock` accounts, in the order the program declares them.
 const UNLOCK_ACCOUNTS: usize = 8;
@@ -28,7 +32,6 @@ pub enum Refusal {
     NoUnlock,
     ExtraInstruction,
     WrongDrop,
-    WrongProof,
     ReleaseKeyNotSigner,
     ReleaseKeyWritable,
     ReleaseKeyPaysFees,
@@ -43,7 +46,6 @@ impl Refusal {
             Refusal::NoUnlock => "the message has no Umanity unlock",
             Refusal::ExtraInstruction => "the message does more than set compute budget and unlock one drop",
             Refusal::WrongDrop => "the unlock is for a different drop",
-            Refusal::WrongProof => "the unlock names a proof the guard did not approve",
             Refusal::ReleaseKeyNotSigner => "the release key is not a signer of this message",
             Refusal::ReleaseKeyWritable => "the release key must be a read-only signer",
             Refusal::ReleaseKeyPaysFees => "the release key cannot be the fee payer",
@@ -104,8 +106,11 @@ pub struct Release {
     pub proof: [u8; 32],
 }
 
-/// Checks `message` (the bytes a Solana signer signs) against what the guard approved.
-pub fn check_release(message: &[u8], program: &[u8; 32], release_key: &[u8; 32], drop: &[u8; 32], proof: &[u8; 32]) -> Result<Release, Refusal> {
+/// Checks `message` (the bytes a Solana signer signs) and returns the drop and proof it unlocks.
+pub fn check_release(message: &[u8], program: &[u8; 32], release_key: &[u8; 32], drop: &[u8; 32]) -> Result<Release, Refusal> {
+    if message.len() > MAX_MESSAGE {
+        return Err(Refusal::Malformed("the message is longer than a Solana packet"));
+    }
     let mut r = Reader { bytes: message, at: 0 };
     let required = r.u8()? as usize;
     if required & 0x80 != 0 {
@@ -175,9 +180,6 @@ pub fn check_release(message: &[u8], program: &[u8; 32], release_key: &[u8; 32],
     }
     if ix.accounts[RELEASE_AUTHORITY_INDEX] as usize != release_at {
         return Err(Refusal::ReleaseKeyMisplaced);
-    }
-    if &ix.data[8..] != proof {
-        return Err(Refusal::WrongProof);
     }
     let mut p = [0u8; 32];
     p.copy_from_slice(&ix.data[8..]);
@@ -249,45 +251,53 @@ mod tests {
     }
 
     #[test]
-    fn accepts_one_unlock_with_compute_budget() {
-        assert_eq!(check_release(&good(), &PROGRAM, &RELEASE, &DROP, &PROOF), Ok(Release { drop: DROP, proof: PROOF }));
+    fn accepts_one_unlock_with_compute_budget_and_reads_its_proof() {
+        assert_eq!(check_release(&good(), &PROGRAM, &RELEASE, &DROP), Ok(Release { drop: DROP, proof: PROOF }));
+        let other = message([2, 1, 6], &keys(), &[(9, unlock_accounts(), unlock_data([6u8; 32]))]);
+        assert_eq!(check_release(&other, &PROGRAM, &RELEASE, &DROP), Ok(Release { drop: DROP, proof: [6u8; 32] }));
     }
 
     #[test]
-    fn refuses_other_proof_and_drop() {
-        assert_eq!(check_release(&good(), &PROGRAM, &RELEASE, &DROP, &[6u8; 32]), Err(Refusal::WrongProof));
-        assert_eq!(check_release(&good(), &PROGRAM, &RELEASE, &[8u8; 32], &PROOF), Err(Refusal::WrongDrop));
+    fn refuses_another_drop() {
+        assert_eq!(check_release(&good(), &PROGRAM, &RELEASE, &[8u8; 32]), Err(Refusal::WrongDrop));
+    }
+
+    #[test]
+    fn refuses_a_message_longer_than_a_packet() {
+        let mut long = good();
+        long.resize(MAX_MESSAGE + 1, 0);
+        assert!(matches!(check_release(&long, &PROGRAM, &RELEASE, &DROP), Err(Refusal::Malformed(_))));
     }
 
     #[test]
     fn refuses_a_second_instruction() {
         let m = message([2, 1, 6], &keys(), &[(9, unlock_accounts(), unlock_data(PROOF)), (9, unlock_accounts(), unlock_data(PROOF))]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::ExtraInstruction));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::ExtraInstruction));
         // A "compute budget" instruction that touches accounts is not a compute budget setting.
         let m = message([2, 1, 6], &keys(), &[(10, vec![1], vec![]), (9, unlock_accounts(), unlock_data(PROOF))]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::ExtraInstruction));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::ExtraInstruction));
     }
 
     #[test]
     fn refuses_a_writable_or_paying_release_key() {
         // release key writable: 2 signers, 0 readonly signed
         let m = message([2, 0, 6], &keys(), &[(9, unlock_accounts(), unlock_data(PROOF))]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::ReleaseKeyWritable));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::ReleaseKeyWritable));
         // release key as fee payer
         let mut k = keys();
         k.swap(0, 1);
         let m = message([2, 1, 6], &k, &[(9, vec![6, 2, 3, 4, 5, 0, 7, 8], unlock_data(PROOF))]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::ReleaseKeyPaysFees));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::ReleaseKeyPaysFees));
         // release key not a signer at all
         let m = message([1, 0, 6], &keys(), &[(9, unlock_accounts(), unlock_data(PROOF))]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::ReleaseKeyNotSigner));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::ReleaseKeyNotSigner));
     }
 
     #[test]
     fn refuses_a_release_key_in_another_slot() {
         // the release key signs, but the unlock names the payer as its release authority
         let m = message([2, 1, 6], &keys(), &[(9, vec![6, 2, 3, 4, 5, 0, 7, 8], unlock_data(PROOF))]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::ReleaseKeyMisplaced));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::ReleaseKeyMisplaced));
     }
 
     #[test]
@@ -295,9 +305,9 @@ mod tests {
         let mut other = unlock_data(PROOF);
         other[0] ^= 1;
         let m = message([2, 1, 6], &keys(), &[(9, unlock_accounts(), other)]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::NoUnlock));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::NoUnlock));
         let m = message([2, 1, 6], &keys(), &[(8, unlock_accounts(), unlock_data(PROOF))]);
-        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::ExtraInstruction));
+        assert_eq!(check_release(&m, &PROGRAM, &RELEASE, &DROP), Err(Refusal::ExtraInstruction));
     }
 
     fn hex(s: &str) -> Vec<u8> {
@@ -320,21 +330,21 @@ mod tests {
         };
         let program: [u8; 32] = [7, 29, 24, 6, 190, 93, 190, 6, 122, 219, 214, 105, 23, 107, 219, 230, 228, 211, 224, 186, 85, 15, 214, 117, 124, 130, 3, 18, 18, 57, 63, 154];
         let (msg, drop, release, proof) = (hex(&field("message")), key32(&field("drop")), key32(&field("release")), key32(&field("proof")));
-        assert_eq!(check_release(&msg, &program, &release, &drop, &proof), Ok(Release { drop, proof }));
-        // The same message is refused for another proof or another drop.
-        assert_eq!(check_release(&msg, &program, &release, &drop, &[0u8; 32]), Err(Refusal::WrongProof));
-        assert_eq!(check_release(&msg, &program, &release, &[3u8; 32], &proof), Err(Refusal::WrongDrop));
+        assert_eq!(check_release(&msg, &program, &release, &drop), Ok(Release { drop, proof }));
+        // The same message is refused for another drop or another release key.
+        assert_eq!(check_release(&msg, &program, &release, &[3u8; 32]), Err(Refusal::WrongDrop));
+        assert_eq!(check_release(&msg, &program, &[3u8; 32], &drop), Err(Refusal::ReleaseKeyNotSigner));
     }
 
     #[test]
     fn refuses_versioned_truncated_and_padded_messages() {
         let mut v0 = good();
         v0.insert(0, 0x80);
-        assert_eq!(check_release(&v0, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::VersionedMessage));
+        assert_eq!(check_release(&v0, &PROGRAM, &RELEASE, &DROP), Err(Refusal::VersionedMessage));
         let g = good();
-        assert!(matches!(check_release(&g[..g.len() - 1], &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::Malformed(_))));
+        assert!(matches!(check_release(&g[..g.len() - 1], &PROGRAM, &RELEASE, &DROP), Err(Refusal::Malformed(_))));
         let mut padded = good();
         padded.push(0);
-        assert!(matches!(check_release(&padded, &PROGRAM, &RELEASE, &DROP, &PROOF), Err(Refusal::Malformed(_))));
+        assert!(matches!(check_release(&padded, &PROGRAM, &RELEASE, &DROP), Err(Refusal::Malformed(_))));
     }
 }

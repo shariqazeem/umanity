@@ -13,6 +13,7 @@ import { CONFIG, DROPS_FUND, FEE_INBOX, UMANITY_PROGRAM_ID, fetchConfig, refunds
 import { syncChain } from './indexer'
 import { keepFeesMoving } from './keeper'
 import { metaMatches, sha256Hex, type DropMeta } from './drops'
+import { guardView } from '@/lib/near/flow'
 
 const FRESH_MS = 8_000
 let lastSync = 0
@@ -131,10 +132,12 @@ export async function getDrop(id: number) {
       .orderBy(asc(moneyEvents.slot)),
   ])
   const view = dropView(row)
-  const config = await fetchConfig(getConnection()).catch(() => null)
+  const currentProof = updates.find((u) => u.kind === 'proof' && u.proofHash && u.proofHash === row.proofHash)
+  const [config, guard] = await Promise.all([fetchConfig(getConnection()).catch(() => null), guardView(id, row.proofHash, currentProof?.guard ?? null).catch(() => null)])
   return {
     ...view,
     reviewHours: config ? config.reviewSecs / 3600 : 0,
+    guard,
     metaVerified: await metaMatches(row.meta, row.metaHash),
     gifts: gifts.map((g) => ({
       ref: g.ref,

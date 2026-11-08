@@ -260,10 +260,10 @@ export async function refundIxs(connection: Connection, a: { dropId: number; bac
   return [createAssociatedTokenAccountIdempotentInstruction(a.payer, usdcAccount(a.backer), a.backer, USDC), ix]
 }
 
-/** `proofHash` is the proof the unlock was approved for; the program refuses if the drop's proof has changed. */
-export async function unlockIxs(connection: Connection, a: { dropId: number; payee: PublicKey; releaseAuthority: PublicKey; payer: PublicKey; proofHash: Uint8Array }) {
+/** The unlock alone. `proofHash` is the proof the unlock was approved for; the program refuses if the drop's proof has changed. */
+export async function unlockIx(connection: Connection, a: { dropId: number; payee: PublicKey; releaseAuthority: PublicKey; proofHash: Uint8Array }) {
   const drop = dropAddress(a.dropId)
-  const ix = await umanityProgram(connection)
+  return umanityProgram(connection)
     .methods.unlock(Array.from(a.proofHash))
     .accountsPartial({
       config: CONFIG,
@@ -275,7 +275,16 @@ export async function unlockIxs(connection: Connection, a: { dropId: number; pay
       usdcMint: USDC,
     })
     .instruction()
-  return [createAssociatedTokenAccountIdempotentInstruction(a.payer, usdcAccount(a.payee), a.payee, USDC), ix]
+}
+
+/** The payee's USDC account (created if missing), then the unlock. */
+export async function unlockIxs(connection: Connection, a: { dropId: number; payee: PublicKey; releaseAuthority: PublicKey; payer: PublicKey; proofHash: Uint8Array }) {
+  return [createAssociatedTokenAccountIdempotentInstruction(a.payer, usdcAccount(a.payee), a.payee, USDC), await unlockIx(connection, a)]
+}
+
+/** Creates the payee's USDC account if it is missing (anyone may). */
+export function payeeAccountIx(payer: PublicKey, payee: PublicKey) {
+  return createAssociatedTokenAccountIdempotentInstruction(payer, usdcAccount(payee), payee, USDC)
 }
 
 export async function postProofIx(connection: Connection, a: { dropId: number; admin: PublicKey; proofHash: Uint8Array }) {

@@ -553,10 +553,25 @@ export const dropUpdates = pgTable(
     proofTx: text('proof_tx'),
     xPostUrl: text('x_post_url'),
     postedBy: text('posted_by'),
+    /** For proof: the NEAR guard transactions that carried its AI check and release. The verdict itself is read from the guard. */
+    guard: jsonb('guard').$type<GuardRecord>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('drop_updates_drop_idx').on(t.cluster, t.dropId)]
 )
+
+/** The NEAR transactions behind a proof's AI check and guarded release. */
+export type GuardRecord = {
+  network: 'mainnet' | 'testnet'
+  contract: string
+  registeredTx?: string | null
+  verdictTx?: string | null
+  releaseTx?: string | null
+  unlockTx?: string | null
+  /** The last thing that went wrong, in plain words, until it goes right. */
+  error?: string | null
+  at: string
+}
 
 /** Every program event, indexed from the chain. The Money page reads from here. */
 export const moneyEvents = pgTable(

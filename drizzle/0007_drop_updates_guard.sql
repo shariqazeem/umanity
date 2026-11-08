@@ -1,0 +1,1 @@
+ALTER TABLE "drop_updates" ADD COLUMN "guard" jsonb;

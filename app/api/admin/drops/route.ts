@@ -3,17 +3,20 @@
  *   POST { action: 'create', meta, goalUsd, capUsd, deadline, payee }
  *   POST { action: 'update' | 'proof', dropId, title, body, media, xPostUrl? }
  *   POST { action: 'unlock' | 'cancel' | 'refund', dropId }
+ *   POST { action: 'check', dropId }   (the NEAR guard's AI check of the current proof; runs by itself after 'proof')
  */
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { verifyAdminRequest } from '@/lib/admin-auth'
 import { getConnection } from '@/lib/solana/chain'
 import type { MediaItem } from '@/lib/db/schema'
 import type { DropMeta } from '@/lib/umanity/drops'
 import { cancelDrop, createDrop, postProof, postUpdate, refundBackers, unlockDrop } from '@/lib/umanity/admin'
+import { guardEnabled } from '@/lib/near/config'
+import { checkDropProof } from '@/lib/near/flow'
 import { syncChain } from '@/lib/umanity/indexer'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+export const maxDuration = 300
 
 const bad = (error: string, status = 400) => NextResponse.json({ error }, { status })
 
@@ -45,8 +48,13 @@ export async function POST(req: NextRequest) {
         const post = { dropId, title: String(b.title ?? '').trim().slice(0, 120), body: String(b.body ?? '').trim().slice(0, 4000), media: media(b.media), xPostUrl: typeof b.xPostUrl === 'string' && /^https:\/\/(x|twitter)\.com\//.test(b.xPostUrl) ? b.xPostUrl : null, postedBy: auth.address! }
         if (!Number.isInteger(dropId) || !post.title) return bad('A drop and a title are required')
         out = b.action === 'proof' ? await postProof(conn, post) : await postUpdate(post)
+        // The guard's AI check starts as soon as the proof is on-chain; the verdict lands in about a minute.
+        if (b.action === 'proof' && guardEnabled()) after(() => checkDropProof(conn, dropId).then(() => undefined, (e) => console.warn('[guard] proof check failed:', (e as Error).message)))
         break
       }
+      case 'check':
+        out = await checkDropProof(conn, dropId)
+        break
       case 'unlock':
         out = { signature: await unlockDrop(conn, dropId) }
         break

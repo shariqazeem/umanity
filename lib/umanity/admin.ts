@@ -10,6 +10,7 @@ import { dropGifts, drops, dropUpdates, getDb, newId } from '@/lib/db'
 import type { MediaItem } from '@/lib/db/schema'
 import { getAuthorityKeypair, getTreasuryKeypair } from '@/lib/solana/server-signer'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
+import { guardHoldsRelease, releaseDrop } from '@/lib/near/flow'
 import { canonicalJson, hexToBytes, sha256Hex, validateMeta, type DropMeta } from './drops'
 import { cancelDropIx, createDropIx, dropAddress, fetchBacker, fetchConfig, fetchDrop, micro, postProofIx, refundIxs, refundsOpen, unlockIxs } from './program'
 
@@ -96,7 +97,9 @@ export async function postProof(conn: Connection, o: Post) {
   return { id, signature, proofHash }
 }
 
+/** Pays a proven drop's pot to its payee. Once the NEAR guard holds the release key, only the guard can sign this. */
 export async function unlockDrop(conn: Connection, dropId: number) {
+  if (await guardHoldsRelease(conn)) return releaseDrop(conn, dropId)
   const drop = await fetchDrop(conn, dropId)
   const config = await fetchConfig(conn)
   if (!drop || !config) throw new Error('No such drop')
