@@ -27,11 +27,6 @@ export const X402_NETWORK = CAIP2_CURRENT
 export const X402_FACILITATOR_URL = process.env.X402_FACILITATOR_URL || (IS_MAINNET ? 'https://facilitator.payai.network' : 'https://x402.org/facilitator')
 export const X402_PAY_TO = process.env.X402_PAY_TO || UMANITY_TREASURY
 
-export const PRICES = {
-  verifyMilestone: process.env.X402_PRICE_VERIFY || '0.01',
-  sponsorDare: process.env.X402_PRICE_SPONSOR || '0.05',
-}
-
 /** Bounds for the Give API, in USD (USDC). The agent chooses the amount. */
 export const GIVE_MIN_USD = Number(process.env.X402_GIVE_MIN || '0.01')
 export const GIVE_MAX_USD = Number(process.env.X402_GIVE_MAX || '250')
@@ -51,8 +46,6 @@ export interface PaidRoute {
 
 export const PAID_ROUTES: Record<string, PaidRoute> = {
   give: { path: '/api/x402/give', price: 'dynamic', description: 'Put USDC into a Umanity drop pot: the payment is the gift, your wallet is the backer (refunded if the drop misses its date), and a signed receipt comes back' },
-  verifyMilestone: { path: '/api/x402/verify-milestone', price: PRICES.verifyMilestone, description: 'AI Impact Oracle: audit a milestone delivery and get a signed attestation' },
-  sponsorDare: { path: '/api/x402/sponsor-dare', price: PRICES.sponsorDare, description: 'Create a sponsored Impact Dare (agents and sponsors)' },
 }
 
 function usd(price: string) {

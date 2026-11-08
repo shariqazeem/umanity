@@ -6,7 +6,7 @@
   ],
   "crons": [
     {
-      "path": "/api/intents/reconcile",
+      "path": "/api/keeper",
       "schedule": "0 6 * * *"
     }
   ]

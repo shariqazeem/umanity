@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar } from '@/components/shared/ui'
 import { ProofOrb } from '@/components/shared/ProofOrb'
-import { DareCard } from '@/components/dares/DareCard'
 import { PostCard } from '@/components/feed/PostCard'
 import { apiGet, apiSend, fmtSol, short, timeAgo } from '@/lib/client/api'
 import { explorerTx } from '@/lib/solana/constants'
@@ -16,9 +15,9 @@ import { pickNextDrop, useDrops } from '@/components/drops/hooks'
 import { usdText } from '@/lib/umanity/drops'
 import type { BackerProfile } from '@/lib/umanity/profile'
 import { shownName } from '@/lib/client/names'
-import type { PublicProfile, CertView } from '@/lib/contracts'
+import type { PublicProfile } from '@/lib/contracts'
 
-type Tab = 'gifts' | 'certificates' | 'dares' | 'posts'
+type Tab = 'gifts' | 'posts'
 
 export function ProfileView({ username, mode }: { username: string; mode: 'own' | 'public' }) {
   const { address, openProfileEditor, openWalletSheet, openGive, ensureSigner, toast } = useUmanity()
@@ -142,11 +141,6 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
               <button onClick={share} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
                 Share
               </button>
-              {!isSelf && (
-                <Link href={`/home?compose=dare&target=${p.username}`} className="h-9 px-3.5 inline-flex items-center rounded-xl bg-amber-50 text-amber-700 text-[12.5px] font-semibold hover:bg-amber-100">
-                  ⚡ Dare @{p.username}
-                </Link>
-              )}
             </>
           )}
         </div>
@@ -201,8 +195,6 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
         {(
           [
             ['gifts', `Receipts${backer?.gifts.length ? ` · ${backer.gifts.length}` : ''}`],
-            ['certificates', `Certificates${p.certificates.length ? ` · ${p.certificates.length}` : ''}`],
-            ['dares', `Dares${p.dares.length ? ` · ${p.dares.length}` : ''}`],
             ['posts', 'Posts'],
           ] as const
         ).map(([k, l]) => (
@@ -216,8 +208,6 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
       </div>
 
       {tab === 'gifts' && <Receipts gifts={backer?.gifts ?? []} />}
-      {tab === 'certificates' && <Certificates certs={p.certificates} owner={p.address} />}
-      {tab === 'dares' && (p.dares.length === 0 ? <EmptyLine text="No dares yet." /> : <div className="space-y-2.5">{p.dares.map((d) => <DareCard key={d.id} dare={d} />)}</div>)}
       {tab === 'posts' && (p.posts.length === 0 ? <EmptyLine text="No posts yet." /> : <div className="space-y-2.5">{p.posts.filter((x) => x.type !== 'joined').map((x) => <PostCard key={x.id} post={x} />)}</div>)}
     </div>
   )
@@ -350,49 +340,6 @@ function Receipts({ gifts }: { gifts: BackerProfile['gifts'] }) {
           )}
         </div>
       ))}
-    </div>
-  )
-}
-
-const CERT: Record<string, { label: string; bg: string; accent: string; emoji: string }> = {
-  bronze: { label: 'Bronze', bg: 'bg-amber-50', accent: 'text-amber-600', emoji: '🥉' },
-  silver: { label: 'Silver', bg: 'bg-[#f5f5f7]', accent: 'text-[#86868b]', emoji: '🥈' },
-  gold: { label: 'Gold', bg: 'bg-yellow-50', accent: 'text-yellow-600', emoji: '🥇' },
-  diamond: { label: 'Diamond', bg: 'bg-sky-50', accent: 'text-sky-600', emoji: '💎' },
-}
-
-function Certificates({ certs, owner }: { certs: CertView[]; owner: string }) {
-  if (certs.length === 0) return <EmptyLine text="Every gift mints a soulbound impact certificate. None yet." />
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {certs.map((c) => {
-        const t = CERT[c.tier] ?? CERT.bronze
-        return (
-          <div key={c.id} className="card overflow-hidden group">
-            <div className={`${t.bg} p-6 text-center relative transition-all group-hover:py-7`}>
-              <div className="text-3xl mb-1.5">{t.emoji}</div>
-              <div className={`text-[9px] font-semibold ${t.accent} uppercase tracking-[0.2em]`}>{t.label} Impact</div>
-              <span className="absolute top-2.5 right-2.5 pill bg-white/70 text-[#86868b] !text-[8px]">Soulbound</span>
-            </div>
-            <div className="p-4">
-              <p className="font-semibold text-[13px] mb-2 truncate">{c.causeName}</p>
-              <div className="flex justify-between text-[11px]">
-                <span className="text-[#86868b]">Amount</span>
-                <span className="font-bold counter">{fmtSol(c.amount, 3)} SOL</span>
-              </div>
-              <div className="flex justify-between text-[11px] mt-1">
-                <span className="text-[#86868b]">Owner</span>
-                <span className="font-mono text-[#86868b]">{short(owner)}</span>
-              </div>
-              {c.signature && !c.signature.startsWith('x402_') && (
-                <a href={explorerTx(c.signature)} target="_blank" rel="noopener noreferrer" className="mt-2 block text-center text-[10px] text-[#aeaeb2] hover:text-[#525252]">
-                  View transaction
-                </a>
-              )}
-            </div>
-          </div>
-        )
-      })}
     </div>
   )
 }

@@ -4,31 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar, Icon } from '@/components/shared/ui'
-import { apiGet, apiSend, fmtSol, fmtUsd, timeAgo } from '@/lib/client/api'
-import { explorerTx } from '@/lib/solana/constants'
-import { getCause } from '@/lib/causes'
+import { apiGet, apiSend, timeAgo } from '@/lib/client/api'
 import type { FeedPost, CommentView } from '@/lib/data/social'
-import { chainLabel } from './types'
 import { shownName } from '@/lib/client/names'
 
 const origin = () => (typeof window !== 'undefined' ? window.location.origin : '')
-const WHALE_SOL = 1
 
-/** The original Umanity post card: author row, type pill, body, gift box, action bar. */
-export function PostCard({ post, fundedByViewer }: { post: FeedPost; fundedByViewer?: boolean }) {
-  const { solPrice, openGive } = useUmanity()
-  const p = post.properties || {}
-  const cause = p.poolId ? getCause(p.poolId) : undefined
-  const causeName = cause?.name ?? p.cause ?? 'a cause'
-  const amount = p.amount ? Number(p.amount) : NaN
-  const isGift = post.type === 'donation' || post.type === 'intent'
-  const isWhale = isGift && amount >= WHALE_SOL
-  const chain = chainLabel(p.sourceChain)
-  const viaAgent = p.route === 'x402' || p.route === 'agent'
-  const isProof = post.type === 'proof' || post.type === 'milestone'
-  const minimal = post.type === 'joined' || post.type === 'vote'
-
-  if (minimal) {
+/** A post someone wrote: author row, text, and the like · comment · share bar. Gifts and proof have their own cards. */
+export function PostCard({ post }: { post: FeedPost }) {
+  if (post.type === 'joined') {
     return (
       <div className="card px-4 py-3 flex items-center gap-2.5">
         <Link href={`/u/${post.username}`}>
@@ -38,24 +22,15 @@ export function PostCard({ post, fundedByViewer }: { post: FeedPost; fundedByVie
           <Link href={`/u/${post.username}`} className="font-semibold text-[#1d1d1f] hover:underline">
             @{post.username}
           </Link>{' '}
-          {post.type === 'joined' ? 'joined Umanity' : post.content.replace(/^Voted\s*/i, 'voted ')}
+          joined Umanity
         </p>
         <span className="text-[10px] text-[#aeaeb2] flex-shrink-0">{timeAgo(post.createdAt)}</span>
       </div>
     )
   }
 
-  const shareText = isGift && isFinite(amount) ? `Just gave ${fmtSol(amount, 3)} SOL to ${causeName} on @umanity_xyz — held in escrow on Solana until the delivery is proven.` : `${post.content.slice(0, 200)}\n\nvia @umanity_xyz`
-
   return (
-    <article className={`card p-4 relative ${isWhale ? 'whale-gradient shadow-whale overflow-hidden' : ''}`}>
-      {isWhale && (
-        <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">
-          <span className="text-[10px]">🐋</span>
-          <span className="text-[9px] font-semibold">Whale</span>
-        </div>
-      )}
-
+    <article className="card p-4">
       <div className="flex items-center gap-2.5 mb-2.5">
         <Link href={`/u/${post.username}`}>
           <Avatar username={post.username} url={post.avatarUrl} size={40} />
@@ -69,85 +44,11 @@ export function PostCard({ post, fundedByViewer }: { post: FeedPost; fundedByVie
             {timeAgo(post.createdAt)}
           </p>
         </div>
-        {!isWhale && (
-          <>
-            {isGift && <span className="pill bg-emerald-50 text-emerald-600 !text-[9px] font-semibold">{viaAgent ? 'Agent gift' : chain ? 'Any-chain' : 'Donation'}</span>}
-            {isProof && <span className="pill bg-[#1d1d1f] text-white !text-[9px] font-semibold">Proof</span>}
-            {post.type === 'dare_accepted' && <span className="pill bg-amber-50 text-amber-600 !text-[9px] font-semibold">Dare accepted</span>}
-          </>
-        )}
       </div>
 
-      {(!isGift || !isFinite(amount)) && post.content && <p className="text-[14px] text-[#1d1d1f] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{post.content}</p>}
+      {post.content && <p className="text-[14px] text-[#1d1d1f] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{post.content}</p>}
 
-      {isGift && isFinite(amount) && (
-        <div className="bg-emerald-50/60 rounded-xl p-3.5 mb-3 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0">{cause?.emoji ?? '💚'}</div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-emerald-700 counter">
-              {viaAgent && p.sourceAmount ? (
-                <>
-                  ${p.sourceAmount} USDC<span className="text-emerald-600/70 font-medium text-[12px]"> · {fmtSol(amount, 4)} SOL into escrow</span>
-                </>
-              ) : (
-                <>
-                  {fmtSol(amount, 3)} SOL
-                  {solPrice ? <span className="text-emerald-600/70 font-medium text-[12px]"> · {fmtUsd(amount * solPrice)}</span> : null}
-                </>
-              )}
-            </p>
-            <p className="text-[11px] text-emerald-600 truncate">
-              to{' '}
-              {p.poolId ? (
-                <Link href={`/causes/${p.poolId}`} className="font-semibold hover:underline">
-                  {causeName}
-                </Link>
-              ) : (
-                causeName
-              )}
-              {chain && <> · from {chain}</>}
-              {viaAgent && <> · {p.agent ? `agent "${p.agent}"` : 'agent'} via x402</>}
-              {p.route === 'multihopper' && <> · private route</>}
-            </p>
-          </div>
-          {post.txSignature && (
-            <div className="flex flex-col items-end gap-1 flex-shrink-0">
-              <Link href={`/gift/${post.txSignature}`} className="text-[10px] text-emerald-700 font-semibold hover:underline">
-                Follow →
-              </Link>
-              <a href={explorerTx(post.txSignature)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-600/70 font-medium hover:underline">
-                Verify ↗
-              </a>
-            </div>
-          )}
-        </div>
-      )}
-
-      {fundedByViewer && (
-        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full mb-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> You helped fund this
-        </p>
-      )}
-
-      <ActionBar
-        postId={post.id}
-        likeCount={post.likeCount}
-        liked={post.liked}
-        commentCount={post.commentCount}
-        shareText={shareText}
-        shareUrl={p.poolId ? `${origin()}/causes/${p.poolId}` : origin()}
-        right={
-          isGift && isFinite(amount) && p.poolId ? (
-            <button onClick={() => openGive({ causeId: p.poolId, amountSol: amount })} className="btn-secondary h-8 px-3 !text-[12px] !rounded-lg">
-              ♡ Match
-            </button>
-          ) : !isGift && post.txSignature ? (
-            <a href={explorerTx(post.txSignature)} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 font-medium hover:underline">
-              Transaction ↗
-            </a>
-          ) : undefined
-        }
-      />
+      <ActionBar postId={post.id} likeCount={post.likeCount} liked={post.liked} commentCount={post.commentCount} shareText={`${post.content.slice(0, 200)}\n\nvia @umanity_xyz`} shareUrl={origin()} />
     </article>
   )
 }

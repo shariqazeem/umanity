@@ -3,7 +3,6 @@ import './globals.css'
 import { WalletProvider } from '@/components/wallet/WalletProvider'
 import { UmanityProvider } from '@/components/providers/UmanityProvider'
 import { Toasts } from '@/components/layout/Toasts'
-import { GiveSheet } from '@/components/give/GiveSheet'
 import { DropGiveSheet } from '@/components/drops/DropGiveSheet'
 import { AuthSheet } from '@/components/auth/AuthSheet'
 import { ProfileEditor } from '@/components/profile/ProfileEditor'
@@ -40,7 +39,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WalletProvider>
           <UmanityProvider>
             {children}
-            <GiveSheet />
             <DropGiveSheet />
             <AuthSheet />
             <ProfileEditor />

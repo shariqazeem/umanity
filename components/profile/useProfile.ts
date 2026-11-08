@@ -12,7 +12,6 @@ import { guardianFor, type GuardianState } from '@/lib/guardian'
 import type { PublicProfile, GiftView, CertView } from '@/lib/contracts'
 import type { PublicUser } from '@/lib/data/users'
 import type { FeedPost } from '@/lib/data/social'
-import type { DareView } from '@/lib/data/dares'
 
 interface LegacyProfile extends PublicUser {
   followers: number
@@ -39,11 +38,10 @@ async function loadModern(username: string, viewer: string | null): Promise<Publ
 
 async function loadLegacy(username: string, viewer: string | null): Promise<PublicProfile | null> {
   const u = encodeURIComponent(username)
-  const [sp, score, feed, dares] = await Promise.all([
+  const [sp, score, feed] = await Promise.all([
     apiGet<{ success?: boolean; profile?: LegacyProfile }>(`/api/social/profile?username=${u}&viewer=${viewer ?? ''}`).catch(() => null),
     apiGet<{ guardian?: GuardianState; breakdown?: { votes?: number } | null }>(`/api/impact-score?username=${u}`).catch(() => null),
     apiGet<{ posts?: FeedPost[] }>(`/api/social/feed?username=${u}&limit=50&viewer=${viewer ?? ''}`).catch(() => null),
-    apiGet<{ dares?: DareView[] }>(`/api/dares?limit=100`).catch(() => null),
   ])
   const p = sp?.profile
   if (!p || sp?.success === false) return null
@@ -75,7 +73,7 @@ async function loadLegacy(username: string, viewer: string | null): Promise<Publ
     certificates,
     gifts,
     posts: feed?.posts ?? [],
-    dares: (dares?.dares ?? []).filter((d) => d.creator.username === p.username || d.targetHandle === p.username),
+    dares: [],
     causes: Array.from(byCause.entries()).map(([poolId, amount]) => {
       const c = getCause(poolId)
       return { poolId, name: c?.name ?? poolId, emoji: c?.emoji ?? '', amount }

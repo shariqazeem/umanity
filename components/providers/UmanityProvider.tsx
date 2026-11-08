@@ -11,7 +11,6 @@ import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { PublicKey, Transaction, VersionedTransaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { loadLocalWallet, createLocalWallet, importLocalWallet, forgetLocalWallet, type LocalWallet } from '@/lib/client/wallet'
 import { apiSend } from '@/lib/client/api'
-import { flushPendingGifts, pendingGiftCount } from '@/lib/client/pending-sync'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
 import type { PublicUser } from '@/lib/data/users'
 
@@ -191,25 +190,6 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
     setToasts((t) => [...t, { id, msg: text, kind, action }])
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), action ? 7000 : 4500)
   }, [])
-
-  // Replay gift records that failed after the transaction confirmed.
-  useEffect(() => {
-    let alive = true
-    const run = async () => {
-      if (!pendingGiftCount()) return
-      const n = await flushPendingGifts()
-      if (alive && n > 0) {
-        toast(n === 1 ? 'Your earlier gift is now recorded.' : `${n} earlier gifts are now recorded.`, 'ok')
-        refreshUser()
-      }
-    }
-    run()
-    const t = setInterval(run, 45_000)
-    return () => {
-      alive = false
-      clearInterval(t)
-    }
-  }, [toast, refreshUser])
 
   const requestFaucet = useCallback(async () => {
     if (IS_MAINNET || !signer) return { ok: false, funded: false, error: IS_MAINNET ? 'Not available on mainnet' : 'No wallet' }
