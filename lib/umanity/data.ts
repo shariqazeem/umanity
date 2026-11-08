@@ -1,8 +1,10 @@
 /**
- * Server-side reads for drops and the money trail. Every read first catches
- * the database up with the chain (at most every few seconds per process), so
- * pages show the chain's numbers, not stale copies.
+ * Server-side reads for drops and the money trail. Every read also catches
+ * the database up with the chain (at most every few seconds per process).
+ * The catch-up runs after the response is sent, so pages render straight from
+ * the database and the next read sees the chain's latest.
  */
+import { after } from 'next/server'
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { dropGifts, drops, dropUpdates, getDb, moneyEvents, spending, trades, users, type Drop } from '@/lib/db'
 import { getConnection } from '@/lib/solana/chain'
@@ -15,17 +17,26 @@ import { metaMatches, sha256Hex, type DropMeta } from './drops'
 const FRESH_MS = 8_000
 let lastSync = 0
 
-export async function freshen() {
+export async function freshen(opts: { wait?: boolean } = {}) {
   if (Date.now() - lastSync < FRESH_MS) return
   lastSync = Date.now()
+  const run = async () => {
+    try {
+      await syncChain(getConnection())
+      // A split shows up on the next sync.
+      await keepFeesMoving(getConnection()).catch(() => null)
+    } catch (e) {
+      // Serve what the database has; the next read retries.
+      lastSync = 0
+      console.warn('[umanity] chain sync failed:', (e as Error).message)
+    }
+  }
+  if (opts.wait) return run()
   try {
-    await syncChain(getConnection())
-    // Fire and forget: a split shows up on the next sync.
-    void keepFeesMoving(getConnection()).catch(() => {})
-  } catch (e) {
-    // Serve what the database has; the next read retries.
-    lastSync = 0
-    console.warn('[umanity] chain sync failed:', (e as Error).message)
+    after(run)
+  } catch {
+    // Outside a request (scripts, tests): catch up before reading.
+    await run()
   }
 }
 
