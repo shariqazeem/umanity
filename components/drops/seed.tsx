@@ -1,10 +1,10 @@
 'use client'
 
 import { createContext, useContext, type ReactNode } from 'react'
-import type { DropView, MoneySummary } from '@/lib/umanity/data'
+import type { DropDetail, DropView, MoneySummary } from '@/lib/umanity/data'
 import type { HomeItem, TopBacker } from '@/lib/umanity/feed'
 
-export type Seed = { drops?: DropView[] | null; money?: MoneySummary | null; feed?: HomeItem[] | null; backers?: TopBacker[] | null }
+export type Seed = { drops?: DropView[] | null; drop?: DropDetail | null; money?: MoneySummary | null; feed?: HomeItem[] | null; backers?: TopBacker[] | null }
 
 const SeedContext = createContext<Seed>({})
 

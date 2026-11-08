@@ -43,7 +43,9 @@ export function useDrops(everyMs = 15_000) {
 }
 
 export function useDrop(id: number | null, everyMs = 10_000) {
-  return usePoll<DropDetail>(id == null ? null : `/api/drops/${id}`, (j) => (j.drop as DropDetail) ?? null, everyMs)
+  const seed = useSeed()
+  const initial = seed.drop && seed.drop.id === id ? seed.drop : null
+  return usePoll<DropDetail>(id == null ? null : `/api/drops/${id}`, (j) => (j.drop as DropDetail) ?? null, everyMs, initial)
 }
 
 export function useMoney(everyMs = 20_000) {
