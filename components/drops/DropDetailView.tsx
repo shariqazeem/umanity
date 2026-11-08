@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { useDrop } from '@/components/drops/hooks'
 import { Backers, ChainFacts, DropMeter, DropSteps, MoneyRules, StatePill, dayText, dropHref, whenText } from '@/components/drops/DropParts'
+import { GuardCard } from '@/components/drops/GuardCard'
 import { listTotal, plural, usdText } from '@/lib/umanity/drops'
 import { explorerTx } from '@/lib/solana/constants'
 
@@ -126,6 +127,7 @@ export function DropDetailView() {
             {proof.map((u) => (
               <ProofCard key={u.id} update={u} />
             ))}
+            {drop.guard && <GuardCard guard={drop.guard} unlocked={drop.state === 'unlocked'} />}
           </div>
         ) : (
           <div className="card p-8 text-center">
