@@ -6,8 +6,8 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   const handle = decodeURIComponent(username).replace(/^@/, '').toLowerCase()
   const u = await findUserByUsername(handle).catch(() => null)
   if (!u) return { title: `@${handle}` }
-  const sol = (u.totalDonatedLamports / 1e9).toFixed(2)
-  const description = `@${u.username} has given ${sol} SOL across ${u.donationCount} gifts on Umanity, every one held in escrow until it was delivered and proven.`
+  const gifts = u.donationCount === 1 ? '1 gift' : `${u.donationCount} gifts`
+  const description = `@${u.username} on Umanity: ${gifts} into USDC pots on Solana that pay out only when each delivery is filmed.`
   return { title: `@${u.username}`, description, openGraph: { title: `@${u.username} on Umanity`, description }, twitter: { card: 'summary_large_image', title: `@${u.username} on Umanity`, description } }
 }
 

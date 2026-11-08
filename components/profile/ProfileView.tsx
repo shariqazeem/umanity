@@ -149,7 +149,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
 
       <GuardianCard p={p} backer={backer} />
 
-      {/* Streak + causes */}
+      {/* Streak + drops backed */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StreakCard current={streak?.currentStreak ?? p.streakCurrent} longest={streak?.longestStreak ?? p.streakLongest} days={streak?.donationDays ?? []} />
         <div className="card p-5">
@@ -206,7 +206,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
   )
 }
 
-/** The Living Guardian pass: a collectible that grows with giving, streaks and votes. */
+/** The Living Guardian pass: a collectible that grows with giving and streaks. */
 function GuardianCard({ p, backer }: { p: PublicProfile; backer: BackerProfile | null }) {
   const given = backer?.totals.givenUsd ?? 0
   const g = p.guardian

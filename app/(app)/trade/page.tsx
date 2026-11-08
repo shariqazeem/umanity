@@ -106,9 +106,7 @@ export default function TradePage() {
       <header className="pt-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">Trade</p>
         <h1 className="text-[28px] md:text-[34px] font-black tracking-[-0.035em] leading-[1.05] mt-1">Swaps that feed people</h1>
-        <p className="text-[14px] text-[#86868b] mt-2 max-w-xl">
-          Best-price routing by Jupiter. Umanity takes 0.5% on trades in or out of USDC, less than Phantom&apos;s 0.85%, and the program sends half of it to drops.
-        </p>
+        <p className="text-[14px] text-[#86868b] mt-2 max-w-xl [text-wrap:balance]">Jupiter&apos;s best route, with 0.5% when USDC is one side. Half of it fills the next drop.</p>
       </header>
 
       <TokenCard onBuy={() => (setFrom('USDC'), setTo('UMANITY'), setPhase({ kind: 'idle' }))} onSell={() => (setFrom('UMANITY'), setTo('USDC'), setPhase({ kind: 'idle' }))} />

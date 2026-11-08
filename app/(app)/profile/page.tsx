@@ -16,7 +16,7 @@ export default function ProfilePage() {
           </span>
           <h1 className="text-[24px] font-bold tracking-[-0.02em] mt-6">Your pass starts with a gift.</h1>
           <p className="text-[15px] text-[#86868b] leading-relaxed mt-4 max-w-[400px] mx-auto">
-            Every gift adds to a Living Guardian pass that grows with your giving, your streak and your votes. Certificates, receipts and the deliveries you helped fund all live here.
+            Every gift grows your Living Guardian pass and your streak, and becomes a ticket you can follow to its delivery video.
           </p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center mt-7">
             <Btn size="lg" onClick={openAuth} icon="bolt">

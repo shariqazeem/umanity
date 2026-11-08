@@ -1,14 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { explorerAccount, explorerTx } from '@/lib/solana/constants'
 import { usdcAccount } from '@/lib/umanity/usdc'
 import { amountInUnits, plural, usdText } from '@/lib/umanity/drops'
 import type { DropDetail, DropView } from '@/lib/umanity/data'
 import { short, timeAgo } from '@/lib/client/api'
-import { Avatar } from '@/components/shared/ui'
+import { Avatar, Icon } from '@/components/shared/ui'
 
 /** Drops are numbered from 1 for people; the chain counts from 0. */
 export const dropHref = (id: number) => `/drops/${id + 1}`
@@ -158,7 +158,9 @@ export function DropCard({ drop }: { drop: DropView }) {
           <StatePill drop={drop} />
         </div>
         <p className="text-[15px] font-bold tracking-tight mt-0.5 truncate">{drop.title}</p>
-        <p className="text-[12px] text-[#86868b] truncate">📍 {drop.place}</p>
+        <p className="text-[12px] text-[#86868b] truncate inline-flex items-center gap-1 max-w-full">
+          <Icon name="pin" size={12} className="flex-shrink-0" /> <span className="truncate">{drop.place}</span>
+        </p>
         <div className="mt-3">
           <DropMeter drop={drop} size="sm" />
         </div>
@@ -211,22 +213,34 @@ function channelLabel(channel: string, sourceChain: string | null) {
 }
 
 /** The rules, in plain words, with the numbers this drop runs on. */
+/** The promises a gift comes with, as pills that each open their sentence. */
 export function MoneyRules({ drop, reviewHours }: { drop: DropView; reviewHours: number }) {
+  const rules = [
+    { key: 'pot', icon: 'lock', label: 'Its own pot', text: "Your gift goes into this drop's own USDC pot on Solana. It can leave only two ways: to the delivery, or back to you." },
+    { key: 'proof', icon: 'camera', label: 'Pays on filmed proof', text: `The pot pays only after the delivery's proof is posted on-chain and a ${reviewHours}-hour check passes, and only to the delivery wallet fixed when the drop was made.` },
+    { key: 'refund', icon: 'refresh', label: 'Refunded if late', text: `If it isn't proven by ${whenText(drop.deadline)}, every backer gets back exactly what they gave.` },
+    { key: 'fees', icon: 'heart', label: '100% to the drop', text: 'Gifts carry no fee. Umanity earns from trading fees, which the program splits 50/50 with drops.' },
+    { key: 'charity', icon: 'info', label: 'Not a charity', text: 'Umanity is a crypto app, not a registered charity. Gifts are not tax-deductible.' },
+  ]
+  const [open, setOpen] = useState('proof')
+  const current = rules.find((r) => r.key === open)
   return (
-    <ul className="space-y-2.5">
-      {[
-        ['🔒', `Your gift goes into this drop's own pot on Solana, in USDC.`],
-        ['🎥', `The pot pays out only after proof of the delivery is posted on-chain and a ${reviewHours}-hour check passes, and only to the delivery wallet fixed when the drop was created.`],
-        ['↩️', `If it isn't proven by ${whenText(drop.deadline)}, every backer gets back exactly what they gave.`],
-        ['💯', '100% of gifts go to the drop. Umanity earns from trading fees, never from gifts.'],
-        ['ℹ️', 'Umanity is a crypto app, not a registered charity, and gifts are not tax-deductible.'],
-      ].map(([icon, text]) => (
-        <li key={text} className="flex gap-3 text-[13px] leading-relaxed text-[#525252]">
-          <span className="w-5 text-center flex-shrink-0">{icon}</span>
-          <span>{text}</span>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <div className="flex flex-wrap gap-1.5">
+        {rules.map((r) => (
+          <button
+            key={r.key}
+            onClick={() => setOpen((o) => (o === r.key ? '' : r.key))}
+            aria-expanded={open === r.key}
+            className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-[12.5px] font-medium border transition-colors ${open === r.key ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#1d1d1f] border-black/[0.08] hover:border-black/[0.2]'}`}
+          >
+            <Icon name={r.icon} size={14} className={open === r.key ? 'text-emerald-400' : 'text-emerald-600'} />
+            {r.label}
+          </button>
+        ))}
+      </div>
+      {current && <p className="text-[13px] leading-relaxed text-[#525252] mt-3">{current.text}</p>}
+    </div>
   )
 }
 

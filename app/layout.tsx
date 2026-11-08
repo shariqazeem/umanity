@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: { default: `Umanity — ${TAGLINE}`, template: '%s · Umanity' },
   description: DESCRIPTION,
   applicationName: 'Umanity',
-  keywords: ['solana', 'charity', 'donations', 'escrow', 'near intents', 'aurora intents', 'x402', 'ai agents', 'proof of impact', 'pakistan', 'giving'],
+  keywords: ['solana', 'usdc', 'giving', 'filmed delivery', 'refunds', 'x402', 'ai agents', 'aurora intents', 'near intents', 'jupiter'],
   authors: [{ name: 'Umanity' }],
   metadataBase: new URL(APP_URL),
   openGraph: {
