@@ -26,7 +26,7 @@ Giving takes one tap: sign in, create a wallet, press the black circle. Umanity 
 - Code: https://github.com/shariqazeem/umanity (branch `mainnet`; README "Try it", JUDGES.md)
 - Program: https://explorer.solana.com/address/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3?cluster=devnet
 - Demo video: _(add the link)_
-- Slides: _(add the link)_
+- Slides: https://claude.ai/artifact/GHsj6hVeko5e8dHLvgyWwd (share it from its Share menu first, so judges can open it)
 
 ## What existed before
 An earlier Umanity (github.com/shariqazeem/umanity-social) won a Superteam bounty and the Solana Graveyard Hackathon's Tapestry track; it was a SOL tipping and cause app with different programs. This repository started fresh on 27 Oct 2026, and everything in it (the program, the drops app, x402 gifts, Aurora gifts, swaps and the token tooling) was written during the hackathon window.
