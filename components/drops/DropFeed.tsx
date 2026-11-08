@@ -10,7 +10,7 @@ import { chainLabel } from '@/components/feed/types'
 import { apiGet, short, timeAgo } from '@/lib/client/api'
 import { shownName } from '@/lib/client/names'
 import { explorerTx } from '@/lib/solana/constants'
-import { amountInUnits, plural, usdText } from '@/lib/umanity/drops'
+import { amountInUnits, helpedText, plural, usdText } from '@/lib/umanity/drops'
 import type { FeedDrop, FeedWho, HomeItem } from '@/lib/umanity/feed'
 import type { FeedPost } from '@/lib/data/social'
 import { pickNextDrop, useDrops } from './hooks'
@@ -182,7 +182,7 @@ function GiftCard({ item }: { item: Extract<HomeItem, { type: 'gift' }> }) {
             {usdText(item.amountUsd)}
             <span className="text-emerald-600/70 font-medium text-[12px]">
               {' '}
-              · {units >= 1 ? `${plural(Math.floor(units + 1e-9), item.drop.unitName)}, ${plural(people, 'person', 'people')} helped` : `${Math.round(units * 100)}% of a ${item.drop.unitName}`}
+              · {units >= 1 ? `${plural(Math.floor(units + 1e-9), item.drop.unitName)}${helpedText(people, item.drop.people)}` : `${Math.round(units * 100)}% of a ${item.drop.unitName}`}
             </span>
           </p>
           <p className="text-[11px] text-emerald-600 truncate">

@@ -87,7 +87,7 @@ function NewDrop({ signer, onCreated }: { signer: Signer; onCreated: () => void 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <input value={f.unitName} onChange={set('unitName')} placeholder="Unit (ration pack)" className="input" />
         <input value={f.unitUsd} onChange={set('unitUsd')} inputMode="decimal" placeholder="$ per unit" className="input" />
-        <input value={f.people} onChange={set('people')} inputMode="numeric" placeholder="People per unit" className="input" />
+        <input value={f.people} onChange={set('people')} inputMode="numeric" placeholder="People per unit (0 if none)" title="0 hides the 'people helped' count, e.g. for animals or a demo" className="input" />
         <input value={f.covers} onChange={set('covers')} placeholder="What one covers" className="input" />
       </div>
       <div className="rounded-2xl bg-[#f5f5f7] p-3 space-y-2">

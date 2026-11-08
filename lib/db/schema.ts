@@ -317,10 +317,24 @@ export const intents = pgTable(
     settlementSignature: text('settlement_signature'),
     explorerUrl: text('explorer_url'),
     lastStatusPayload: jsonb('last_status_payload').$type<Record<string, unknown>>(),
+    /** v3: the drop a cross-chain gift goes into, and how it was settled there. */
+    dropId: integer('drop_id'),
+    /** USDC (micro) the giver asked to land in the pot. */
+    targetMicro: bigint('target_micro', { mode: 'number' }),
+    /** USDC (micro) the solver actually delivered to the treasury. */
+    receivedMicro: bigint('received_micro', { mode: 'number' }),
+    /** drop_gifts.ref of the give, and its signature (stored before sending, so a retry can check it). */
+    giveRef: text('give_ref'),
+    giveSignature: text('give_signature'),
+    giveValidUntil: bigint('give_valid_until', { mode: 'number' }),
+    /** USDC that couldn't go into the pot (it filled or closed first), sent to the backer's own wallet. */
+    returnedMicro: bigint('returned_micro', { mode: 'number' }),
+    returnSignature: text('return_signature'),
+    settledAt: timestamp('settled_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('intents_user_idx').on(t.userAddress)]
+  (t) => [index('intents_user_idx').on(t.userAddress), index('intents_drop_idx').on(t.dropId)]
 )
 
 // ---------- x402 receipts ----------

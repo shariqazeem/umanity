@@ -6,7 +6,7 @@ import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Sheet } from '@/components/shared/ui'
 import { apiSend } from '@/lib/client/api'
 import { explorerTx } from '@/lib/solana/constants'
-import { amountInUnits, plural, usdText } from '@/lib/umanity/drops'
+import { amountInUnits, helpedText, plural, usdText } from '@/lib/umanity/drops'
 import { useDrop, useUsdcBalance } from './hooks'
 import { dayText, dropHref } from './DropParts'
 
@@ -161,7 +161,7 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
       <p className="text-[12.5px] text-[#525252] mt-3 min-h-[18px]">
         {valid
           ? units >= 1
-            ? `= ${plural(Math.floor(units + 1e-9), drop.unit.name)}, ${plural(Math.floor(people + 1e-9), 'person', 'people')} helped`
+            ? `= ${plural(Math.floor(units + 1e-9), drop.unit.name)}${helpedText(people, drop.unit.people)}`
             : `${Math.round(units * 100)}% of one ${drop.unit.name} (${drop.unit.covers})`
           : value > room
             ? `This pot has room for ${usdText(room, 2)} more`

@@ -50,7 +50,8 @@ export function validateMeta(m: DropMeta): string | null {
   if (!m.title?.trim() || m.title.length > 80) return 'title: 1-80 characters'
   if (!m.place?.trim() || m.place.length > 80) return 'place: 1-80 characters'
   if (m.story.length > 2_000) return 'story: at most 2,000 characters'
-  if (!m.unit?.name || !(m.unit.usd > 0) || !(m.unit.people >= 1)) return 'unit needs a name, a price and people helped'
+  // people may be 0 for drops that don't feed people directly (or demos): the app then never claims anyone was helped.
+  if (!m.unit?.name || !(m.unit.usd > 0) || !(m.unit.people >= 0)) return 'unit needs a name, a price and people helped (0 if none)'
   if (!m.items?.length) return 'the shopping list is empty'
   for (const it of m.items) {
     if (!it.name || !(it.unitUsd > 0) || !(it.qty > 0)) return `item "${it.name}": needs a name, price and quantity`
@@ -67,6 +68,11 @@ export function amountInUnits(usdAmount: number, unit: DropMeta['unit']) {
   const whole = Math.floor(units + 1e-9)
   const people = Math.floor(units * unit.people + 1e-9)
   return { units, whole, people }
+}
+
+/** ", 10 people helped", or nothing for drops that don't count people. */
+export function helpedText(people: number, perUnit: number) {
+  return perUnit > 0 ? `, ${plural(Math.floor(people + 1e-9), 'person', 'people')} helped` : ''
 }
 
 export function plural(n: number, one: string, many = `${one}s`) {

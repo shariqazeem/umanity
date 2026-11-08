@@ -43,6 +43,13 @@
       "when": 1793732209200,
       "tag": "0005_trades",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794107780578,
+      "tag": "0006_drop_intents",
+      "breakpoints": true
     }
   ]
 }

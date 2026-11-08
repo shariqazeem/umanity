@@ -59,7 +59,8 @@ export function DropMeter({ drop, size = 'lg' }: { drop: DropView; size?: 'sm' |
       <p className={`${big ? 'text-[13px]' : 'text-[11.5px]'} text-[#525252] mt-2`}>
         {whole > 0 ? (
           <>
-            <span className="font-semibold text-[#1d1d1f]">{plural(whole, drop.unit.name)}</span> {delivered ? 'delivered' : 'so far'} · {plural(people, 'person', 'people')} helped
+            <span className="font-semibold text-[#1d1d1f]">{plural(whole, drop.unit.name)}</span> {delivered ? 'delivered' : 'so far'}
+            {drop.unit.people > 0 && <> · {plural(people, 'person', 'people')} helped</>}
           </>
         ) : (
           <>Every {usdText(drop.unit.usd)} is one {drop.unit.name}: {drop.unit.covers}</>
