@@ -2,6 +2,8 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // A production build can run beside `next dev` with NEXT_DIST_DIR=.next-build.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   output: 'standalone',
   outputFileTracingRoot: process.cwd(),
   serverExternalPackages: ['@electric-sql/pglite', 'postgres', 'drizzle-orm'],
