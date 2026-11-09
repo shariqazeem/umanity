@@ -28,6 +28,7 @@ import {
   type WalletMethod,
 } from '@/lib/client/wallet'
 import { apiSend } from '@/lib/client/api'
+import { usdcAccount } from '@/lib/umanity/usdc'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
 import type { PublicUser } from '@/lib/data/users'
 
@@ -66,6 +67,8 @@ interface Ctx {
   user: PublicUser | null
   profileLoading: boolean
   balance: number | null
+  /** USDC in the wallet, in dollars: what people give with (Umanity pays the SOL fees). */
+  usdc: number | null
   solPrice: number | null
   network: 'devnet' | 'mainnet-beta'
   isMainnet: boolean
@@ -135,6 +138,7 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<PublicUser | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
   const [balance, setBalance] = useState<number | null>(null)
+  const [usdc, setUsdc] = useState<number | null>(null)
   const [solPrice, setSolPrice] = useState<number | null>(null)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [give, setGive] = useState<GiveRequest | null>(null)
@@ -208,11 +212,16 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
   const refreshBalance = useCallback(async () => {
     if (!signer) {
       setBalance(null)
+      setUsdc(null)
       return
     }
     try {
-      const l = await connection.getBalance(signer.publicKey, 'confirmed')
+      const [l, t] = await Promise.all([
+        connection.getBalance(signer.publicKey, 'confirmed'),
+        connection.getTokenAccountBalance(usdcAccount(signer.publicKey), 'confirmed').catch(() => null),
+      ])
       setBalance(l / LAMPORTS_PER_SOL)
+      setUsdc(t ? Number(t.value.amount) / 1e6 : 0)
     } catch {
       /* ignore */
     }
@@ -404,6 +413,7 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
     user,
     profileLoading,
     balance,
+    usdc,
     solPrice,
     network: SOLANA_CLUSTER,
     isMainnet: IS_MAINNET,

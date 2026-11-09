@@ -6,12 +6,12 @@ import { usePathname } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar, Icon } from '@/components/shared/ui'
 import { NotificationBell } from '@/components/layout/NotificationBell'
-import { fmtSol, short } from '@/lib/client/api'
+import { short } from '@/lib/client/api'
 import { NAV, SECONDARY_NAV, isActive } from './nav'
 
 export function LeftNav() {
   const pathname = usePathname()
-  const { signer, user, balance, isMainnet, openAuth, openWalletSheet } = useUmanity()
+  const { signer, user, usdc, isMainnet, openAuth, openWalletSheet } = useUmanity()
   const activeMain = (match: readonly string[]) => isActive(pathname, match)
 
   return (
@@ -74,7 +74,7 @@ export function LeftNav() {
               <span className="flex-1 min-w-0">
                 <span className="block text-[13px] font-semibold truncate">{user ? `@${user.username}` : short(signer.publicKey.toBase58())}</span>
                 <span className="block text-[11px] text-[#86868b] counter">
-                  {balance == null ? '…' : `${fmtSol(balance, 2)} SOL`}
+                  {usdc == null ? '…' : `$${usdc.toFixed(2)} USDC`}
                   {user && user.streakCurrent > 0 && <span className="ml-1.5">· 🔥 {user.streakCurrent}</span>}
                 </span>
               </span>
