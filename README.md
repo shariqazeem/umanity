@@ -10,6 +10,7 @@ Umanity is the app where your crypto feeds people, on camera. Money goes into **
   - 1B fixed supply, with no mint or freeze authority, no team tokens and no presale.
   - Every trading fee is claimable only by the Umanity program, which splits it 50/50 between drops and ops.
   - Bots that bought in its first minute paid $26.99 in anti-sniping fees; the program put $13.49 into the drops fund and $13.49 to ops.
+- **The plan:** [docs/PLAN.md](docs/PLAN.md): the flywheel, what $UMANITY is for, runners, films, and the rules that never change.
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
 - **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)
 - **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps and the token tooling, was written from 27 Oct on, inside Encode's 12 Oct to 8 Nov window.
