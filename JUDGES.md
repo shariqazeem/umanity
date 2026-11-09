@@ -1,19 +1,19 @@
 # For judges
 
-**Umanity is live on Solana mainnet: https://umanity.gives**
+**Umanity is live on Solana mainnet: https://umanity.gives** · [Demo video (3:55)](https://youtu.be/45kQBtNDMBU)
 
 Real USDC. Gifts start at $1, and Umanity pays the network fee. No wallet is needed to browse. The README's **Try it (do X → see Y)** is the full walkthrough; below is the shortest path for each track.
 
 Program [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3) on mainnet since 9 Nov 2026. Every number on the site is read from it.
 
 ## Proof: one real gift each way, 9 Nov 2026
-On launch day the team gave $1 to [Drop #1](https://umanity.gives/drops/1) each way you can give. Its pot holds $16.49: $13.49 from $UMANITY trading fees and these three gifts.
+On launch day the team gave $1 to [Drop #1](https://umanity.gives/drops/1) each way you can give. The [demo video](https://youtu.be/45kQBtNDMBU) did it again, live, from a brand-new wallet (@umanity). The pot now holds $19.49: $13.49 from $UMANITY trading fees and these six gifts.
 
-| Way | What happened | Transactions |
-| --- | --- | --- |
-| **One tap** | A Umanity wallet unlocked with Touch ID gave $1. The treasury paid the network fee. | [give](https://solscan.io/tx/4RmusH4RUrDhSf1YsBuMP6bxSFfPT4FR4ETvYRngK4htQjs9nSysHXT96Q9LZJ8hRXgvDh5MzsqtQF2oJnNFS2QD) |
-| **x402** | An agent paid $1 in USDC and PayAI settled it. One second later, `give` put it in the pot with the agent's wallet as the backer. | [payment](https://solscan.io/tx/5e9JGdx3KjvjYoad5WXf3iWFAJJn7kuy2VufCYnWesGmFuEkHZwh2iGG8pdHFhpF4x9DSRGzAktTgqttgkrBwRaw) · [give](https://solscan.io/tx/5GQFEkVuswDHqAFmESNcsH8dfbGkWTZa6HNWbc32bivHBU7nUknkcczMZcSo7NGyS6EwfKQ9bRn2qkPRfPYNbuYm) |
-| **Aurora Intents** | 0.000477 ETH sent on Ethereum. NEAR Intents delivered exactly 1.000000 USDC on Solana, and 3 seconds later it was in the pot in the giver's name. 2 min 40 s from deposit to pot. | [deposit on Ethereum](https://etherscan.io/tx/0xf374cf6e02742c374f9d644f6a39f684a02deb6117e5d4f0da79b72bf5d7c3e7) · [USDC delivered](https://solscan.io/tx/4PyvGfn5EGj7vPk2c2TgmgCTUxPGuAJcnrWqARRzCLVVWfgvWshVSVryC1srBpzUaAwfp5giwoUG6fmUaRCh6n5f) · [give](https://solscan.io/tx/2tZXjMZJiRemYr8ub7eoucNZWWRFnJtc4vsQaRGZWBRFnGxqqCf7YwKQHyyy63Hn8M8hcM6pR5PQ9vGp8avDBmp5) |
+| Way | What happened | Launch day | In the demo video |
+| --- | --- | --- | --- |
+| **One tap** | A Umanity wallet unlocked with Touch ID gave $1. The treasury paid the network fee. | [give](https://solscan.io/tx/4RmusH4RUrDhSf1YsBuMP6bxSFfPT4FR4ETvYRngK4htQjs9nSysHXT96Q9LZJ8hRXgvDh5MzsqtQF2oJnNFS2QD) | [give](https://solscan.io/tx/3gnGjf4AUNv2BNeL9Hpw6aKVjgf2L3cpxuB6BWqSVp9oqFH8yiihcZfxz1PrqraSCYZ1B7SxQpDj6JZFFxUoEbjm) |
+| **x402** | An agent paid $1 in USDC and PayAI settled it. One second later, `give` put it in the pot with the agent's wallet as the backer. | [payment](https://solscan.io/tx/5e9JGdx3KjvjYoad5WXf3iWFAJJn7kuy2VufCYnWesGmFuEkHZwh2iGG8pdHFhpF4x9DSRGzAktTgqttgkrBwRaw) · [give](https://solscan.io/tx/5GQFEkVuswDHqAFmESNcsH8dfbGkWTZa6HNWbc32bivHBU7nUknkcczMZcSo7NGyS6EwfKQ9bRn2qkPRfPYNbuYm) | [give](https://solscan.io/tx/3KBC8tJ6A87Wud6ZEcVxKuRKr2ahE3rR4ZqF2NLCPUwKrnSj7eLwUak5kz4s2tGytj4dyn3Cb7DfRMc8edkUeJbW) |
+| **Aurora Intents** | 0.000477 ETH sent on Ethereum. NEAR Intents delivered exactly 1.000000 USDC on Solana, and 3 seconds later it was in the pot in the giver's name. 2 min 40 s from deposit to pot. | [deposit on Ethereum](https://etherscan.io/tx/0xf374cf6e02742c374f9d644f6a39f684a02deb6117e5d4f0da79b72bf5d7c3e7) · [USDC delivered](https://solscan.io/tx/4PyvGfn5EGj7vPk2c2TgmgCTUxPGuAJcnrWqARRzCLVVWfgvWshVSVryC1srBpzUaAwfp5giwoUG6fmUaRCh6n5f) · [give](https://solscan.io/tx/2tZXjMZJiRemYr8ub7eoucNZWWRFnJtc4vsQaRGZWBRFnGxqqCf7YwKQHyyy63Hn8M8hcM6pR5PQ9vGp8avDBmp5) | [give](https://solscan.io/tx/LyHNs2MvxjD9Xrs6wZMQS3gvCZJcLNXza1QBqETMUkeBTHBGmmFBJxnNKQma2Uh7NoosAjCGJaaVLNM8uo4aPUu) |
 
 ## Best Consumer App (5 minutes)
 1. `/` → the landing, with live totals read from the program. `/home` → the live drop and its black circle, plus a feed of gifts, filmed proof, unlocks and fee splits, each with its transaction.

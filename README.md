@@ -1,19 +1,26 @@
 # Umanity — Crypto giving, ~~on trust~~ on camera.
 
-Umanity is the app where your crypto feeds people, on camera. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot on Solana**. The pot pays the drop's supplier only after the delivery is filmed and the proof has cleared a review window. If the drop misses its date, the program opens refunds and Umanity sends every backer their money back. Trading in the app feeds the same pots: every swap fee, and every $UMANITY trading fee, is split 50/50 by the program between drops and running Umanity.
+**Live on Solana mainnet: [umanity.gives](https://umanity.gives)** · [Demo video (3:55)](https://youtu.be/45kQBtNDMBU) · [For judges: every claim with its transaction](JUDGES.md) · [Slides](https://docs.google.com/presentation/d/1w3ntxyNXFjRDFRhAU5GXaDBTN68yh5c-rOe7fNWLJWQ/edit?usp=sharing)
+
+Umanity is crypto giving you can verify. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot owned by a Solana program**. The pot pays the drop's supplier only after the delivery is filmed, its proof is hashed on-chain and a review window passes. If the drop misses its date, the program opens refunds and every backer gets their own money back. Gifts carry no fee. Trading in the app feeds the same pots: every swap fee and every $UMANITY trading fee is split 50/50 by the program between drops and running Umanity.
+
+## Live on mainnet now
+
+| What's live | Detail |
+| --- | --- |
+| **Real money in the first pot** | [Drop #1](https://umanity.gives/drops/1), ration packs for 5 families in Lahore due 20 Nov, holds **$19.49**: $13.49 from $UMANITY trading fees and $6 from 6 real gifts by 2 backers. |
+| **Three ways to give, each proven** | One tap with a Touch ID wallet and no SOL, ETH from Ethereum through Aurora Intents, and an AI agent over x402. Every transaction is in [JUDGES.md](JUDGES.md). |
+| **$UMANITY** | [`E8xJU7k…`](https://solscan.io/token/E8xJU7kAhKhDqnchrNfRKYTix7Hmgz8TBqX7QXCpNFka) on a Meteora bonding curve ([pool](https://solscan.io/account/EcKz44PtV27rpVQbThRACUUL3MhVTt9TYVBrdiNwivYc)) since 9 Nov. Fixed 1B supply, no mint or freeze authority, no team tokens, no presale. Only the program can claim its trading fees. Sniping bots paid $26.99 in its first minute; the program split it 50/50, and the drops fund's $13.49 is already in Drop #1. |
+| **The program** | [`UmauiNG…`](https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3), 18 instructions, [deployed 9 Nov](https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN). The bytes on-chain match `target/deploy/umanity.so`. |
+| **Community drops** | Anyone can propose a drop where they live at [/start](https://umanity.gives/start). The team reviews it, and the runner is paid only after proof. |
+| **NEAR guard** | [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near) is live on NEAR mainnet. It signs a pot's unlock with Chain Signatures only after an AI checks the proof inside a TEE on NEAR AI Cloud and a council has had time to veto. It takes over the unlock key next: [NEAR.md](NEAR.md). |
 
 - **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions won a **Superteam bounty** and the **Solana Graveyard Hackathon (Tapestry track)** as [umanity-social](https://github.com/shariqazeem/umanity-social).
-- **Program:** `umanity` [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
-- **Live on Solana mainnet:** https://umanity.gives. Real USDC, gifts from $1, and Umanity pays the network fee. Program [deployed 9 Nov 2026](https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN); the bytes on-chain match `target/deploy/umanity.so`.
-- **NEAR guard on NEAR mainnet:** [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near), see [NEAR.md](NEAR.md).
-- **$UMANITY:** [`E8xJU7kAhKhDqnchrNfRKYTix7Hmgz8TBqX7QXCpNFka`](https://solscan.io/token/E8xJU7kAhKhDqnchrNfRKYTix7Hmgz8TBqX7QXCpNFka), on a Meteora bonding curve ([pool](https://solscan.io/account/EcKz44PtV27rpVQbThRACUUL3MhVTt9TYVBrdiNwivYc)) since 9 Nov 2026.
-  - 1B fixed supply, with no mint or freeze authority, no team tokens and no presale.
-  - Every trading fee is claimable only by the Umanity program, which splits it 50/50 between drops and ops.
-  - Bots that bought in its first minute paid $26.99 in anti-sniping fees; the program put $13.49 into the drops fund and $13.49 to ops.
+- **Program source:** [`programs/umanity/src/lib.rs`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
 - **The plan:** [docs/PLAN.md](docs/PLAN.md): the flywheel, what $UMANITY is for, runners, films, and the rules that never change.
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
 - **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)
-- **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps and the token tooling, was written from 27 Oct on, inside Encode's 12 Oct to 8 Nov window.
+- **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps, $UMANITY and the mainnet launch, was built from 27 Oct on, during the hackathons.
 
 ---
 
