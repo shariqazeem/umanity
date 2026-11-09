@@ -12,11 +12,14 @@ import { guardianFor } from '@/lib/guardian'
 import { usdText } from '@/lib/umanity/drops'
 import type { HomeItem, TopBacker } from '@/lib/umanity/feed'
 import { activityLine } from '@/components/drops/activity'
+import { PriceChart, priceText } from '@/components/trade/PriceChart'
+import { useMarket, useTokenSummary } from '@/components/trade/hooks'
 
 export function RightRail() {
   return (
     <aside className="hidden xl:block w-[320px] flex-shrink-0 sticky top-0 h-[100dvh] overflow-y-auto no-scrollbar px-5 py-5 space-y-4">
       <StatsWidget />
+      <TokenWidget />
       <GuardianWidget />
       <LeaderboardWidget />
       <ActivityWidget />
@@ -37,6 +40,38 @@ export function RightRail() {
         <p className="text-[10px] text-[#d4d4d4] mt-2">&copy; 2026 Umanity</p>
       </div>
     </aside>
+  )
+}
+
+/** $UMANITY at a glance on every page: its price, today's line, and what its fees have sent to drops. */
+function TokenWidget() {
+  const token = useTokenSummary()
+  const market = useMarket(token ? '1d' : null)
+  const { data: money } = useMoney(60_000)
+  if (!token) return null
+  const change = market?.changePct ?? null
+  const up = (change ?? 0) >= 0
+  return (
+    <section className="card p-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-[15px]">$UMANITY</h3>
+        {change != null && (
+          <span className={`text-[11.5px] font-bold counter ${up ? 'text-emerald-600' : 'text-red-500'}`}>
+            {up ? '▲' : '▼'} {Math.abs(change) < 0.05 ? '0.0' : Math.abs(change).toFixed(1)}% · 1D
+          </span>
+        )}
+      </div>
+      <p className="text-[22px] font-black tracking-[-0.03em] counter mt-1">{priceText(token.priceUsd)}</p>
+      <div className="mt-2">{market ? <PriceChart points={market.points} height={44} /> : <div className="skeleton h-[44px]" />}</div>
+      <div className="flex items-center justify-between mt-3">
+        <p className="text-[11.5px] text-[#86868b]">
+          Fees to drops <span className="font-semibold text-emerald-600 counter">{usdText((money?.fees.fromToken ?? 0) / 2, 2)}</span>
+        </p>
+        <Link href="/trade" className="text-[12px] font-semibold text-[#1d1d1f] hover:underline">
+          Trade →
+        </Link>
+      </div>
+    </section>
   )
 }
 

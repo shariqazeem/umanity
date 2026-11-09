@@ -34,11 +34,12 @@ export function NextDrop() {
           </div>
           <Link href={dropHref(drop.id)} className="block mt-2 group">
             <h2 className="text-[26px] md:text-[30px] font-black tracking-[-0.03em] leading-[1.05] group-hover:underline decoration-2 underline-offset-4">
-              {drop.emoji} {drop.title}
+              <span className="mr-2.5">{drop.emoji}</span>
+              {drop.title}
             </h2>
           </Link>
           <p className="text-[13.5px] text-[#86868b] mt-1.5">
-            {plural(Math.round(units), drop.unit.name)} for {drop.place}, {drop.unit.covers} each. {daysLeft > 0 ? `${plural(daysLeft, 'day')} left.` : 'Closes today.'}
+            {plural(Math.round(units), drop.unit.name)} in {drop.place}. Each covers {drop.unit.covers}. {daysLeft > 0 ? `${plural(daysLeft, 'day')} left.` : 'Closes today.'}
           </p>
           <div className="mt-5">
             <DropMeter drop={drop} />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 
 export type ChartPoint = { t: number; p: number }
 
@@ -26,6 +26,7 @@ const clock = (t: number, span: number) =>
  */
 export function PriceChart({ points, height = 168, onHover }: { points: ChartPoint[]; height?: number; onHover?: (p: ChartPoint | null) => void }) {
   const svg = useRef<SVGSVGElement>(null)
+  const fillId = `fill-${useId().replace(/:/g, '')}`
   const [at, setAt] = useState<number | null>(null)
   const span = points.length > 1 ? points[points.length - 1].t - points[0].t : 1
   const up = points.length < 2 || points[points.length - 1].p >= points[0].p
@@ -85,12 +86,12 @@ export function PriceChart({ points, height = 168, onHover }: { points: ChartPoi
         onPointerCancel={leave}
       >
         <defs>
-          <linearGradient id={`fill-${up ? 'up' : 'down'}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.16" />
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path d={geo.area} fill={`url(#fill-${up ? 'up' : 'down'})`} />
+        <path d={geo.area} fill={`url(#${fillId})`} />
         <path d={geo.line} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         {hx != null && <line x1={hx} x2={hx} y1="0" y2={height} stroke="#1d1d1f" strokeOpacity="0.18" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
       </svg>

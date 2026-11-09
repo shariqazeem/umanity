@@ -12,6 +12,7 @@ import { TRADE_TOKENS, tradeToken, type TradeToken } from '@/lib/umanity/tokens'
 import type { TokenSummary } from '@/lib/umanity/token'
 import { useMoney } from '@/components/drops/hooks'
 import { PriceChart, priceText, type ChartPoint } from '@/components/trade/PriceChart'
+import { useMarket, useTokenSummary, type Timeframe } from '@/components/trade/hooks'
 import type { Market } from '@/app/api/token/market/route'
 
 type Quote = { out: number; feeBps: number; feeUsd: number; priceImpactPct: number; route: string[] } | { error: string }
@@ -247,45 +248,11 @@ export default function TradePage() {
   )
 }
 
-type Timeframe = '1h' | '1d' | '1w'
 const FRAMES: [Timeframe, string][] = [
   ['1h', '1H'],
   ['1d', '1D'],
   ['1w', '1W'],
 ]
-
-/** $UMANITY from its pool, refreshed every 20 s; null until the token exists. */
-function useTokenSummary() {
-  const [token, setToken] = useState<TokenSummary | null>(null)
-  useEffect(() => {
-    let alive = true
-    const load = () => apiGet<{ token?: TokenSummary | null }>('/api/token').then((d) => alive && setToken(d.token ?? null)).catch(() => {})
-    load()
-    const t = setInterval(load, 20_000)
-    return () => {
-      alive = false
-      clearInterval(t)
-    }
-  }, [])
-  return token
-}
-
-/** The price line and latest trades for a timeframe, refreshed every 30 s. */
-function useMarket(tf: Timeframe | null) {
-  const [market, setMarket] = useState<Market | null>(null)
-  useEffect(() => {
-    if (!tf) return
-    let alive = true
-    const load = () => apiGet<Market>(`/api/token/market?tf=${tf}`).then((d) => alive && d?.points?.length && setMarket(d)).catch(() => {})
-    load()
-    const t = setInterval(load, 30_000)
-    return () => {
-      alive = false
-      clearInterval(t)
-    }
-  }, [tf])
-  return market
-}
 
 /** $UMANITY: its price and line, how far the curve has filled, and what its fees have sent to drops. Hidden until the token exists. */
 function TokenCard({ token, market, tf, onTf, onBuy, onSell }: { token: TokenSummary | null; market: Market | null; tf: Timeframe; onTf: (tf: Timeframe) => void; onBuy: () => void; onSell: () => void }) {
