@@ -54,6 +54,6 @@ LINKS
 - Program on mainnet: https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3
 
 WHAT EXISTED BEFORE
-An earlier Umanity (github.com/shariqazeem/umanity-social) won a Superteam bounty and the Solana Graveyard Hackathon's Tapestry track; it was a SOL tipping and cause app with different programs. This repository started fresh on 27 Oct 2026, and everything in it was built during the hackathon: the program, the drops app, x402 gifts, Aurora gifts, swaps, $UMANITY and the mainnet launch.
+An earlier Umanity (github.com/shariqazeem/umanity-social) placed 3rd in a Superteam bounty (Nov 2025) and 3rd of 74 teams in the Solana Graveyard Hackathon's Tapestry track (Mar 2026); it was a SOL tipping and cause app with different programs. This repository started fresh on 27 Oct 2026, and everything in it was built during the hackathon: the program, the drops app, x402 gifts, Aurora gifts, swaps, $UMANITY and the mainnet launch.
 
 Team: Shariq, solo founder (@umanity_xyz).

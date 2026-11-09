@@ -15,7 +15,7 @@ Umanity is crypto giving you can verify. Money goes into **drops**: one real del
 | **Community drops** | Anyone can propose a drop where they live at [/start](https://umanity.gives/start). The team reviews it, and the runner is paid only after proof. |
 | **NEAR guard** | [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near) is live on NEAR mainnet. It signs a pot's unlock with Chain Signatures only after an AI checks the proof inside a TEE on NEAR AI Cloud and a council has had time to veto. It takes over the unlock key next: [NEAR.md](NEAR.md). |
 
-- **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions won a **Superteam bounty** and the **Solana Graveyard Hackathon (Tapestry track)** as [umanity-social](https://github.com/shariqazeem/umanity-social).
+- **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions placed 3rd in a **Superteam bounty** (Nov 2025) and 3rd of 74 teams in the **Solana Graveyard Hackathon (Tapestry track)** (Mar 2026) as [umanity-social](https://github.com/shariqazeem/umanity-social).
 - **Program source:** [`programs/umanity/src/lib.rs`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
 - **The plan:** [docs/PLAN.md](docs/PLAN.md): the flywheel, what $UMANITY is for, runners, films, and the rules that never change.
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)

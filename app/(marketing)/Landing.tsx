@@ -154,7 +154,7 @@ export function Landing() {
             <div className="text-center mb-14">
               <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">What crypto giving got wrong &rarr; What Umanity does</p>
               <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Six fixes. One app.</h2>
-              <p className="text-[#86868b] text-base max-w-lg mx-auto">Built on the version that won Superteam and the Solana Graveyard Hackathon, rebuilt around real deliveries and real money flows.</p>
+              <p className="text-[#86868b] text-base max-w-lg mx-auto">Built on the version that placed 3rd in a Superteam bounty and 3rd of 74 at the Solana Graveyard Hackathon, rebuilt around real deliveries and real money flows.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {FIXES.map((r) => (
