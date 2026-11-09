@@ -47,9 +47,14 @@ trade, which makes fees, and half of every fee fills more pots. More pots means 
 films. $UMANITY is in the loop three times: its trading fees feed drops, runners put it up as their promise,
 and holders use it to steer where fee money goes.
 
-**What's live today (9 Nov):** gifts three ways, swap and $UMANITY fees split by the program, and the keeper
-pouring the drops fund into the drop that closes soonest. The first $13.49 of fees is already in Drop #1.
-Runner bonds and holder votes come next (section 8).
+**What's live today (9 Nov):**
+- Gifts three ways.
+- Swap and $UMANITY fees split by the program, and the keeper pouring the drops fund into Umanity's own drops
+  first. The first $13.49 of fees is already in Drop #1.
+- **Community drops**: anyone can propose one at /start. The team reviews it, and the runner is paid only
+  after proof.
+
+Holder votes and two-step payouts come next (section 8).
 
 ---
 
@@ -61,7 +66,7 @@ Three jobs, all real, none of them a payout:
 | --- | --- | --- |
 | **Fees feed drops** | Its pool's 1% trading fee can only be claimed by the program, which sends half to the drops fund. | Live |
 | **Run a drop** | A runner puts up a bond in $UMANITY, worth 20% of the drop's goal, when the drop opens. A delivered drop returns the bond. A drop that's vetoed or abandoned loses it, and the slashed bond goes to the drops fund. | Next |
-| **Steer the fund** | Holders lock $UMANITY to vote on which approved drop the drops fund fills next. A vote is weighted by the amount locked and how long it's locked. | Next |
+| **Steer the fund** (chosen first) | Umanity's own drops are filled first. Beyond them, holders vote with $UMANITY on which community drop the drops fund fills next. A vote is weighted by the amount held. It starts as signed messages read by the keeper, and moves on-chain later. | Next |
 
 Bonds and votes give the token a reason to be bought and held that comes from using Umanity: more drops
 means more bonds. It is never a share of revenue.
@@ -74,9 +79,17 @@ drops anyway.
 
 ## 4. Who creates drops
 
-**Today: the Umanity team.** Open **umanity.gives/admin** with a team wallet and fill in the place, story,
-shopping list, goal, cap, date and payee. The server writes the drop on Solana, with its description
-fingerprinted, and opens the pot.
+**Umanity's own drops come first.** The team runs them and films them, so they lead everywhere: the Give
+button, the Home hero, and the drops fund's fee pours. Open **umanity.gives/admin** with a team wallet and fill
+in the place, story, shopping list, goal, cap, date and payee. The server writes the drop on Solana, with its
+description fingerprinted, and opens the pot.
+
+**Community drops are live (9 Nov).** Anyone signed in can propose one at **umanity.gives/start**.
+1. The proposal stays off-chain until the team approves it in /admin.
+2. The server then opens it with the runner's wallet as payee.
+3. The runner sends proof from /start, and the team checks it and posts it on-chain.
+4. Community drops have their own section and badge.
+5. Fees work exactly as for Umanity's drops: gifts 100% to the pot, fees split 50/50.
 
 **Next: runners, anywhere.** A runner is a person or group that can buy and hand over goods where they live,
 such as a shelter in Nairobi, a community kitchen in Karachi, or a volunteer in Gaza or Lagos. Most people
@@ -107,12 +120,18 @@ A pot pays out after the proof. That means a runner has to buy the goods first, 
 
 - **Phase 1 (now):** Umanity runs the drops and covers the shopping itself. The pot pays it back after the
   proof. This works for small drops, around $150–$1,000.
-- **Phase 2:** **two-step payouts** for bonded runners.
-  - Up to 50% is released on a *purchase proof*: the shop's receipt, plus photos of the goods with the drop's
-    code written on paper.
-  - The rest is released on the *delivery proof*.
-  - This needs one new program instruction and a new drop state ("bought"). The bond covers the risk between
-    the two steps.
+- **Phase 2: two-step payouts**, in the next program upgrade.
+  - **The money:**
+    - `unlock_part(proof_hash)` releases up to 50% of what's in the pot on a *purchase proof*: the shop's
+      receipt, plus photos of the goods with the drop's number on a card. The proof goes through the same AI
+      check and council window.
+    - `unlock` releases the rest on the *delivery proof*.
+  - **If the delivery never comes:** refunds become pro-rata. Each backer gets back their share of what is
+    still in the pot, so a late refunder is never left with nothing. The runner's bond is slashed into the
+    pot first, to make backers whole.
+  - **Why it isn't rushed:** it changes how the program pays out and refunds real money. It ships after
+    tests and a review, with about 2.3 SOL of temporary rent for the upgrade, which comes back when the
+    upgrade lands.
 - **Never:** paying a runner before any proof at all.
 
 ---
@@ -158,7 +177,7 @@ guard holds the unlock key. A post is drafted automatically from the proof; a pe
 
 | When | What |
 | --- | --- |
-| **Live (9 Nov)** | Team drops, gifts three ways, fees split by the program and poured into the next drop, $UMANITY trading, Money page, NEAR guard on NEAR mainnet |
+| **Live (9 Nov)** | Umanity's drops first, community drops (/start, reviewed by the team), gifts three ways, fees split by the program and poured into the next drop, $UMANITY trading, Money page, NEAR guard on NEAR mainnet |
 | **Weeks 1–2 after the hackathons** | Turn on the NEAR guard and lock the unlock key · runner applications and the proof console · round-ups · auto-drafted film posts · holder votes (off-chain signatures first) |
 | **Month 1–2** | Program upgrade: runner bonds in $UMANITY, two-step payouts, weekly gifts · upgrade key to a multisig · runners in three countries |
 | **Later** | On-chain holder votes · runner reputation that lowers bonds · partner organisations as runners where fundraising needs registration |
