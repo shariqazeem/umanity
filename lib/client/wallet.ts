@@ -308,6 +308,7 @@ export async function protectWallet(kp: Keypair, how: { passkey: true } | { pass
   const vault = 'passkey' in how ? await sealWithPasskey(kp) : await sealWithPasscode(kp, how.passcode)
   storeVault(vault)
   remember(kp)
+  backUpVault(vault)
   return { wallet: walletFor(kp.publicKey, vault.method), vault }
 }
 
@@ -319,6 +320,58 @@ export async function unlockWithPasskey(vault: Vault) {
   } finally {
     prf.fill(0)
   }
+  backUpVault(vault)
+}
+
+const BACKED_KEY = `${VAULT_KEY}.backed`
+
+/**
+ * Keeps a copy of a passkey wallet's sealed secret on the server, so the same passkey can open it on
+ * another device. It is ciphertext only: opening it needs the passkey. Best effort, once per wallet.
+ */
+function backUpVault(vault: Vault) {
+  if (vault.method !== 'passkey' || !vault.credentialId) return
+  try {
+    if (localStorage.getItem(BACKED_KEY) === vault.credentialId) return
+  } catch {
+    return
+  }
+  fetch('/api/wallet/vault', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credentialId: vault.credentialId, address: vault.address, salt: vault.salt, iv: vault.iv, ct: vault.ct }),
+  })
+    .then((r) => r.ok && localStorage.setItem(BACKED_KEY, vault.credentialId!))
+    .catch(() => null)
+}
+
+/**
+ * Signs in on a device that doesn't have the wallet yet, with a passkey that synced to it: the first prompt
+ * picks the passkey, the server returns its sealed wallet, the second prompt opens it.
+ */
+export async function signInWithPasskey(): Promise<{ wallet: UmanityWallet; vault: Vault }> {
+  const cred = (await navigator.credentials.get({
+    publicKey: { challenge: B(random(32)), rpId: location.hostname, userVerification: 'required', timeout: 120_000 },
+  })) as PublicKeyCredential | null
+  if (!cred) throw new DOMException('Cancelled', 'NotAllowedError')
+  const credentialId = toB64(new Uint8Array(cred.rawId))
+  const res = await fetch(`/api/wallet/vault?id=${encodeURIComponent(credentialId)}`, { cache: 'no-store' })
+  if (!res.ok) throw new Error('This passkey has no Umanity wallet saved yet. Open the wallet once where you made it, then try again here.')
+  const saved = (await res.json()) as { address: string; salt: string; iv: string; ct: string }
+  const vault: Vault = { v: 2, address: saved.address, method: 'passkey', salt: saved.salt, iv: saved.iv, ct: saved.ct, credentialId, createdAt: Date.now() }
+  const prf = await passkeyPrf(fromB64(credentialId), fromB64(vault.salt))
+  try {
+    remember(await unseal(await keyFromPrf(prf), vault))
+  } finally {
+    prf.fill(0)
+  }
+  storeVault(vault)
+  try {
+    localStorage.setItem(BACKED_KEY, credentialId)
+  } catch {
+    /* ignore */
+  }
+  return { wallet: walletFor(new PublicKey(vault.address), 'passkey'), vault }
 }
 
 export async function unlockWithPasscode(vault: Vault, passcode: string) {

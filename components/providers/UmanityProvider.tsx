@@ -19,6 +19,7 @@ import {
   newKeypair,
   passkeysAvailable,
   protectWallet,
+  signInWithPasskey,
   revealSecret,
   setUnlocker,
   unlockWithPasskey,
@@ -84,6 +85,8 @@ interface Ctx {
   startImport: (secret: string) => { ok: boolean; error?: string }
   /** Locks the pending wallet (or an old unprotected one) and makes it the active wallet. */
   protectWallet: (how: Protect) => Promise<{ ok: boolean; error?: string }>
+  /** Opens a passkey wallet made on another device, with the same (synced) passkey. */
+  signInWithPasskey: () => Promise<{ ok: boolean; error?: string }>
   /** Resolves true once the wallet can sign: unlocked, locked-in, or an external wallet. */
   ensureUnlocked: (reason?: string) => Promise<boolean>
   lockNow: () => void
@@ -279,6 +282,24 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const passkeySignIn = useCallback(async () => {
+    try {
+      const r = await signInWithPasskey()
+      setVault(r.vault)
+      setLocal(r.wallet)
+      setLockTick((t) => t + 1)
+      try {
+        localStorage.setItem('umanity.entered', '1')
+      } catch {
+        /* ignore */
+      }
+      return { ok: true }
+    } catch (e) {
+      if ((e as DOMException)?.name === 'NotAllowedError') return { ok: false }
+      return { ok: false, error: e instanceof Error ? e.message : 'Could not sign in' }
+    }
+  }, [])
+
   const protect = useCallback(async (how: Protect) => {
     const kp = pending.current ?? unprotectedKeypair()
     if (!kp) return { ok: false, error: 'There is no wallet to lock' }
@@ -425,6 +446,7 @@ export function UmanityProvider({ children }: { children: ReactNode }) {
     startNewWallet,
     startImport,
     protectWallet: protect,
+    signInWithPasskey: passkeySignIn,
     ensureUnlocked,
     lockNow,
     revealSecretKey,

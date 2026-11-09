@@ -13,7 +13,7 @@ import { apiSend } from '@/lib/client/api'
 import type { PublicUser } from '@/lib/data/users'
 
 export function AuthSheet() {
-  const { authOpen, closeAuth, signer, user, startNewWallet, connectWallet, startImport, toast, refreshUser } = useUmanity()
+  const { authOpen, closeAuth, signer, user, startNewWallet, connectWallet, startImport, toast, refreshUser, canUsePasskeys, signInWithPasskey } = useUmanity()
   const [step, setStep] = useState<'choose' | 'import' | 'protect' | 'name'>('choose')
   const [busy, setBusy] = useState(false)
   const [secret, setSecret] = useState('')
@@ -43,6 +43,15 @@ export function AuthSheet() {
   const create = () => {
     startNewWallet()
     setStep('protect')
+  }
+
+  const passkeyIn = async () => {
+    setBusy(true)
+    setError('')
+    const r = await signInWithPasskey()
+    setBusy(false)
+    if (r.ok) toast('Welcome back.', 'ok')
+    else if (r.error) setError(r.error)
   }
 
   const doImport = () => {
@@ -104,6 +113,20 @@ export function AuthSheet() {
               <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
             </div>
           </button>
+
+          {canUsePasskeys && (
+            <button onClick={passkeyIn} disabled={busy} className="mt-2.5 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group disabled:opacity-60">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-700 text-[18px]">◉</div>
+                <div className="flex-1 min-w-0">
+                  <span className="block text-[15px] font-semibold">{busy ? 'Opening your wallet…' : 'I have a Umanity wallet'}</span>
+                  <span className="block text-[12.5px] text-[#86868b]">Sign in with Face ID or Touch ID, on any device your passkey syncs to.</span>
+                </div>
+                <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
+              </div>
+            </button>
+          )}
+          {error && step === 'choose' && <p className="mt-3 text-[12.5px] text-red-600">{error}</p>}
 
           <div className="mt-5">
             <button onClick={() => setStep('import')} className="text-[12.5px] text-[#86868b] hover:text-[#1d1d1f] underline underline-offset-2">

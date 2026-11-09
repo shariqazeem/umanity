@@ -717,3 +717,21 @@ export type Intent = typeof intents.$inferSelect
 export type Notification = typeof notifications.$inferSelect
 export type ImpactCertificate = typeof impactCertificates.$inferSelect
 export type FieldDelivery = typeof fieldDeliveries.$inferSelect
+
+/**
+ * A passkey wallet's sealed secret, so the same passkey can open it on another device (iCloud Keychain and
+ * Google Password Manager sync passkeys). The server cannot open it: the key comes from the passkey's PRF,
+ * which never leaves the authenticator.
+ */
+export const walletVaults = pgTable(
+  'wallet_vaults',
+  {
+    credentialId: text('credential_id').primaryKey(),
+    address: text('address').notNull(),
+    salt: text('salt').notNull(),
+    iv: text('iv').notNull(),
+    ct: text('ct').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('wallet_vaults_address_idx').on(t.address)]
+)

@@ -64,6 +64,13 @@
       "when": 1794194466417,
       "tag": "0008_community_drops",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794196110136,
+      "tag": "0009_wallet_vaults",
+      "breakpoints": true
     }
   ]
 }
