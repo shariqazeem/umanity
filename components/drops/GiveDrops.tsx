@@ -3,6 +3,7 @@
 import { NextDrop } from '@/components/drops/NextDrop'
 import { DropCard } from '@/components/drops/DropParts'
 import { pickNextDrop, useDrops } from '@/components/drops/hooks'
+import { TokenStrip } from '@/components/trade/TokenStrip'
 
 /** Every drop you can fill, the next one first, then the ones already filled. */
 export function GiveDrops() {
@@ -19,6 +20,7 @@ export function GiveDrops() {
       </section>
 
       <NextDrop />
+      <TokenStrip />
 
       {!loading && drops && drops.length === 0 && (
         <div className="card p-8 text-center">

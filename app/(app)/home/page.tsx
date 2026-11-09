@@ -1,6 +1,7 @@
 import { DropFeed } from '@/components/drops/DropFeed'
 import { NextDrop } from '@/components/drops/NextDrop'
 import { SeedProvider } from '@/components/drops/seed'
+import { TokenStrip } from '@/components/trade/TokenStrip'
 import { listDrops } from '@/lib/umanity/data'
 import { homeFeed } from '@/lib/umanity/feed'
 
@@ -12,6 +13,9 @@ export default async function HomePage() {
   return (
     <SeedProvider seed={{ drops, feed }}>
       <NextDrop />
+      <div className="mt-4 empty:hidden">
+        <TokenStrip />
+      </div>
       <DropFeed />
     </SeedProvider>
   )
