@@ -29,7 +29,7 @@ const shows = (it: HomeItem, f: Filter) =>
   f === 'all' ||
   (f === 'deliveries' && (it.type === 'update' || it.type === 'unlocked' || it.type === 'missed')) ||
   (f === 'gifts' && it.type === 'gift') ||
-  (f === 'money' && (it.type === 'fees' || it.type === 'unlocked' || it.type === 'missed'))
+  (f === 'money' && (it.type === 'fees' || it.type === 'funded' || it.type === 'unlocked' || it.type === 'missed'))
 
 /** Home's stream: what happened to drops, from the chain, plus people's posts. */
 export function DropFeed() {
@@ -123,6 +123,8 @@ export function DropFeed() {
                 return <MissedCard key={it.id} item={it} />
               case 'fees':
                 return <FeesCard key={it.id} item={it} />
+              case 'funded':
+                return <FundedCard key={it.id} item={it} />
               case 'post':
                 return <PostCard key={it.id} post={it.post} />
             }
@@ -319,6 +321,31 @@ function FeesCard({ item }: { item: Extract<HomeItem, { type: 'fees' }> }) {
           </a>
           <Link href="/money" className="text-[#86868b] hover:text-[#1d1d1f]">
             Where fees go →
+          </Link>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+/** Trading fees, moved by the program from the drops fund into a drop's pot. */
+function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
+  return (
+    <article className="card p-4 flex items-start gap-3">
+      <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0">{item.drop.emoji}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13.5px] font-semibold">
+          Trading fees put <span className="text-emerald-700">{usdText(item.amountUsd, 2)}</span> into Drop #{item.drop.id + 1}
+        </p>
+        <p className="text-[12px] text-[#86868b] mt-0.5">
+          {item.drop.title} · {timeAgo(item.at)}
+        </p>
+        <div className="flex items-center gap-4 mt-2 text-[11.5px]">
+          <a href={explorerTx(item.signature)} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
+            Transaction ↗
+          </a>
+          <Link href={dropHref(item.drop.id)} className="text-[#86868b] hover:text-[#1d1d1f]">
+            See the drop →
           </Link>
         </div>
       </div>

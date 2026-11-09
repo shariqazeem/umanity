@@ -21,6 +21,7 @@ export type HomeItem =
   | { type: 'unlocked'; id: string; at: string; drop: FeedDrop; amountUsd: number; signature: string }
   | { type: 'missed'; id: string; at: string; drop: FeedDrop; potUsd: number; cancelled: boolean }
   | { type: 'fees'; id: string; at: string; totalUsd: number; toDropsUsd: number; toOpsUsd: number; signature: string }
+  | { type: 'funded'; id: string; at: string; drop: FeedDrop; amountUsd: number; signature: string }
   | { type: 'post'; id: string; at: string; post: FeedPost }
 
 export async function homeFeed(opts: { viewer?: string | null; limit?: number } = {}) {
@@ -61,7 +62,7 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
     db
       .select()
       .from(moneyEvents)
-      .where(and(eq(moneyEvents.cluster, SOLANA_CLUSTER), inArray(moneyEvents.kind, ['unlocked', 'feesSplit', 'dropCancelled'])))
+      .where(and(eq(moneyEvents.cluster, SOLANA_CLUSTER), inArray(moneyEvents.kind, ['unlocked', 'feesSplit', 'fundedDrop', 'dropCancelled'])))
       .orderBy(desc(moneyEvents.slot))
       .limit(20),
     db.select().from(posts).where(eq(posts.type, 'manual')).orderBy(desc(posts.createdAt)).limit(20),
@@ -95,6 +96,9 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
     if (e.kind === 'unlocked' && e.dropId != null) {
       const drop = dropById.get(e.dropId)
       if (drop) items.push({ type: 'unlocked', id: `ev_${e.id}`, at, drop, amountUsd: (e.amountMicro ?? 0) / 1e6, signature: e.signature })
+    } else if (e.kind === 'fundedDrop' && e.dropId != null) {
+      const drop = dropById.get(e.dropId)
+      if (drop) items.push({ type: 'funded', id: `ev_${e.id}`, at, drop, amountUsd: (e.amountMicro ?? 0) / 1e6, signature: e.signature })
     } else if (e.kind === 'feesSplit') {
       const d = e.data as { total?: string; toDrops?: string; toOps?: string }
       items.push({ type: 'fees', id: `ev_${e.id}`, at, totalUsd: Number(d.total ?? 0) / 1e6, toDropsUsd: Number(d.toDrops ?? 0) / 1e6, toOpsUsd: Number(d.toOps ?? 0) / 1e6, signature: e.signature })

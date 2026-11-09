@@ -17,6 +17,7 @@ import { ComputeBudgetProgram, PublicKey, Transaction } from '@solana/web3.js'
 import { dropGifts, getDb } from '@/lib/db'
 import { getConnection } from '@/lib/solana/chain'
 import { getTreasuryKeypair } from '@/lib/solana/server-signer'
+import { PRIORITY_MICROLAMPORTS, sendAndLand } from '@/lib/solana/send'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { fetchDrop, giveIx, potAddress, tokenBalance, usdcAccount, usd } from '@/lib/umanity/program'
 
@@ -58,7 +59,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const latest = await conn.getLatestBlockhash('confirmed')
     const tx = new Transaction({ feePayer: sponsor.publicKey, blockhash: latest.blockhash, lastValidBlockHeight: latest.lastValidBlockHeight })
     if (IS_MAINNET) {
-      tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 60_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }))
+      tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 60_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_MICROLAMPORTS }))
     }
     tx.add(await giveIx(conn, { dropId, giver: from, amount, ref, payer: sponsor.publicKey }))
     tx.partialSign(sponsor)
@@ -95,17 +96,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!tx.feePayer?.equals(sponsor.publicKey) || !tx.verifySignatures()) return bad('This transaction is not signed as prepared')
 
     try {
-      const signature = await conn.sendRawTransaction(tx.serialize(), { preflightCommitment: 'confirmed' })
-      for (let i = 0; i < 40; i++) {
-        const s = (await conn.getSignatureStatuses([signature])).value[0]
-        if (s?.err) throw new Error(`The gift failed on-chain: ${JSON.stringify(s.err)}`)
-        if (s?.confirmationStatus === 'confirmed' || s?.confirmationStatus === 'finalized') {
-          await db.update(dropGifts).set({ status: 'confirmed', signature }).where(eq(dropGifts.ref, ref))
-          return NextResponse.json({ signature })
-        }
-        await new Promise((r) => setTimeout(r, 750))
-      }
-      return NextResponse.json({ signature, pending: true })
+      const { signature, confirmed } = await sendAndLand(conn, tx.serialize(), { timeoutMs: 40_000 })
+      if (!confirmed) return NextResponse.json({ signature, pending: true })
+      await db.update(dropGifts).set({ status: 'confirmed', signature }).where(eq(dropGifts.ref, ref))
+      return NextResponse.json({ signature })
     } catch (e) {
       await db.update(dropGifts).set({ status: 'failed' }).where(eq(dropGifts.ref, ref))
       return bad((e as Error).message.slice(0, 300), 502)

@@ -61,6 +61,11 @@ export function DropMeter({ drop, size = 'lg' }: { drop: DropView; size?: 'sm' |
           <>
             <span className="font-semibold text-[#1d1d1f]">{plural(whole, drop.unit.name)}</span> {delivered ? 'delivered' : 'so far'}
             {drop.unit.people > 0 && <> · {plural(people, 'person', 'people')} helped</>}
+            {!delivered && drop.fromFundUsd > 0 && <> · <span className="text-emerald-700">{usdText(drop.fromFundUsd, 2)} from trading fees</span></>}
+          </>
+        ) : !delivered && drop.fromFundUsd > 0 ? (
+          <>
+            <span className="text-emerald-700">{usdText(drop.fromFundUsd, 2)} from trading fees</span> so far · every {usdText(drop.unit.usd)} is one {drop.unit.name}
           </>
         ) : (
           <>Every {usdText(drop.unit.usd)} is one {drop.unit.name}: {drop.unit.covers}</>

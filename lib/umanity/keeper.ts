@@ -4,18 +4,20 @@
  * $UMANITY's Meteora pool owes a dollar in trading fees they are claimed and
  * split in the same step; when a drop misses its date its backers are
  * refunded; and cross-chain gifts that arrived while nobody was watching are
- * put into their pots. The first three are permissionless instructions where
+ * put into their pots, and the drops fund pours into the drop that closes
+ * soonest. The first three are permissionless instructions where
  * the treasury only pays the network fee. Runs from page reads, at most every few minutes per server
  * process. Server-only.
  */
 import { ComputeBudgetProgram, type Connection, PublicKey, Transaction, type TransactionInstruction } from '@solana/web3.js'
 import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk'
-import { getTreasuryKeypair } from '@/lib/solana/server-signer'
+import { getAuthorityKeypair, getTreasuryKeypair } from '@/lib/solana/server-signer'
+import { PRIORITY_MICROLAMPORTS, sendAndLand } from '@/lib/solana/send'
 import { IS_MAINNET } from '@/lib/solana/constants'
 import { and, eq, gt } from 'drizzle-orm'
 import { drops, getDb } from '@/lib/db'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
-import { FEE_INBOX, fetchConfig, refundsOpen, splitFeesIxs, sweepMeteoraFeesIxs, tokenBalance } from './program'
+import { DROPS_FUND, FEE_INBOX, fetchConfig, fetchDrops, fundDropIx, refundsOpen, splitFeesIxs, sweepMeteoraFeesIxs, tokenBalance } from './program'
 import { refundBackers } from './admin'
 import { reconcileDropIntents } from './intents'
 
@@ -42,20 +44,51 @@ export async function keepFeesMoving(conn: Connection) {
   if (!ixs.length && (await tokenBalance(conn, FEE_INBOX).catch(() => 0n)) >= MIN_MICRO) ixs = await splitFeesIxs(conn, { ops, payer: payer.publicKey })
   await refundMissedDrops(conn)
   await reconcileDropIntents(conn).catch((e) => console.warn('[keeper] cross-chain gifts failed:', (e as Error).message))
+  await fundNextDrop(conn).catch((e) => console.warn('[keeper] funding a drop failed:', (e as Error).message))
   if (!ixs.length) return null
 
   const tx = new Transaction()
-  if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 120_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 20_000 }))
+  if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 120_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_MICROLAMPORTS }))
   tx.add(...ixs)
   tx.feePayer = payer.publicKey
-  tx.recentBlockhash = (await conn.getLatestBlockhash('confirmed')).blockhash
+  const latest = await conn.getLatestBlockhash('confirmed')
+  tx.recentBlockhash = latest.blockhash
   tx.sign(payer)
   try {
-    return await conn.sendRawTransaction(tx.serialize(), { maxRetries: 3 })
+    return (await sendAndLand(conn, tx.serialize(), { lastValidBlockHeight: latest.lastValidBlockHeight, timeoutMs: 30_000 })).signature
   } catch (e) {
     console.warn('[keeper] fee step failed:', (e as Error).message)
     return null
   }
+}
+
+/**
+ * The drops fund pours into the open drop that closes soonest, up to the room in its pot, once it holds a
+ * dollar. Fee money then lands in a real pot without anyone choosing where, and if that drop misses its
+ * date the program sends it back to the fund (return_to_fund), never to a person. fund_drop needs the admin.
+ */
+export async function fundNextDrop(conn: Connection): Promise<string | null> {
+  const admin = getAuthorityKeypair()
+  const config = admin && (await fetchConfig(conn).catch(() => null))
+  if (!admin || !config || config.admin !== admin.publicKey.toBase58()) return null
+  const fund = await tokenBalance(conn, DROPS_FUND).catch(() => 0n)
+  if (fund < MIN_MICRO) return null
+  const now = Date.now() / 1000
+  const open = (await fetchDrops(conn)).filter((d) => d.state === 'open' && d.deadline - now > 3600).sort((a, b) => a.deadline - b.deadline)
+  for (const d of open) {
+    const room = d.cap - (await tokenBalance(conn, new PublicKey(d.pot)))
+    const amount = fund < room ? fund : room
+    if (amount <= 0n) continue
+    const tx = new Transaction()
+    if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 80_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_MICROLAMPORTS }))
+    tx.add(await fundDropIx(conn, { dropId: d.id, admin: admin.publicKey, amount }))
+    tx.feePayer = admin.publicKey
+    const latest = await conn.getLatestBlockhash('confirmed')
+    tx.recentBlockhash = latest.blockhash
+    tx.sign(admin)
+    return (await sendAndLand(conn, tx.serialize(), { lastValidBlockHeight: latest.lastValidBlockHeight, timeoutMs: 30_000 })).signature
+  }
+  return null
 }
 
 /** Backers of a drop that missed its date (or was called off) get their money back without asking. */

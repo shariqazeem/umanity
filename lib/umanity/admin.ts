@@ -5,20 +5,18 @@
  * and paid for by the treasury, so backers never have to ask. Server-only.
  */
 import { and, eq } from 'drizzle-orm'
-import { ComputeBudgetProgram, type Connection, type Keypair, PublicKey, Transaction, type TransactionInstruction, sendAndConfirmTransaction } from '@solana/web3.js'
+import { type Connection, type Keypair, PublicKey, type TransactionInstruction } from '@solana/web3.js'
 import { dropGifts, drops, dropUpdates, getDb, newId } from '@/lib/db'
 import type { MediaItem } from '@/lib/db/schema'
 import { getAuthorityKeypair, getTreasuryKeypair } from '@/lib/solana/server-signer'
-import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
+import { signAndLand } from '@/lib/solana/send'
+import { SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { guardHoldsRelease, releaseDrop } from '@/lib/near/flow'
 import { canonicalJson, hexToBytes, sha256Hex, validateMeta, type DropMeta } from './drops'
 import { cancelDropIx, createDropIx, dropAddress, fetchBacker, fetchConfig, fetchDrop, micro, postProofIx, refundIxs, refundsOpen, unlockIxs } from './program'
 
 async function send(conn: Connection, signer: Keypair, ixs: TransactionInstruction[]) {
-  const tx = new Transaction()
-  if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }))
-  tx.add(...ixs)
-  return sendAndConfirmTransaction(conn, tx, [signer], { commitment: 'confirmed' })
+  return signAndLand(conn, ixs, [signer])
 }
 
 function admin() {

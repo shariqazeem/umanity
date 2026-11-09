@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
-import { ComputeBudgetProgram, PublicKey, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
+import { signAndLand } from '@/lib/solana/send'
 import { withX402, giveAmount, GIVE_MAX_USD, PAID_ROUTES, X402_NETWORK, X402_PAY_TO, X402_FACILITATOR_URL } from '@/lib/x402/server'
 import { ensureUser } from '@/lib/data/users'
 import { dropGifts, getDb } from '@/lib/db'
@@ -81,9 +82,7 @@ export const POST = withX402<GiveBody>(
       if (picked && treasury && payer) {
         try {
           const conn = getConnection()
-          const tx = new Transaction()
-          if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 60_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }))
-          tx.add(await giveIx(conn, { dropId: picked.id, giver: treasury.publicKey, amount: micro, ref, backer: new PublicKey(payer), payer: treasury.publicKey }))
+          const giveInstruction = await giveIx(conn, { dropId: picked.id, giver: treasury.publicKey, amount: micro, ref, backer: new PublicKey(payer), payer: treasury.publicKey })
           const db = await getDb()
           await ensureUser(payer)
           await db.insert(dropGifts).values({
@@ -100,7 +99,7 @@ export const POST = withX402<GiveBody>(
             anonymous: !!body.anonymous,
             message: agent ? `Sent by agent "${agent}" over x402` : null,
           })
-          give = { signature: await sendAndConfirmTransaction(conn, tx, [treasury], { commitment: 'confirmed' }) }
+          give = { signature: await signAndLand(conn, [giveInstruction], [treasury], { units: 60_000, timeoutMs: 40_000 }) }
         } catch (e) {
           giveError = e instanceof Error ? e.message : 'give failed'
         }

@@ -21,6 +21,7 @@ import { appliedFeeBps, CHAIN_LABELS, confidentialAvailable, deadlineMinutesFor,
 import { claimIntentSuccess, createIntentRecord, getIntent, updateIntent } from '@/lib/data/intents'
 import { ensureUser } from '@/lib/data/users'
 import { getTreasuryKeypair } from '@/lib/solana/server-signer'
+import { PRIORITY_MICROLAMPORTS, sendAndLand } from '@/lib/solana/send'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { fetchDrop, giveIx, tokenBalance } from './program'
 import { USDC, usdcAccount } from './usdc'
@@ -292,7 +293,7 @@ async function settle(conn: Connection, intent: Intent): Promise<{ intent: Inten
   const back = received - toPot
 
   const tx = new Transaction()
-  if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 120_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }))
+  if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 120_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_MICROLAMPORTS }))
   const ref = Buffer.from(intent.giveRef!, 'hex')
   if (toPot > 0n) tx.add(await giveIx(conn, { dropId: intent.dropId!, giver: treasury.publicKey, amount: toPot, ref, backer, payer: treasury.publicKey }))
   if (back > 0n) {
@@ -331,9 +332,8 @@ async function settle(conn: Connection, intent: Intent): Promise<{ intent: Inten
   intent = (await updateIntent(intent.id, { giveSignature: signature, giveValidUntil: lastValidBlockHeight, returnedMicro: Number(back) })) ?? intent
 
   try {
-    await conn.sendRawTransaction(tx.serialize(), { maxRetries: 4 })
-    const res = await conn.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed')
-    if (res.value.err) return { intent, error: `The settling transaction failed: ${JSON.stringify(res.value.err)}` }
+    const { confirmed } = await sendAndLand(conn, tx.serialize(), { lastValidBlockHeight, timeoutMs: 40_000 })
+    if (!confirmed) return { intent, error: 'Settling; not confirmed yet' }
   } catch (e) {
     // Not necessarily lost: the next refresh checks the stored signature first.
     return { intent, error: (e as Error).message }

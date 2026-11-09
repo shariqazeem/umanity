@@ -9,12 +9,12 @@ import bs58 from 'bs58'
 import { eq } from 'drizzle-orm'
 import { getDb, trades } from '@/lib/db'
 import { getConnection } from '@/lib/solana/chain'
+import { sendAndLand } from '@/lib/solana/send'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
 
 export const dynamic = 'force-dynamic'
 
 const bad = (error: string, status = 400) => NextResponse.json({ error }, { status })
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export async function POST(req: Request) {
   if (!IS_MAINNET) return bad('Swaps run on Solana mainnet', 409)
@@ -50,24 +50,15 @@ export async function POST(req: Request) {
     .onConflictDoNothing()
 
   const conn = getConnection()
+  let landed: Awaited<ReturnType<typeof sendAndLand>>
   try {
-    await conn.sendRawTransaction(tx.serialize(), { skipPreflight: false, maxRetries: 4, preflightCommitment: 'confirmed' })
+    landed = await sendAndLand(conn, tx.serialize(), { timeoutMs: 40_000 })
   } catch (e) {
     await db.update(trades).set({ status: 'failed' }).where(eq(trades.signature, signature))
     const logs = (e as { logs?: string[] }).logs?.join('\n') ?? ''
     return bad(/slippage|0x1771/i.test(logs) ? 'The price moved. Try again' : 'The swap did not go through', 502)
   }
-  for (let i = 0; i < 40; i++) {
-    const st = (await conn.getSignatureStatuses([signature])).value[0]
-    if (st?.err) {
-      await db.update(trades).set({ status: 'failed' }).where(eq(trades.signature, signature))
-      return bad('The swap failed on-chain', 502)
-    }
-    if (st?.confirmationStatus === 'confirmed' || st?.confirmationStatus === 'finalized') {
-      await db.update(trades).set({ status: 'confirmed' }).where(eq(trades.signature, signature))
-      return NextResponse.json({ signature })
-    }
-    await sleep(750)
-  }
-  return NextResponse.json({ signature, pending: true })
+  if (!landed.confirmed) return NextResponse.json({ signature, pending: true })
+  await db.update(trades).set({ status: 'confirmed' }).where(eq(trades.signature, signature))
+  return NextResponse.json({ signature })
 }

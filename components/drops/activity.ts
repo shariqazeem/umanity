@@ -19,6 +19,8 @@ export function activityLine(a: HomeItem): string {
       return `↩︎ Drop #${a.drop.id + 1} ${a.cancelled ? 'called off' : 'missed its date'}: refunds open`
     case 'fees':
       return `⇄ ${usdText(a.toDropsUsd, 2)} of fees went to drops`
+    case 'funded':
+      return `⇄ Trading fees put ${usdText(a.amountUsd, 2)} into Drop #${a.drop.id + 1}`
     default:
       return ''
   }
