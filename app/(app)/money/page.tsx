@@ -115,8 +115,8 @@ const MOVE: Record<string, { icon: string; text: (e: Move) => ReactNode }> = {
 function Totals({ d }: { d: MoneySummary }) {
   const t = d.totals
   const items: [string, number, string][] = [
-    ['Came in', t.cameIn, `${t.gifts.toLocaleString('en-US')} gifts`],
-    ['In pots now', t.inPots, 'waiting for proof'],
+    ['Came in', t.cameIn, `${t.gifts.toLocaleString('en-US')} ${t.gifts === 1 ? 'gift' : 'gifts'}`],
+    ['In pots now', t.inPots, d.fees.fundIntoPots > 0 ? `waiting for proof · ${money(d.fees.fundIntoPots)} from fees` : 'waiting for proof'],
     ['Unlocked', t.unlocked, 'paid for deliveries'],
     ['Refunded', t.refunded, 'back to backers'],
     ['Umanity spent', t.umanitySpent, 'from its half of fees'],
