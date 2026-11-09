@@ -7,9 +7,12 @@ import { SOLANA_RPC } from './constants'
 import { DONATIONS_PROGRAM, findPoolPDA, findVaultPDA, findCampaignPDA } from './pda'
 import { readU64, readI64 } from './bytes'
 
+/** The server's RPC. SOLANA_RPC_URL carries the provider's key, so it is never read in the browser. */
+export const SERVER_RPC = process.env.SOLANA_RPC_URL?.trim() || SOLANA_RPC
+
 let _conn: Connection | null = null
 export function getConnection(): Connection {
-  if (!_conn) _conn = new Connection(SOLANA_RPC, 'confirmed')
+  if (!_conn) _conn = new Connection(SERVER_RPC, 'confirmed')
   return _conn
 }
 

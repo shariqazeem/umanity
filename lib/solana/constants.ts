@@ -7,8 +7,18 @@ export const LAMPORTS_PER_SOL = 1_000_000_000
 export const SOLANA_CLUSTER = (process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet') as 'devnet' | 'mainnet-beta'
 export const IS_MAINNET = SOLANA_CLUSTER === 'mainnet-beta'
 
-export const SOLANA_RPC =
-  process.env.NEXT_PUBLIC_SOLANA_RPC || (IS_MAINNET ? 'https://api.mainnet-beta.solana.com' : 'https://api.devnet.solana.com')
+/**
+ * With NEXT_PUBLIC_SOLANA_RPC_PROXY=1, browsers reach Solana through this app's /api/rpc, so the
+ * RPC provider's key (SOLANA_RPC_URL) stays on the server. Server code uses SERVER_RPC (lib/solana/chain).
+ */
+const RPC_PROXY = process.env.NEXT_PUBLIC_SOLANA_RPC_PROXY === '1' && typeof window !== 'undefined'
+
+export const SOLANA_RPC = RPC_PROXY
+  ? `${window.location.origin}/api/rpc`
+  : process.env.NEXT_PUBLIC_SOLANA_RPC || (IS_MAINNET ? 'https://api.mainnet-beta.solana.com' : 'https://api.devnet.solana.com')
+
+/** Subscriptions can't pass through /api/rpc, so a proxied browser uses the cluster's public websocket. */
+export const SOLANA_WS = RPC_PROXY ? (IS_MAINNET ? 'wss://api.mainnet-beta.solana.com' : 'wss://api.devnet.solana.com') : undefined
 
 /** CAIP-2 ids (used by Solana Actions / Blinks and x402). */
 export const CAIP2_SOLANA_MAINNET = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'

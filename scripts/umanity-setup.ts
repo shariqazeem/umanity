@@ -4,6 +4,8 @@
  *
  *   npx tsx scripts/umanity-setup.ts status
  *   npx tsx scripts/umanity-setup.ts init --ops <pubkey> [--release <pubkey>] [--max-pot 2000] [--review-hours 6]
+ *   npx tsx scripts/umanity-setup.ts set-admin <pubkey>
+ *   npx tsx scripts/umanity-setup.ts accounts --treasury <pubkey> --ops <pubkey>
  *   npx tsx scripts/umanity-setup.ts drop <meta.json> --goal 750 --cap 1000 --deadline 2026-11-07T18:00:00Z --payee <pubkey>
  *   npx tsx scripts/umanity-setup.ts sync
  *
@@ -17,6 +19,7 @@ dotenv.config()
 import fs from 'fs'
 import { BN } from '@coral-xyz/anchor'
 import { Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, sendAndConfirmTransaction, type TransactionInstruction } from '@solana/web3.js'
+import { createAssociatedTokenAccountIdempotentInstruction } from '@solana/spl-token'
 import { getAuthorityKeypair } from '../lib/solana/server-signer'
 import { getConnection } from '../lib/solana/chain'
 import { SOLANA_CLUSTER } from '../lib/solana/constants'
@@ -36,6 +39,7 @@ import {
   tokenBalance,
   umanityProgram,
   usd,
+  usdcAccount,
 } from '../lib/umanity/program'
 import { canonicalJson, hexToBytes, listTotal, sha256Hex, validateMeta, type DropMeta } from '../lib/umanity/drops'
 import { syncChain } from '../lib/umanity/indexer'
@@ -154,8 +158,29 @@ async function main() {
   const sol = (await getConnection().getBalance(authority.publicKey)) / LAMPORTS_PER_SOL
   console.log(`authority ${authority.publicKey.toBase58()} · ${sol} SOL`)
   if (cmd === 'init') return init(authority)
+  if (cmd === 'set-admin') return setAdmin(authority)
+  if (cmd === 'accounts') return usdcAccounts(authority)
   if (cmd === 'drop') return createDrop(authority)
   throw new Error(`unknown command ${cmd}`)
+}
+
+/** Hands the admin role (create drops, post proof) from the current admin to another key. */
+async function setAdmin(authority: Keypair) {
+  const conn = getConnection()
+  const next = new PublicKey(process.argv[3] ?? '')
+  const ix = await umanityProgram(conn).methods.setAdmin(next).accountsPartial({ config: CONFIG, admin: authority.publicKey }).instruction()
+  console.log('set_admin', await send(authority, [ix]))
+  const config = await fetchConfig(conn)
+  if (config?.admin.toString() !== next.toBase58()) throw new Error(`admin is ${config?.admin.toString()}, not ${next.toBase58()}`)
+  console.log(`admin is now ${next.toBase58()}`)
+}
+
+/** Opens the USDC accounts the app pays into: the treasury's (Aurora and x402 gifts land there) and ops' (its half of fees). */
+async function usdcAccounts(authority: Keypair) {
+  const owners = ['treasury', 'ops'].map((name) => [name, new PublicKey(flag(name))] as const)
+  const ixs = owners.map(([, owner]) => createAssociatedTokenAccountIdempotentInstruction(authority.publicKey, usdcAccount(owner), owner, USDC))
+  console.log('usdc accounts', await send(authority, ixs))
+  for (const [name, owner] of owners) console.log(`${name} ${owner.toBase58()} → USDC ${usdcAccount(owner).toBase58()}`)
 }
 
 main()

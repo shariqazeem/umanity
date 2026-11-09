@@ -3,7 +3,7 @@
 import { FC, ReactNode, useMemo } from 'react'
 import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
-import { SOLANA_RPC } from '@/lib/solana/constants'
+import { SOLANA_RPC, SOLANA_WS } from '@/lib/solana/constants'
 
 import '@solana/wallet-adapter-react-ui/styles.css'
 
@@ -12,7 +12,7 @@ export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const wallets = useMemo(() => [], [])
   return (
     // Polls retry on their own schedule, so a rate-limited read fails fast instead of stacking retries.
-    <ConnectionProvider endpoint={SOLANA_RPC} config={{ commitment: 'confirmed', disableRetryOnRateLimit: true }}>
+    <ConnectionProvider endpoint={SOLANA_RPC} config={{ commitment: 'confirmed', disableRetryOnRateLimit: true, wsEndpoint: SOLANA_WS }}>
       <SolanaWalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </SolanaWalletProvider>

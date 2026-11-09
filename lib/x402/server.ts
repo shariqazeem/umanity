@@ -20,7 +20,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { HTTPFacilitatorClient, x402ResourceServer, x402HTTPResourceServer, type RoutesConfig, type HTTPRequestContext, type HTTPAdapter } from '@x402/core/server'
 import { ExactSvmScheme } from '@x402/svm/exact/server'
 import { decodeTransactionFromPayload, getTokenPayerFromTransaction, transactionMessageHash } from '@x402/svm'
-import { CAIP2_CURRENT, IS_MAINNET, SOLANA_RPC, UMANITY_TREASURY, USDC_MINT } from '@/lib/solana/constants'
+import { CAIP2_CURRENT, IS_MAINNET, UMANITY_TREASURY, USDC_MINT } from '@/lib/solana/constants'
+import { SERVER_RPC } from '@/lib/solana/chain'
 import { recordX402Receipt, updateX402Receipt, findX402ReceiptByHash } from '@/lib/data/intents'
 
 export const X402_NETWORK = CAIP2_CURRENT
@@ -85,7 +86,7 @@ export async function getX402Server(): Promise<x402HTTPResourceServer> {
     return cache.http
   }
   const facilitator = new HTTPFacilitatorClient({ url: X402_FACILITATOR_URL, timeoutMs: 30_000 })
-  const core = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactSvmScheme({ rpcUrl: SOLANA_RPC }))
+  const core = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactSvmScheme({ rpcUrl: SERVER_RPC }))
   const http = new x402HTTPResourceServer(core, buildRoutes())
   cache.http = http
   cache.init = http.initialize().catch((e) => {
