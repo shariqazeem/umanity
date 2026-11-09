@@ -18,10 +18,10 @@ export function ogFonts() {
 }
 
 let logo: string | null = null
-/** The round Umanity logo as a data URL (read once from /public). */
+/** The round "U" mark as a data URL (read once from /public). Cards set it beside the word "Umanity", so not the wordmark badge. */
 export function logoDataUrl(): string {
   if (!logo) {
-    const buf = fs.readFileSync(path.join(process.cwd(), 'public', 'logo.png'))
+    const buf = fs.readFileSync(path.join(process.cwd(), 'public', 'mark.png'))
     logo = `data:image/png;base64,${buf.toString('base64')}`
   }
   return logo

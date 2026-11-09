@@ -12,10 +12,10 @@ const nextConfig: NextConfig = {
   // the SQL in drizzle/ (read from disk, so the tracer cannot see it).
   outputFileTracingIncludes: {
     '/**': ['./drizzle/**'],
-    '/**/opengraph-image*': ['./lib/og/fonts/**', './public/logo.png'],
-    '/**/twitter-image*': ['./lib/og/fonts/**', './public/logo.png'],
-    '/opengraph-image': ['./lib/og/fonts/**', './public/logo.png'],
-    '/twitter-image': ['./lib/og/fonts/**', './public/logo.png'],
+    '/**/opengraph-image*': ['./lib/og/fonts/**', './public/logo.png', './public/mark.png'],
+    '/**/twitter-image*': ['./lib/og/fonts/**', './public/logo.png', './public/mark.png'],
+    '/opengraph-image': ['./lib/og/fonts/**', './public/logo.png', './public/mark.png'],
+    '/twitter-image': ['./lib/og/fonts/**', './public/logo.png', './public/mark.png'],
   },
   turbopack: {},
   webpack: (config) => {
