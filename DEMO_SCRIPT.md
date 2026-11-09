@@ -5,7 +5,7 @@ A first-time walkthrough on https://umanity.gives (Solana mainnet), step by step
 ✂ marks a wait to cut in the edit. Aim for a final cut under 4:00 (Encode allows 2 to 4 minutes). If it runs long, speed up the typing and trim steps 10 and 12 first.
 
 ## Before you record
-1. Phantom needs a little SOL (about 0.02) to send USDC into a brand-new wallet, at least $2.50 of USDC on Solana, and at least 0.0005 ETH on Ethereum.
+1. Phantom needs a little SOL (about 0.01) to send USDC into a brand-new wallet, $5 of USDC on Solana, and at least 0.0005 ETH on Ethereum. The new wallet gets the $5: $1 in one tap, $1 from the agent, $1 of UMANITY, and $2 spare in case a step needs a retry.
 2. Open a Safari Private Window at umanity.gives, so you sign up as a brand-new user. If Touch ID isn't offered there, use Chrome instead.
 3. In another tab, open [NEAR.md](https://github.com/shariqazeem/umanity/blob/mainnet/NEAR.md) on GitHub for step 11.
 4. Turn on Do Not Disturb, set the browser zoom to 100%, and record the full screen with your camera on.
@@ -54,9 +54,9 @@ Or back to every giver, if we miss the date.
 This is my Umanity wallet. It's empty, so let's add money.
 I can send USDC on Solana from any wallet or exchange.
 
-**Do:** Phantom → **Send** → USDC → paste the address → enter your USDC → send. ✂ Cut the wait. Tap ↻ in the wallet if the balance doesn't update.
+**Do:** Phantom → **Send** → USDC → paste the address → **5** → send. ✂ Cut the wait. Tap ↻ in the wallet if the balance doesn't update.
 
-I'm sending a few dollars from Phantom.
+I'm sending five dollars from Phantom.
 And it's here.
 I never need SOL to give. Umanity pays the network fees.
 
@@ -98,10 +98,10 @@ The wallet signs a USDC payment, PayAI settles it on Solana, and it goes into th
 The agent is the backer, so if the drop fails, it gets its money back.
 
 ## 9 · Buy $UMANITY · Trade
-**Do:** **Trade** → the UMANITY chart → under **You pay**, type **0.5** USDC → **Swap USDC for UMANITY** (Touch ID if it asks).
+**Do:** **Trade** → the UMANITY chart → under **You pay**, type **1** USDC → **Swap USDC for UMANITY** (Touch ID if it asks).
 
 This is our token, UMANITY. It launched today.
-I'm buying fifty cents' worth.
+I'm buying a dollar's worth.
 Only our program can claim its trading fees, and half of them go to drops.
 In the first minute, sniper bots paid twenty-seven dollars in fees.
 Half of that is already in Drop #1.
