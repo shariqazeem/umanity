@@ -10,6 +10,7 @@ import { Img } from '@/components/shared/ui'
 import { pickNextDrop, useDrops, useMoney } from '@/components/drops/hooks'
 import { DropMeter, StatePill, dayText, dropHref } from '@/components/drops/DropParts'
 import { usdText } from '@/lib/umanity/drops'
+import { UMANITY_MINT } from '@/lib/umanity/tokens'
 import type { HomeItem } from '@/lib/umanity/feed'
 
 const GITHUB = 'https://github.com/shariqazeem/umanity'
@@ -249,7 +250,8 @@ export function Landing() {
             </div>
           </div>
           <p className="max-w-5xl mx-auto text-[10.5px] text-[#c7c7cc] mt-4 text-center sm:text-left">
-            Umanity is a crypto app, not a registered charity, and gifts are not tax-deductible. $UMANITY is not an investment and comes with no promise of returns.
+            Umanity is a crypto app, not a registered charity, and gifts are not tax-deductible.
+            {UMANITY_MINT && ' $UMANITY is not an investment and comes with no promise of returns.'}
           </p>
         </footer>
       </main>
@@ -286,7 +288,9 @@ const FIXES = [
     dead: 'Fees vanish into overhead',
     why: 'Nobody can tell how much of a dollar reached anyone.',
     alive: 'Fees split by code',
-    how: 'Gifts go 100% to drops. Every fee, from swaps or the $UMANITY pool, is split 50/50 by the program, and the Money tab traces each dollar.',
+    how: UMANITY_MINT
+      ? 'Gifts go 100% to drops. Every fee, from swaps or the $UMANITY pool, is split 50/50 by the program, and the Money tab traces each dollar.'
+      : 'Gifts go 100% to drops. Every swap fee is split 50/50 by the program, and the Money tab traces each dollar.',
     tag: 'Money tab',
     stat: '50/50, on-chain',
   },
@@ -298,14 +302,24 @@ const FIXES = [
     tag: 'x402 · Aurora',
     stat: 'No keys, no checkout',
   },
-  {
-    dead: 'Tokens with no point',
-    why: 'Launch, pump, dump. Nothing happens in the real world.',
-    alive: 'A token that feeds people',
-    how: "$UMANITY trades on Meteora. Its trading fees go to the program, which sends half to drops. No team tokens. Not an investment.",
-    tag: '$UMANITY',
-    stat: 'Fees claimed by the program',
-  },
+  // The token's fix shows once $UMANITY exists; until then the sixth fix is the wallet.
+  UMANITY_MINT
+    ? {
+        dead: 'Tokens with no point',
+        why: 'Launch, pump, dump. Nothing happens in the real world.',
+        alive: 'A token that feeds people',
+        how: '$UMANITY trades on Meteora. Its trading fees go to the program, which sends half to drops. No team tokens. Not an investment.',
+        tag: '$UMANITY',
+        stat: 'Fees claimed by the program',
+      }
+    : {
+        dead: 'Wallets scare people off',
+        why: 'A seed phrase, gas and a coin to buy before the first gift.',
+        alive: 'A wallet in one tap',
+        how: 'Create a Umanity wallet with Face ID or a passcode. It stays sealed on your device, and Umanity pays the network fee, so you never need SOL.',
+        tag: 'Wallet',
+        stat: 'No seed phrase, no gas',
+      },
 ]
 
 function StatsColumn() {
@@ -389,7 +403,7 @@ function StatsRow() {
 }
 
 const LOOP = [
-  { icon: '⇄', title: 'Trade', body: 'Swaps in the app pay 0.5%. $UMANITY trades pay its pool fee.' },
+  { icon: '⇄', title: 'Trade', body: UMANITY_MINT ? 'Swaps in the app pay 0.5%. $UMANITY trades pay its pool fee.' : 'Swaps in the app pay 0.5% when USDC is one side.' },
   { icon: '⚖️', title: 'Split by code', body: 'The program sends half of every fee to the drops fund.' },
   { icon: '🍲', title: 'Fill drops', body: 'The fund and your gifts fill pots for real deliveries.' },
   { icon: '🎥', title: 'On camera', body: 'Every delivery is filmed and posted, here and on X.' },

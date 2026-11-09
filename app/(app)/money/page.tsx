@@ -7,6 +7,7 @@ import { DropCard, dropHref } from '@/components/drops/DropParts'
 import { explorerAccount, explorerTx } from '@/lib/solana/constants'
 import { short, timeAgo } from '@/lib/client/api'
 import { usdText } from '@/lib/umanity/drops'
+import { UMANITY_MINT } from '@/lib/umanity/tokens'
 import type { MoneySummary } from '@/lib/umanity/data'
 
 const money = (n: number) => usdText(n, n > 0 && n < 100 ? 2 : 0)
@@ -172,7 +173,7 @@ function Flow({ d }: { d: MoneySummary }) {
           </div>
         </div>
         <div className="rounded-3xl bg-[#f5f5f7] p-3">
-          <Node title="Fees" value={money(f.split + f.inboxWaiting)} sub={`${money(f.fromToken)} from $UMANITY trades · ${d.swaps.count} ${d.swaps.count === 1 ? 'swap' : 'swaps'} worth ${money(d.swaps.volumeUsd)}`} />
+          <Node title="Fees" value={money(f.split + f.inboxWaiting)} sub={`${UMANITY_MINT ? `${money(f.fromToken)} from $UMANITY trades · ` : ''}${d.swaps.count} ${d.swaps.count === 1 ? 'swap' : 'swaps'} worth ${money(d.swaps.volumeUsd)}`} />
           <Arrow label="split 50/50 by the program" />
           <div className="grid grid-cols-2 gap-2">
             <Node title="Drops fund" value={money(f.toDrops)} sub={`${money(f.fundIntoPots)} put into pots`} tone="green" />
