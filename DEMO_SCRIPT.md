@@ -1,50 +1,46 @@
-# Umanity — demo video (target 3:00, limit 4:00)
+# Umanity: the live mainnet demo (target 3:30, limit 4:00)
 
-Encode asks for a 2–4 minute video. Record the screen at 1440p, browser zoom 100%, light mode, on https://umanity.vercel.app. Speak plainly; let the screen prove each claim.
+One take, with your face cam in a corner and the screen recorded at 1440p (browser zoom 100%, light mode) on the mainnet site. Everything in it is real: real USDC, real transactions, the first real drop. Speak plainly and let the screen prove each claim.
 
-## Before you record (10 minutes)
-1. Open the site, **Sign in → Create a Umanity wallet**. Open the wallet sheet and copy your address.
-2. Go to [faucet.circle.com](https://faucet.circle.com), pick **Solana Devnet**, paste the address, get 10 test USDC.
-3. Open **Drop #3** (the labelled devnet demo) in one tab and **For agents** in another.
-4. Optional, for the Aurora track: only once mainnet is live, with a few USDC on Base in any wallet (record that part separately, see the end).
+## Before you record (15 minutes)
+1. On the site: **Sign in → Create a Umanity wallet → Use Touch ID**. Open the wallet sheet and copy your address.
+2. Send **$6 USDC** to that address from Phantom: $2 for the one-tap gift, $1 for the agent gift, plus spare.
+3. For the Aurora part, have **$3+ on another chain** in a wallet you can send from (USDC on Base, or NEAR in your HOT wallet). Do one dry run of the quote so you know the flow, but don't send.
+4. Open the tabs: the landing, **Drop #1**, **For agents**, **Money**, and Solscan.
+5. Close everything else. Turn notifications off.
 
-## 0:00 – 0:20 · Hook (landing page)
-"Crypto giving runs on trust: you send money and hope. I'm Shariq, and Umanity puts every gift on camera, with the rules in a Solana program."
-> Landing: *Crypto giving ~~on trust.~~ On camera.* Scroll once through **How a drop works**.
+## 0:00–0:20 · Hook (face cam, landing)
+"Crypto giving runs on trust: you send money and hope it arrives. I'm Shariq. Umanity puts every gift on camera, with the rules in a Solana program. It went live on mainnet today, and I'll give to our first real drop right now."
+> The landing: *Live on Solana Mainnet*, live totals.
 
-## 0:20 – 0:50 · What a drop is (Drop #3)
-"Every gift goes into a drop: one real delivery, with a shopping list, a place and a date, and its own USDC pot owned by the program."
-> Point at the pot, the four steps, the shopping list and *checked against its on-chain hash*.
-"The pot only pays the drop's supplier after the delivery is filmed, its proof is hashed on Solana and a review window passes. If the date is missed, the program refunds every backer. This one is a labelled devnet demo, so it will be called off and refunded after judging."
+## 0:20–0:50 · The drop (Drop #1)
+"Every gift goes into a drop: one real delivery, with a shopping list, a place and a date. It has its own USDC pot, and the program owns it."
+> Point at the shopping list (*checked against its on-chain hash*), the pot, the date, the four steps.
+"The pot pays only after I film the delivery, hash the proof onto Solana, and a six-hour check passes. If I miss the date, the program refunds every backer. Nobody can send it anywhere else."
 
-## 0:50 – 1:40 · Give (Consumer App)
-> Press **Give to this drop** → pick $2 → **Give $2** → approve.
-"No SOL, no gas: Umanity pays the network fee. One tap and it's in the pot, in my name."
-> Success screen → **View transaction** → Solana Explorer showing the `give` instruction.
-"If you don't hold USDC on Solana, you can pay from 30 other chains with Aurora Intents. Here on devnet it shows live prices; on mainnet it settles straight into the pot."
-> Back in the sheet: **Or pay from 30+ chains** → USDC on Base → the price appears. Close.
+## 0:50–1:25 · Give in one tap (Consumer)
+> **Give to this drop** → $2 → **Give $2** → Touch ID.
+"No SOL, no gas, no seed phrase. Umanity pays the network fee. One touch and it's in the pot, in my name."
+> The success screen and gift ticket → **View transaction** → Solscan shows the `give`.
 
-## 1:40 – 2:20 · An AI agent gives over x402
-> **For agents** → amount $1 → **▶ Pay $1 into Drop #3 via x402**.
-"Agents can give too. The API answers 402 Payment Required, the agent signs a USDC transfer, the facilitator settles it on Solana, and the treasury puts the same USDC into the pot with the agent's wallet as the backer. So if the drop misses its date, the agent gets refunded."
-> Show 402 → signed → settled → the signed receipt verified in the browser.
-"A gift the drop can't take is refused before any payment, so an agent is never charged for nothing."
+## 1:25–2:20 · Give from another chain (Aurora Intents)
+"Most people don't hold USDC on Solana. So you can pay from 39 chains."
+> **Give** → $3 → **Or pay from 30+ chains** → USDC on Base (or NEAR) → the exact amount to send appears → enter your refund address → **Get my deposit address** → send it from your wallet on camera.
+"Aurora Intents quotes exactly what I need to send so $3 lands in the pot. If the swap fails, NEAR Intents refunds me on Base. If the drop isn't delivered, the program refunds me on Solana."
+> While it swaps (about a minute), show **Money** with the totals moving. Then back: *In the pot ✓* → Solscan: the treasury's `give`, with my wallet as the backer.
 
-## 2:20 – 2:45 · Where the money goes
-> **Money** tab.
-"Every dollar in and out, read from the program: gifts, pots, payouts, refunds."
-> **Trade** tab.
-"Trading feeds the pots too. Swaps carry a 0.5% fee that goes into the program, which splits every fee 50/50 between drops and running Umanity."
+## 2:20–2:55 · An AI agent gives over x402
+> **For agents** → $1 → **▶ Pay $1 into Drop #1 via x402**.
+"Agents can give too, with one HTTP request. The API answers 402 Payment Required, the wallet signs a USDC transfer, PayAI settles it on mainnet, and the money goes into the pot with the agent as the backer. So a missed date refunds the agent."
+> 402 → signed → settled → the receipt, verified in the browser.
 
-## 2:45 – 3:00 · Close
-"Proof on camera, refunds by code, fees that feed people. Umanity is live on devnet today and goes to mainnet with its first real filmed delivery. Thanks!"
+## 2:55–3:20 · Where every dollar goes
+> **Money**: gifts, pots, unlocks, refunds, and the rules with their addresses.
+"Every dollar, read from the program. Trading feeds the pots too: swaps carry a 0.5% fee, and the program sends half of it to drops."
+
+## 3:20–3:40 · What's next (face cam)
+"Today Umanity's key signs the unlock. Next, that key moves to a NEAR contract that's already on NEAR mainnet. It only signs after an AI checks the filmed proof inside a secure enclave and a council has had time to say no. Proof on camera, refunds by code. Thanks!"
 
 ---
 
-## Aurora track: separate 60–90 s clip (mainnet only)
-1. On the mainnet site, open a drop → **Give** → $5 → **Or pay from 30+ chains** → **USDC · Base**.
-2. "I hold USDC on Base, not Solana. Aurora Intents quotes exactly what to send so $5 lands in the pot."
-3. Enter your Base address for refunds → **Get my deposit address** → send from your wallet.
-4. Wait on the status: *Waiting for your deposit → Swapping → In the pot ✓* (about a minute).
-5. **View transaction** on Solscan: the treasury's `give` into the drop's pot, with your Umanity wallet as the backer.
-6. "If the swap had failed, NEAR Intents refunds me on Base. If the drop isn't delivered, the program refunds me on Solana."
+If something stalls live, say what's happening; the transactions are real. The Aurora swap can take one to three minutes, so fill the wait with the Money tab.

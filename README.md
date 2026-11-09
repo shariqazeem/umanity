@@ -1,10 +1,11 @@
 # Umanity — Crypto giving, ~~on trust~~ on camera.
 
-Umanity is the app where your crypto feeds people, on camera. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot on Solana**. The pot pays the drop's supplier only after the delivery is filmed and the proof has cleared a review window. If the drop misses its date, the program opens refunds and Umanity sends every backer their money back. Trading in the app feeds the same pots: every fee, from swaps or from the $UMANITY pool, is split 50/50 by the program between drops and running Umanity.
+Umanity is the app where your crypto feeds people, on camera. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot on Solana**. The pot pays the drop's supplier only after the delivery is filmed and the proof has cleared a review window. If the drop misses its date, the program opens refunds and Umanity sends every backer their money back. Trading in the app feeds the same pots: every swap fee is split 50/50 by the program between drops and running Umanity (and, once it launches, the $UMANITY pool's fees too).
 
 - **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions won a **Superteam bounty** and the **Solana Graveyard Hackathon (Tapestry track)** as [umanity-social](https://github.com/shariqazeem/umanity-social).
 - **Program:** `umanity` [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
-- **Live demo:** https://umanity.vercel.app (Solana devnet). Drop #3 is a labelled devnet demo you can give to with free test USDC from [faucet.circle.com](https://faucet.circle.com) (pick Solana Devnet); it is called off and refunded by the program after judging.
+- **Live on Solana mainnet:** https://umanity-mainnet.vercel.app. Real USDC, gifts from $1, and Umanity pays the network fee. Program [deployed 9 Nov 2026](https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN); the bytes on-chain match `target/deploy/umanity.so`.
+- **NEAR guard on NEAR mainnet:** [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near), see [NEAR.md](NEAR.md).
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
 - **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)
 - **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps and the token tooling, was written from 27 Oct on, inside Encode's 12 Oct to 8 Nov window.
@@ -68,7 +69,7 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 4. **Open the drop page.** See the pot, the four steps with a transaction each, the shopping list, backers, the description checked against its on-chain hash, and the proof checked against `post_proof`.
 5. **Open Money.** See gifts → pots → unlocked / refunded, fees → split → drops fund / Umanity, every move with its transaction, and where each rule lives on-chain.
 6. **Open Trade.** Live Jupiter routes with Umanity's 0.5% fee shown as dollars to drops. On mainnet the swap is built with Jupiter Swap V2 `/build`, and the fee goes in the same transaction into the program's fee inbox. Wallets without SOL get the network fee paid, a few swaps a day.
-7. **Give from another chain (mainnet).** In the give sheet, **Or pay from 30+ chains** → pick what you hold (USDC on Base, ETH, BTC, NEAR…) → see the exact price → get a one-off deposit address → send → the status follows it from deposit to swap to **in the pot**, with the Solana transaction. On devnet the same sheet shows live prices only, because NEAR Intents has no test network.
+7. **Give from another chain.** In the give sheet, **Or pay from 30+ chains** → pick what you hold (USDC on Base, ETH, BTC, NEAR…) → see the exact price → get a one-off deposit address → send → the status follows it from deposit to swap to **in the pot**, with the Solana transaction. (On a devnet copy the sheet shows prices only: NEAR Intents has no test network.)
 8. **Open For agents → ▶ Pay into a drop via x402.** `POST /api/x402/give {drop, amountUsd}` → **402** → the wallet signs a USDC transfer → the facilitator settles → the treasury gives the same USDC into the pot **with the agent's wallet as the backer**, so a missed date refunds the agent → **200** with an ed25519-signed receipt verified in the browser.
 9. **Team console (`/admin`, team wallets only).** Open a drop (description hashed on-chain), post updates, post proof (text, X post and every file's sha256, bundled and hashed onto Solana), unlock after review, call a drop off, refund everyone.
 
@@ -98,7 +99,7 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 
 ### The NEAR guard (`near/guard/`, `lib/near/`): see [NEAR.md](NEAR.md)
 - The key that unlocks a pot is a key only a NEAR contract can use, through Chain Signatures. The guard signs an unlock only after two things. First, an AI inside a TEE (NEAR AI Cloud) checks the proof against the promise, and the guard verifies the TEE's signature on-chain. Second, a council the owner cannot change gets a review window to veto. Even then, the only thing it signs is that one unlock.
-- Live on NEAR testnet (`guard.umanity.testnet`). Verified end to end: NEAR's testnet MPC network signed a real Umanity unlock that a Solana validator accepted.
+- Live on NEAR mainnet (`guard.umanity.near`, on NEAR's `v1.signer`) and testnet (`guard.umanity.testnet`). Verified end to end on testnet: NEAR's MPC network signed a real Umanity unlock that a Solana validator accepted.
 
 ## Run it locally
 
@@ -111,11 +112,12 @@ npm run dev                    # http://localhost:3000 (Turbopack)
 Without `DATABASE_URL` the app uses an embedded PGlite database (one process at a time: never point a script at the data directory the dev server has open). Migrations in `drizzle/` apply on start.
 
 - Program tests: `bash scripts/test-programs.sh`
-- Set up a cluster: `npx tsx scripts/umanity-setup.ts init --ops <pubkey> [--release <pubkey>] [--max-pot 2000] [--review-hours 6]`
+- Deploy and set up a cluster the way mainnet was: `OPS=<wallet> bash scripts/mainnet-deploy.sh` (keys outside the repo; resumable; rehearse with `RPC=http://127.0.0.1:8899`)
+- Set up a cluster by hand: `npx tsx scripts/umanity-setup.ts init --ops <pubkey> [--release <pubkey>] [--max-pot 2000] [--review-hours 6]`, then `set-admin` and `accounts`
 - Open a drop from a file: `npx tsx scripts/umanity-setup.ts drop meta.json --goal 750 --cap 900 --deadline 2026-11-20T18:00:00Z --payee <pubkey>` (or use `/admin`)
 - Typecheck: `npm run typecheck`
 
-The public devnet RPC rate-limits deploys and reads (HTTP 429). Set `NEXT_PUBLIC_SOLANA_RPC` to a dedicated endpoint. If a deploy stalls, `npx tsx scripts/resume-buffer.ts <BUFFER> target/deploy/umanity.so` fills only the missing chunks.
+Public RPCs rate-limit deploys and reads (HTTP 429). Put a dedicated endpoint with its key in `SOLANA_RPC_URL` (server only), and set `NEXT_PUBLIC_SOLANA_RPC_PROXY=1` so browsers go through `/api/rpc` and the key never reaches the page. If a deploy stalls, `npx tsx scripts/resume-buffer.ts <BUFFER> target/deploy/umanity.so` fills only the missing chunks.
 
 ## Repository map
 
@@ -129,13 +131,15 @@ app/api/                           drops (+ intents), feed, money, trade, x402, 
 mcp/server.ts                      MCP server: Claude can fill a drop
 near/guard/                        the NEAR guard contract: TEE verdicts, council, Solana message checker, Chain Signatures (39 tests)
 lib/near/                          the guard's server side: NEAR AI check, verdicts, guarded release
-scripts/                           test-programs.sh, guard-e2e.sh, near-attest.ts, umanity-setup.ts, launch-umanity.ts, resume-buffer.ts
+scripts/                           test-programs.sh, mainnet-deploy.sh, umanity-setup.ts, admin.ts, guard-setup.ts, guard-e2e.sh, near-attest.ts, launch-umanity.ts, resume-buffer.ts
 ```
 
 ## Honest status
 
-- **Clusters:** the program is live on **devnet** ([`UmauiNG…`](https://explorer.solana.com/address/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3?cluster=devnet)), set up with a $2,000 cap per pot and a 6-hour review window. An x402 agent gift went into a labelled test drop's pot there ([tx](https://explorer.solana.com/tx/3yif3WLC51VXb1nqeQxd8DNN3gQVCv4Z7zjKKJLgxAfE6AS3dZJH5zNjsxofxSBtFfM5nh5xViV3xjpVrBx6A6UZ?cluster=devnet)), and the agent got its USDC back when the drop was called off. Every flow above is also verified on a local validator with Meteora's real program cloned from mainnet, and swaps by mainnet simulation. The mainnet deploy comes next.
-- **Who can unlock a pot today:** on devnet, the release key held by Umanity. It can only unlock a drop whose proof is on-chain and whose review window has passed, and only to that drop's payee; it cannot redirect or withdraw. The NEAR guard that replaces it is live on NEAR testnet and verified end to end ([NEAR.md](NEAR.md)). On mainnet, the release key will be the guard's from the start and then locked for good (`lock_release_authority`). Until then, Umanity does not claim that nobody can move a pot alone.
-- **Umanity is a crypto app, not a registered charity.** Gifts are not tax-deductible. $UMANITY is not an investment and comes with no promise of returns.
+- **Mainnet (since 9 Nov 2026):** the program runs on Solana mainnet ([`UmauiNG…`](https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3)) with real USDC, a $2,000 cap per pot and a 6-hour review after proof. The deploy was rehearsed first on a local validator with the real USDC mint, including closing the program and getting its rent back. Before that, every flow ran on devnet and on a local validator with Meteora's real program cloned from mainnet.
+- **Who can unlock a pot today:** Umanity's release key. It can only unlock a drop whose proof is on-chain and whose review window has passed, and only to that drop's payee; it cannot redirect or withdraw. The NEAR guard that replaces it is deployed on NEAR mainnet and set up ([NEAR.md](NEAR.md)). The key moves to the guard after its first live AI check passes on mainnet, and is then locked for good (`lock_release_authority`). Until then, Umanity does not claim that nobody can move a pot alone.
+- **Upgrades:** Umanity still holds the program's upgrade key, so fixes can ship. That is trust too; it moves to a multisig later.
+- **$UMANITY is not launched.** The launch tooling (`scripts/launch-umanity.ts`) is tested on a local validator and waits for the right time. The app shows no token until it exists.
+- **Umanity is a crypto app, not a registered charity.** Gifts are not tax-deductible.
 
 MIT licence ([LICENSE](LICENSE)).

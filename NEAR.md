@@ -72,6 +72,18 @@ Each rule is enforced in code:
 
 ## It runs
 
+**On NEAR mainnet** since 9 Nov 2026, with NEAR's MPC network (`v1.signer`), beside the Umanity program on Solana mainnet:
+
+| | |
+| --- | --- |
+| Guard | [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near) ([deploy](https://nearblocks.io/txns/CgM54dhXve3sSYoD4xAkaaeJrFxU2LXHMvDrpWuUyFC6)), the same wasm as testnet (code hash `3XLhHF8P…`) |
+| Roles | owner `umanity.near`, registrar `bot.umanity.near`, council `shariq7861.tg` |
+| Release key, read from the MPC network by `sync_release_key` | `681SwgKSC4dJfn4z85QxUELsfPhw6Qm6on4UEASvUwtQ` |
+| Checker | `Qwen/Qwen3-VL-30B-A3B-Instruct`; TEE key `c6eb7050…8b6d`, registered after a fresh attestation check (`scripts/guard-setup.ts`) |
+| Review | at least 6 hours, fixed at deploy |
+
+The Solana mainnet program still takes unlocks from Umanity's key. That key moves to the guard after the first live AI check passes on mainnet, and is then locked (see Honest status).
+
 **On NEAR testnet**, with NEAR's testnet MPC network (`v1.signer-prod.testnet`):
 
 | | |
@@ -107,15 +119,17 @@ bash scripts/guard-e2e.sh                                                       
 
 ## Honest status
 
-- **Live on NEAR testnet**, verified end to end against a local Solana validator.
-- **Mainnet next:**
-  1. Deploy the same contract on NEAR mainnet (`v1.signer`).
-  2. Point the Solana mainnet program's release authority at the guard's key.
-  3. Lock it for good (`lock_release_authority`).
-  4. Hand the guard's ownership to a DAO.
+- **Verified end to end on NEAR testnet** against a local Solana validator.
+- **Deployed and set up on NEAR mainnet** (9 Nov 2026). What's left:
+  1. ~~Deploy the same contract on NEAR mainnet (`v1.signer`).~~ Done.
+  2. Run the first live NEAR AI check on a mainnet drop's proof.
+  3. Point the Solana mainnet program's release authority at the guard's key (`set_release_authority`).
+  4. Lock it for good (`lock_release_authority`).
+  5. Add independent council members, then hand the guard's ownership to a DAO.
 
-  Until step 3 runs on mainnet, Umanity does not claim that nobody can move a pot alone.
+  Until step 4 runs, Umanity does not claim that nobody can move a pot alone.
 - **Trust that remains:**
-  - The owner registers TEE keys after checking attestation off-chain. `near-attest.ts` checks the quote's binding, not Intel's signature chain.
-  - The guard account still holds a full-access key on testnet so it can be upgraded.
+  - The owner registers TEE keys after checking attestation off-chain. The attestation check covers the quote's binding to the key and a fresh nonce, not Intel's signature chain.
+  - The guard account still holds a full-access key, so it can be upgraded, until a DAO holds it.
+  - The council is the founder's own wallet for now, on a different key from the owner's. Only the council can add independent members.
   - The AI sees photos and receipts but not video. The council watches the video during its window.
