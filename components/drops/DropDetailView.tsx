@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { useParams } from 'next/navigation'
@@ -17,6 +18,9 @@ export function DropDetailView() {
   const id = Number.isInteger(n) && n >= 1 ? n - 1 : null
   const { data: drop, loading, error } = useDrop(id)
   const { openGive } = useUmanity()
+  // The page renders on the server too, where there is no document.body to portal the Give bar into.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   if (id == null || (!loading && !drop)) {
     return (
@@ -176,6 +180,7 @@ export function DropDetailView() {
 
       {/* Portaled: the page's entrance animation leaves a transform that would pin a fixed bar to the page instead of the screen. */}
       {giving &&
+        mounted &&
         createPortal(
           <div className="lg:hidden fixed left-0 right-0 bottom-[56px] z-40 px-4 pb-3 pt-2 bg-gradient-to-t from-white via-white/95 to-white/0 safe-area-bottom">
             <button onClick={give} className="btn-primary w-full py-3.5 !text-[14px] shadow-lg shadow-black/10">
