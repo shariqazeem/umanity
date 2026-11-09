@@ -36,7 +36,7 @@ Trading in the app feeds the same pots: swaps carry a 0.5% fee that the program 
   Demoed live on mainnet in the video.
 
 ## Links
-- **Live app (Solana mainnet):** https://umanity-mainnet.vercel.app
+- **Live app (Solana mainnet):** https://umanity.gives
 - **Code:** https://github.com/shariqazeem/umanity (branch `mainnet`; README "Try it", JUDGES.md)
 - **Program on mainnet:** https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3 (deploy: https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN)
 - **Demo video:** _(add the link)_

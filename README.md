@@ -4,7 +4,7 @@ Umanity is the app where your crypto feeds people, on camera. Money goes into **
 
 - **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions won a **Superteam bounty** and the **Solana Graveyard Hackathon (Tapestry track)** as [umanity-social](https://github.com/shariqazeem/umanity-social).
 - **Program:** `umanity` [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
-- **Live on Solana mainnet:** https://umanity-mainnet.vercel.app. Real USDC, gifts from $1, and Umanity pays the network fee. Program [deployed 9 Nov 2026](https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN); the bytes on-chain match `target/deploy/umanity.so`.
+- **Live on Solana mainnet:** https://umanity.gives. Real USDC, gifts from $1, and Umanity pays the network fee. Program [deployed 9 Nov 2026](https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN); the bytes on-chain match `target/deploy/umanity.so`.
 - **NEAR guard on NEAR mainnet:** [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near), see [NEAR.md](NEAR.md).
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
 - **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)

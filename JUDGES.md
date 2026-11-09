@@ -1,6 +1,6 @@
 # For judges
 
-**Umanity is live on Solana mainnet: https://umanity-mainnet.vercel.app**
+**Umanity is live on Solana mainnet: https://umanity.gives**
 
 Real USDC. Gifts start at $1, and Umanity pays the network fee. No wallet is needed to browse. The README's **Try it (do X → see Y)** is the full walkthrough; below is the shortest path for each track.
 
