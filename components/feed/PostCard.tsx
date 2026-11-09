@@ -4,9 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar, Icon } from '@/components/shared/ui'
-import { apiGet, apiSend, timeAgo } from '@/lib/client/api'
+import { apiGet, apiSend } from '@/lib/client/api'
 import type { FeedPost, CommentView } from '@/lib/data/social'
 import { shownName } from '@/lib/client/names'
+import { Ago } from '@/components/shared/Ago'
 
 const origin = () => (typeof window !== 'undefined' ? window.location.origin : '')
 
@@ -24,7 +25,7 @@ export function PostCard({ post }: { post: FeedPost }) {
           </Link>{' '}
           joined Umanity
         </p>
-        <span className="text-[10px] text-[#aeaeb2] flex-shrink-0">{timeAgo(post.createdAt)}</span>
+        <span className="text-[10px] text-[#aeaeb2] flex-shrink-0"><Ago at={post.createdAt} /></span>
       </div>
     )
   }
@@ -41,7 +42,7 @@ export function PostCard({ post }: { post: FeedPost }) {
           </Link>
           <p className="text-[10px] text-[#aeaeb2]">
             {shownName(post.displayName, post.username) ? `@${post.username} · ` : ''}
-            {timeAgo(post.createdAt)}
+            <Ago at={post.createdAt} />
           </p>
         </div>
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { apiGet } from '@/lib/client/api'
+import { sharedGet } from '@/lib/client/api'
 import type { TokenSummary } from '@/lib/umanity/token'
 import type { Market } from '@/app/api/token/market/route'
 
@@ -12,7 +12,7 @@ export function useTokenSummary() {
   const [token, setToken] = useState<TokenSummary | null>(null)
   useEffect(() => {
     let alive = true
-    const load = () => apiGet<{ token?: TokenSummary | null }>('/api/token').then((d) => alive && setToken(d.token ?? null)).catch(() => {})
+    const load = () => sharedGet<{ token?: TokenSummary | null }>('/api/token', 10_000).then((d) => alive && setToken(d.token ?? null)).catch(() => {})
     load()
     const t = setInterval(load, 20_000)
     return () => {
@@ -29,7 +29,7 @@ export function useMarket(tf: Timeframe | null) {
   useEffect(() => {
     if (!tf) return
     let alive = true
-    const load = () => apiGet<Market>(`/api/token/market?tf=${tf}`).then((d) => alive && d?.points?.length && setMarket(d)).catch(() => {})
+    const load = () => sharedGet<Market>(`/api/token/market?tf=${tf}`, 15_000).then((d) => alive && d?.points?.length && setMarket(d)).catch(() => {})
     load()
     const t = setInterval(load, 30_000)
     return () => {

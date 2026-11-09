@@ -12,6 +12,21 @@ export async function apiGet<T = Record<string, unknown>>(path: string, opts: { 
   }
 }
 
+const sharedGets = new Map<string, { at: number; promise: Promise<unknown> }>()
+
+/**
+ * A GET shared by everything on the page that polls the same path: a request younger than `freshMs`
+ * is reused, or joined while in flight, so ten widgets polling /api/drops cost one request, not ten.
+ */
+export function sharedGet<T = Record<string, unknown>>(path: string, freshMs = 4_000, force = false): Promise<T> {
+  const hit = sharedGets.get(path)
+  if (!force && hit && Date.now() - hit.at < freshMs) return hit.promise as Promise<T>
+  const promise = apiGet<T>(path)
+  sharedGets.set(path, { at: Date.now(), promise })
+  promise.catch(() => sharedGets.delete(path))
+  return promise
+}
+
 export async function apiSend<T = Record<string, unknown>>(path: string, body: unknown, method: 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'POST', opts: { timeoutMs?: number } = {}): Promise<T> {
   const ctrl = new AbortController()
   const t = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 30_000)

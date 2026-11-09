@@ -7,13 +7,14 @@ import { Avatar } from '@/components/shared/ui'
 import { ProofOrb } from '@/components/shared/ProofOrb'
 import { useMoney } from '@/components/drops/hooks'
 import { useSeed } from '@/components/drops/seed'
-import { apiGet, short, timeAgo } from '@/lib/client/api'
+import { apiGet, short } from '@/lib/client/api'
 import { guardianFor } from '@/lib/guardian'
 import { usdText } from '@/lib/umanity/drops'
 import type { HomeItem, TopBacker } from '@/lib/umanity/feed'
 import { activityLine } from '@/components/drops/activity'
 import { PriceChart, priceText } from '@/components/trade/PriceChart'
 import { useMarket, useTokenSummary } from '@/components/trade/hooks'
+import { Ago } from '@/components/shared/Ago'
 
 export function RightRail() {
   return (
@@ -230,7 +231,7 @@ function ActivityWidget() {
               <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
               <p className="text-[12px] leading-snug text-[#525252] min-w-0">
                 {activityLine(a)}
-                <span className="text-[#aeaeb2]"> · {timeAgo(a.at)}</span>
+                <span className="text-[#aeaeb2]"> · <Ago at={a.at} /></span>
               </p>
             </li>
           ))}

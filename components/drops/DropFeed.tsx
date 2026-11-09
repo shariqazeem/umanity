@@ -7,7 +7,7 @@ import { Avatar, Img } from '@/components/shared/ui'
 import { Composer } from '@/components/feed/Composer'
 import { PostCard } from '@/components/feed/PostCard'
 import { chainLabel } from '@/components/feed/types'
-import { apiGet, short, timeAgo } from '@/lib/client/api'
+import { apiGet, short } from '@/lib/client/api'
 import { shownName } from '@/lib/client/names'
 import { explorerTx } from '@/lib/solana/constants'
 import { amountInUnits, helpedText, plural, usdText } from '@/lib/umanity/drops'
@@ -16,6 +16,7 @@ import type { FeedPost } from '@/lib/data/social'
 import { pickNextDrop, useDrops } from './hooks'
 import { useSeed } from './seed'
 import { dropHref } from './DropParts'
+import { Ago } from '@/components/shared/Ago'
 
 const FILTERS = [
   { key: 'all', label: 'For you' },
@@ -175,7 +176,7 @@ function GiftCard({ item }: { item: Extract<HomeItem, { type: 'gift' }> }) {
           )}
           <p className="text-[10px] text-[#aeaeb2]">
             {w.handle ? `${w.handle} · ` : ''}
-            {timeAgo(item.at)}
+            <Ago at={item.at} />
           </p>
         </div>
         <span className="pill bg-emerald-50 text-emerald-600 !text-[9px] font-semibold">{CHANNEL[item.channel] ?? 'Gift'}</span>
@@ -235,7 +236,7 @@ function UpdateCard({ item }: { item: Extract<HomeItem, { type: 'update' }> }) {
         <div className="flex items-center gap-2 mb-1.5">
           <span className={`pill !text-[9px] font-semibold ${proof ? 'bg-[#1d1d1f] text-white' : 'bg-[#f5f5f7] text-[#525252]'}`}>{proof ? 'Proof' : 'Update'}</span>
           <span className="text-[10px] text-[#aeaeb2] truncate">
-            {item.drop.emoji} Drop #{item.drop.id + 1} · {timeAgo(item.at)}
+            {item.drop.emoji} Drop #{item.drop.id + 1} · <Ago at={item.at} />
           </span>
         </div>
         <p className="text-[15px] font-bold tracking-tight">{item.title}</p>
@@ -265,7 +266,7 @@ function UnlockedCard({ item }: { item: Extract<HomeItem, { type: 'unlocked' }> 
     <article className="rounded-[20px] bg-[#111] text-white p-5">
       <div className="flex items-center gap-2 mb-2">
         <span className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-emerald-400 text-[12px]">✓</span>
-        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-400">Delivered · {timeAgo(item.at)}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-400">Delivered · <Ago at={item.at} /></span>
       </div>
       <p className="text-[17px] font-bold tracking-tight">
         {item.drop.emoji} Drop #{item.drop.id + 1} unlocked {usdText(item.amountUsd)}
@@ -289,7 +290,7 @@ function MissedCard({ item }: { item: Extract<HomeItem, { type: 'missed' }> }) {
   return (
     <article className="card p-4 border border-amber-200/70 bg-amber-50/40">
       <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700 mb-1.5">
-        {item.cancelled ? 'Called off' : 'Missed its date'} · {timeAgo(item.at)}
+        {item.cancelled ? 'Called off' : 'Missed its date'} · <Ago at={item.at} />
       </p>
       <p className="text-[15px] font-bold tracking-tight">
         {item.drop.emoji} Drop #{item.drop.id + 1}: every backer gets their money back
@@ -313,7 +314,7 @@ function FeesCard({ item }: { item: Extract<HomeItem, { type: 'fees' }> }) {
           {usdText(item.totalUsd, 2)} in fees, split by the program
         </p>
         <p className="text-[12px] text-[#86868b] mt-0.5">
-          <span className="font-semibold text-emerald-600">{usdText(item.toDropsUsd, 2)} to drops</span> · {usdText(item.toOpsUsd, 2)} to Umanity · {timeAgo(item.at)}
+          <span className="font-semibold text-emerald-600">{usdText(item.toDropsUsd, 2)} to drops</span> · {usdText(item.toOpsUsd, 2)} to Umanity · <Ago at={item.at} />
         </p>
         <div className="flex items-center gap-4 mt-2 text-[11.5px]">
           <a href={explorerTx(item.signature)} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
@@ -338,7 +339,7 @@ function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
           Trading fees put <span className="text-emerald-700">{usdText(item.amountUsd, 2)}</span> into Drop #{item.drop.id + 1}
         </p>
         <p className="text-[12px] text-[#86868b] mt-0.5">
-          {item.drop.title} · {timeAgo(item.at)}
+          {item.drop.title} · <Ago at={item.at} />
         </p>
         <div className="flex items-center gap-4 mt-2 text-[11.5px]">
           <a href={explorerTx(item.signature)} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">

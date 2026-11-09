@@ -1,22 +1,26 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { useConnection } from '@solana/wallet-adapter-react'
-import { apiGet } from '@/lib/client/api'
+import { sharedGet } from '@/lib/client/api'
 import { usdcAccount } from '@/lib/umanity/usdc'
 import type { DropDetail, DropView, MoneySummary } from '@/lib/umanity/data'
 import { useSeed } from './seed'
 
-/** Polls a JSON endpoint while the tab is visible, starting from what the server rendered when there is a seed. */
+/**
+ * Polls a JSON endpoint while the tab is visible, starting from what the server rendered when there is
+ * a seed (then the first fetch waits for the first tick). Every poller of a path shares its requests.
+ */
 function usePoll<T>(path: string | null, pick: (j: Record<string, unknown>) => T | null, everyMs: number, initial: T | null = null) {
   const [data, setData] = useState<T | null>(initial)
   const [loading, setLoading] = useState(initial == null)
   const [error, setError] = useState<string | null>(null)
-  const load = useCallback(async () => {
+  const seeded = useRef(initial != null)
+  const load = useCallback(async (force = false) => {
     if (!path) return
     try {
-      const j = await apiGet<Record<string, unknown>>(path)
+      const j = await sharedGet<Record<string, unknown>>(path, 4_000, force)
       if (j.error) setError(String(j.error))
       else {
         setData(pick(j))
@@ -30,11 +34,13 @@ function usePoll<T>(path: string | null, pick: (j: Record<string, unknown>) => T
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path])
   useEffect(() => {
-    load()
+    if (!seeded.current) load()
+    seeded.current = false
     const t = setInterval(() => document.visibilityState === 'visible' && load(), everyMs)
     return () => clearInterval(t)
   }, [load, everyMs])
-  return { data, loading, error, reload: load }
+  const reload = useCallback(() => load(true), [load])
+  return { data, loading, error, reload }
 }
 
 export function useDrops(everyMs = 15_000) {

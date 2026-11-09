@@ -7,8 +7,9 @@ import { explorerAccount, explorerTx } from '@/lib/solana/constants'
 import { usdcAccount } from '@/lib/umanity/usdc'
 import { amountInUnits, plural, usdText } from '@/lib/umanity/drops'
 import type { DropDetail, DropView } from '@/lib/umanity/data'
-import { short, timeAgo } from '@/lib/client/api'
+import { short } from '@/lib/client/api'
 import { Avatar, Icon } from '@/components/shared/ui'
+import { Ago } from '@/components/shared/Ago'
 
 /** Drops are numbered from 1 for people; the chain counts from 0. */
 export const dropHref = (id: number) => `/drops/${id + 1}`
@@ -196,10 +197,10 @@ export function Backers({ gifts }: { gifts: DropDetail['gifts'] }) {
               <p className="text-[13px] font-bold counter">{usdText(g.amountUsd)}</p>
               {g.signature ? (
                 <a href={explorerTx(g.signature)} target="_blank" rel="noopener noreferrer" className="text-[10.5px] text-[#86868b] hover:text-[#1d1d1f]">
-                  {timeAgo(g.at)} ↗
+                  <Ago at={g.at} /> ↗
                 </a>
               ) : (
-                <p className="text-[10.5px] text-[#86868b]">{timeAgo(g.at)}</p>
+                <p className="text-[10.5px] text-[#86868b]"><Ago at={g.at} /></p>
               )}
             </div>
           </li>
