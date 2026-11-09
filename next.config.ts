@@ -25,6 +25,9 @@ const nextConfig: NextConfig = {
   // v2.1 screens (causes, votes, the SOL ledger) gave way to drops; old links land on their v3 home.
   async redirects() {
     return [
+      // The site lives at umanity.gives. Wallets and passkeys belong to one domain, so the old Vercel address
+      // sends people there (pages only: API routes keep answering, for crons and anything already pointed at them).
+      { source: '/:path((?!api/).*)', has: [{ type: 'host', value: 'umanity-mainnet.vercel.app' }], destination: 'https://umanity.gives/:path', permanent: false },
       { source: '/transparency', destination: '/money', permanent: false },
       { source: '/govern/:path*', destination: '/money', permanent: false },
       { source: '/causes/:path*', destination: '/give', permanent: false },
