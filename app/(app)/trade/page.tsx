@@ -5,18 +5,22 @@ import Link from 'next/link'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useConnection } from '@solana/wallet-adapter-react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
-import { apiGet, apiSend } from '@/lib/client/api'
+import { apiGet, apiSend, short, timeAgo } from '@/lib/client/api'
 import { explorerTx } from '@/lib/solana/constants'
 import { usdText } from '@/lib/umanity/drops'
 import { TRADE_TOKENS, tradeToken, type TradeToken } from '@/lib/umanity/tokens'
 import type { TokenSummary } from '@/lib/umanity/token'
 import { useMoney } from '@/components/drops/hooks'
+import { PriceChart, priceText, type ChartPoint } from '@/components/trade/PriceChart'
+import type { Market } from '@/app/api/token/market/route'
 
 type Quote = { out: number; feeBps: number; feeUsd: number; priceImpactPct: number; route: string[] } | { error: string }
 type Built = { tx: string; inAmount: string; outAmount: string; minOut: string; feeBps: number; feeMicro: number; usdMicro: number | null; sponsored: boolean; error?: string }
 type Phase = { kind: 'idle' } | { kind: 'working'; step: string } | { kind: 'done'; signature: string; got: number; to: TradeToken; feeUsd: number; sponsored: boolean } | { kind: 'error'; message: string }
 
-const fmt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: n >= 1000 ? 2 : n >= 1 ? 4 : 8 })
+/** Amounts that fit their box: 1,318,402.55 → 1.32M. */
+const fmt = (n: number) =>
+  n >= 1e9 ? `${(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n.toLocaleString('en-US', { maximumFractionDigits: n >= 1000 ? 2 : n >= 1 ? 4 : 8 })
 const NATIVE = 'So11111111111111111111111111111111111111112'
 
 /** The signed-in wallet's balance of one token, in whole units. */
@@ -42,7 +46,10 @@ function useBalance(owner: PublicKey | null, token: TradeToken | undefined) {
 export default function TradePage() {
   const { isMainnet, signer, ensureSigner, ensureUnlocked, toast } = useUmanity()
   const [from, setFrom] = useState('USDC')
-  const [to, setTo] = useState('SOL')
+  const [to, setTo] = useState(TRADE_TOKENS.some((t) => t.symbol === 'UMANITY') ? 'UMANITY' : 'SOL')
+  const [tf, setTf] = useState<Timeframe>('1d')
+  const token = useTokenSummary()
+  const market = useMarket(token ? tf : null)
   const [amount, setAmount] = useState('20')
   const [quote, setQuote] = useState<Quote | null>(null)
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' })
@@ -109,10 +116,10 @@ export default function TradePage() {
         <p className="text-[14px] text-[#86868b] mt-2 max-w-xl [text-wrap:balance]">Jupiter&apos;s best route, with 0.5% when USDC is one side. Half of it fills the next drop.</p>
       </header>
 
-      <TokenCard onBuy={() => (setFrom('USDC'), setTo('UMANITY'), setPhase({ kind: 'idle' }))} onSell={() => (setFrom('UMANITY'), setTo('USDC'), setPhase({ kind: 'idle' }))} />
+      <TokenCard token={token} market={market} tf={tf} onTf={setTf} onBuy={() => (setFrom('USDC'), setTo('UMANITY'), setPhase({ kind: 'idle' }))} onSell={() => (setFrom('UMANITY'), setTo('USDC'), setPhase({ kind: 'idle' }))} />
 
-      <div className="flex flex-col lg:flex-row gap-5 items-start">
-        <section className="card p-5 w-full max-w-[520px]">
+      <div className={`grid gap-5 items-start ${token ? 'lg:grid-cols-[minmax(0,1fr)_320px]' : ''}`}>
+        <section className={`card p-5 w-full ${token ? '' : 'max-w-[560px]'}`}>
           {phase.kind === 'done' ? (
             <div className="text-center py-6">
               <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4 text-emerald-600 text-2xl">✓</div>
@@ -213,12 +220,15 @@ export default function TradePage() {
           )}
         </section>
 
-        <aside className="card p-5 w-full lg:max-w-[340px]">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-600 mb-2">Where your fee goes</p>
-          <ol className="space-y-3 text-[13px] text-[#525252]">
+        {token && <TradesCard trades={market ? market.trades : undefined} />}
+      </div>
+
+      <section className="card p-5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-600 mb-3">Where every fee goes</p>
+          <ol className="grid md:grid-cols-3 gap-4 text-[13px] text-[#525252]">
             <li className="flex gap-2.5">
               <span className="w-5 h-5 rounded-full bg-[#1d1d1f] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">1</span>
-              <span>The fee is paid in USDC into the program&apos;s fee inbox, in the same transaction as your swap.</span>
+              <span>Swaps pay 0.5% when USDC is one side, and $UMANITY trades pay its pool&apos;s 1%. Both go to the program, in the same transaction.</span>
             </li>
             <li className="flex gap-2.5">
               <span className="w-5 h-5 rounded-full bg-[#1d1d1f] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">2</span>
@@ -232,16 +242,21 @@ export default function TradePage() {
           <Link href="/money" className="inline-block mt-4 text-[12.5px] font-semibold text-[#1d1d1f] hover:underline">
             Follow every dollar on Money →
           </Link>
-        </aside>
-      </div>
+      </section>
     </div>
   )
 }
 
-/** $UMANITY, from its Meteora pool. Hidden until the token exists. */
-function TokenCard({ onBuy, onSell }: { onBuy: () => void; onSell: () => void }) {
+type Timeframe = '1h' | '1d' | '1w'
+const FRAMES: [Timeframe, string][] = [
+  ['1h', '1H'],
+  ['1d', '1D'],
+  ['1w', '1W'],
+]
+
+/** $UMANITY from its pool, refreshed every 20 s; null until the token exists. */
+function useTokenSummary() {
   const [token, setToken] = useState<TokenSummary | null>(null)
-  const { data: money } = useMoney(60_000)
   useEffect(() => {
     let alive = true
     const load = () => apiGet<{ token?: TokenSummary | null }>('/api/token').then((d) => alive && setToken(d.token ?? null)).catch(() => {})
@@ -252,45 +267,155 @@ function TokenCard({ onBuy, onSell }: { onBuy: () => void; onSell: () => void })
       clearInterval(t)
     }
   }, [])
+  return token
+}
+
+/** The price line and latest trades for a timeframe, refreshed every 30 s. */
+function useMarket(tf: Timeframe | null) {
+  const [market, setMarket] = useState<Market | null>(null)
+  useEffect(() => {
+    if (!tf) return
+    let alive = true
+    const load = () => apiGet<Market>(`/api/token/market?tf=${tf}`).then((d) => alive && d?.points?.length && setMarket(d)).catch(() => {})
+    load()
+    const t = setInterval(load, 30_000)
+    return () => {
+      alive = false
+      clearInterval(t)
+    }
+  }, [tf])
+  return market
+}
+
+/** $UMANITY: its price and line, how far the curve has filled, and what its fees have sent to drops. Hidden until the token exists. */
+function TokenCard({ token, market, tf, onTf, onBuy, onSell }: { token: TokenSummary | null; market: Market | null; tf: Timeframe; onTf: (tf: Timeframe) => void; onBuy: () => void; onSell: () => void }) {
+  const { data: money } = useMoney(60_000)
+  const [hover, setHover] = useState<ChartPoint | null>(null)
   if (!token) return null
   const toDrops = (money?.fees.fromToken ?? 0) / 2
+  const change = market?.changePct ?? null
+  const up = (change ?? 0) >= 0
+  const price = hover?.p ?? token.priceUsd
   return (
-    <section className="card relative overflow-hidden">
-      <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-emerald-100/60 blur-3xl pointer-events-none" />
-      <div className="relative p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-5">
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-600">$UMANITY · Meteora</p>
-          <div className="flex items-end gap-3 mt-1.5 flex-wrap">
-            <p className="text-[30px] font-black tracking-[-0.03em] leading-none counter">${token.priceUsd < 0.01 ? token.priceUsd.toPrecision(3) : token.priceUsd.toFixed(4)}</p>
-            <p className="text-[13px] text-[#86868b] pb-0.5 counter">market cap {usdText(token.marketCapUsd, 0)}</p>
+    <section className="card overflow-hidden">
+      <div className="p-5 md:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-600">$UMANITY · Meteora</p>
+            <div className="flex items-baseline gap-2.5 mt-1.5 flex-wrap">
+              <p className="text-[30px] md:text-[34px] font-black tracking-[-0.03em] leading-none counter">{priceText(price)}</p>
+              {change != null && !hover && (
+                <span className={`text-[12.5px] font-bold counter ${up ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {up ? '▲' : '▼'} {Math.abs(change) < 0.05 ? '0.0' : Math.abs(change).toFixed(1)}%
+                </span>
+              )}
+            </div>
+            <p className="text-[12.5px] text-[#86868b] mt-1.5 counter">
+              Market cap {usdText(token.marketCapUsd, 0)}
+              {market?.volume24hUsd != null && ` · 24h volume ${usdText(market.volume24hUsd, 0)}`}
+            </p>
           </div>
-          {token.graduated ? (
-            <p className="text-[12.5px] text-[#525252] mt-3">Graduated to a Meteora DAMM v2 pool. Its liquidity is locked for good to the program.</p>
-          ) : (
-            <>
-              <div className="progress emerald mt-3">
-                <span style={{ width: `${Math.max(1, Math.round(token.progress * 100))}%` }} />
-              </div>
-              <p className="text-[12px] text-[#86868b] mt-1.5 counter">
-                {usdText(token.raisedUsd, 0)} of {usdText(token.graduateAtUsd, 0)} to graduation · then its liquidity is locked for good
-              </p>
-            </>
-          )}
-          <p className="text-[12px] text-[#525252] mt-2">
-            Trading fees sent to drops so far: <span className="font-semibold text-emerald-600">{usdText(toDrops, 2)}</span>
-            {token.feesOwedUsd > 0 && <span className="text-[#86868b]"> · {usdText(token.feesOwedUsd / 2, 2)} more on the way</span>}
-          </p>
+          <div className="hidden md:flex flex-col gap-2 w-36 flex-shrink-0">
+            <button onClick={onBuy} className="btn-primary py-2.5 !text-[13px]">
+              Buy
+            </button>
+            <button onClick={onSell} className="btn-secondary py-2.5 !text-[13px]">
+              Sell
+            </button>
+          </div>
         </div>
-        <div className="flex md:flex-col gap-2 md:w-36">
-          <button onClick={onBuy} className="btn-primary flex-1 py-2.5 !text-[13px]">
+
+        <div className="mt-5">
+          {market ? <PriceChart points={market.points} height={160} onHover={setHover} /> : <div className="skeleton h-[160px]" />}
+        </div>
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex gap-1">
+            {FRAMES.map(([id, label]) => (
+              <button key={id} onClick={() => onTf(id)} className={`hit h-8 px-3 rounded-full text-[12px] font-semibold transition-colors ${tf === id ? 'bg-[#1d1d1f] text-white' : 'text-[#86868b] hover:bg-black/[0.04]'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-[#aeaeb2]">{market?.source === 'chain' ? 'Price from the chain' : 'Chart by GeckoTerminal'}</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-3 mt-4">
+          <div className="rounded-2xl bg-[#f5f5f7] p-3.5">
+            {token.graduated ? (
+              <p className="text-[12.5px] text-[#525252]">Graduated to a Meteora DAMM v2 pool. Its liquidity is locked for good to the program.</p>
+            ) : (
+              <>
+                <p className="text-[12px] text-[#86868b] counter">
+                  {usdText(token.raisedUsd, 0)} of {usdText(token.graduateAtUsd, 0)} to graduation
+                </p>
+                <div className="progress emerald mt-2">
+                  <span style={{ width: `${Math.max(1, Math.round(token.progress * 100))}%` }} />
+                </div>
+                <p className="text-[11px] text-[#aeaeb2] mt-1.5">Then its liquidity is locked for good.</p>
+              </>
+            )}
+          </div>
+          <div className="rounded-2xl bg-emerald-50/70 p-3.5">
+            <p className="text-[12px] text-emerald-800/80">Its trading fees sent to drops</p>
+            <p className="text-[20px] font-black text-emerald-700 counter mt-0.5">{usdText(toDrops, 2)}</p>
+            <p className="text-[11px] text-emerald-800/60 mt-0.5">
+              {token.feesOwedUsd > 0 ? `${usdText(token.feesOwedUsd / 2, 2)} more on the way · ` : ''}every trade sends 0.4%
+            </p>
+          </div>
+        </div>
+
+        <div className="md:hidden flex gap-2 mt-4">
+          <button onClick={onBuy} className="btn-primary flex-1 py-3 !text-[14px]">
             Buy
           </button>
-          <button onClick={onSell} className="btn-secondary flex-1 py-2.5 !text-[13px]">
+          <button onClick={onSell} className="btn-secondary flex-1 py-3 !text-[14px]">
             Sell
           </button>
         </div>
       </div>
-      <p className="relative px-5 md:px-6 pb-4 text-[10.5px] text-[#aeaeb2]">No team tokens, no presale. Not an investment, and no returns are promised.</p>
+      <p className="px-5 md:px-6 pb-4 text-[10.5px] text-[#aeaeb2]">No team tokens, no presale. Not an investment, and no returns are promised.</p>
+    </section>
+  )
+}
+
+/** The latest $UMANITY trades, each linked to its transaction. */
+function TradesCard({ trades }: { trades: Market['trades'] | undefined }) {
+  const fresh = trades?.some((t) => Date.now() / 1000 - t.at < 3600)
+  return (
+    <section className="card p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-600">Latest trades</p>
+        {fresh && (
+          <span className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-[#86868b]">
+            <span className="pulse-dot" />
+            live
+          </span>
+        )}
+      </div>
+      {trades === null ? (
+        <p className="text-[12.5px] text-[#86868b] mt-3">The trade feed is catching up. Every trade is on Solscan meanwhile.</p>
+      ) : !trades ? (
+        <div className="space-y-2 mt-3">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skeleton h-9" />
+          ))}
+        </div>
+      ) : trades.length ? (
+        <ul className="mt-2 divide-y divide-black/[0.04]">
+          {trades.slice(0, 8).map((t) => (
+            <li key={t.tx} className="flex items-center gap-2.5 py-2.5 text-[13px]">
+              <span className={`w-11 text-center text-[10.5px] font-bold rounded-full py-0.5 flex-shrink-0 ${t.kind === 'buy' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{t.kind === 'buy' ? 'Buy' : 'Sell'}</span>
+              <span className="font-semibold counter">{usdText(t.usd, t.usd < 10 ? 2 : 0)}</span>
+              <span className="text-[#aeaeb2] font-mono text-[11px] truncate">{short(t.wallet)}</span>
+              <a href={explorerTx(t.tx)} target="_blank" rel="noopener noreferrer" className="ml-auto text-[11.5px] text-[#86868b] hover:text-[#1d1d1f] whitespace-nowrap">
+                {timeAgo(new Date(t.at * 1000).toISOString())} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-[12.5px] text-[#86868b] mt-3">No trades yet. Every trade sends 0.4% of it to drops.</p>
+      )}
     </section>
   )
 }
