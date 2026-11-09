@@ -1,0 +1,11 @@
+{
+  "name": "Umanity",
+  "symbol": "UMANITY",
+  "description": "The token of Umanity, the app where your crypto feeds people, on camera. Trading fees go to the Umanity program, which sends half to drops (filmed deliveries) and half to running Umanity. No team tokens. Not an investment; no returns are promised.",
+  "image": "https://umanity.gives/logo.png",
+  "external_url": "https://umanity.gives",
+  "extensions": {
+    "website": "https://umanity.gives",
+    "twitter": "https://x.com/umanity_xyz"
+  }
+}

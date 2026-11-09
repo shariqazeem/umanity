@@ -9,7 +9,7 @@
  * Settings (defaults in brackets): --name [Umanity] --symbol [UMANITY]
  *   --initial-mcap [15000] --migration-mcap [250000] (USDC)
  *   --fee-bps [100] --launch-fee-bps [2500] --launch-fee-secs [60]
- *   --uri [https://umanity.vercel.app/token/umanity.json]
+ *   --uri [$UMANITY_SITE/token/umanity.json, the site defaulting to https://umanity.gives]
  *   --first-buy [0] (USDC the creator buys in the launch transaction)
  *
  * The DBC config's fee claimer is the Umanity program's `fees` address, so
@@ -34,7 +34,8 @@ import { FEES, USDC, fetchConfig } from '../lib/umanity/program'
 import { UMANITY_SUPPLY, umanityCurve } from '../lib/token/curve'
 
 const KEYS = process.env.UMANITY_KEYS_DIR || path.join(os.homedir(), '.config/solana')
-const SITE = 'https://umanity.vercel.app'
+/** The live site: the token's metadata, image and links point here, and the metadata URI is permanent once launched. */
+const SITE = (process.env.UMANITY_SITE || 'https://umanity.gives').replace(/\/$/, '')
 
 function flag(name: string, fallback: string) {
   const i = process.argv.indexOf(`--${name}`)
