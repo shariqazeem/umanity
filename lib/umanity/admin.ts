@@ -25,7 +25,7 @@ function admin() {
   return k
 }
 
-export async function createDrop(conn: Connection, o: { meta: DropMeta; goalUsd: number; capUsd: number; deadline: Date; payee: string }) {
+export async function createDrop(conn: Connection, o: { meta: DropMeta; goalUsd: number; capUsd: number; deadline: Date; payee: string; kind?: 'official' | 'community'; proposalId?: string }) {
   const problem = validateMeta(o.meta)
   if (problem) throw new Error(problem)
   if (!(o.goalUsd >= 1) || !(o.capUsd >= o.goalUsd)) throw new Error('The cap must be at least the goal')
@@ -61,6 +61,8 @@ export async function createDrop(conn: Connection, o: { meta: DropMeta; goalUsd:
       deadline: new Date(deadline * 1000),
       payee: payee.toBase58(),
       createdTx: signature,
+      kind: o.kind ?? 'official',
+      proposalId: o.proposalId ?? null,
     })
     .onConflictDoNothing()
   return { id, signature, metaHash }

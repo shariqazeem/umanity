@@ -165,6 +165,8 @@ export type FeedItem =
  */
 export const ADMIN_MESSAGE_PREFIX = 'umanity-admin:'
 export const ADMIN_MESSAGE_TTL_SECONDS = 600
+/** Any signed-in wallet (runners proposing drops, posting proof) signs `umanity-wallet:<unix seconds>` the same way. */
+export const WALLET_MESSAGE_PREFIX = 'umanity-wallet:'
 
 /** GET /api/users/[username]?viewer= */
 export interface PublicProfile extends PublicUser {

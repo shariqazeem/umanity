@@ -59,9 +59,9 @@ export function useMoney(everyMs = 20_000) {
   return usePoll<MoneySummary>('/api/money', (j) => j as unknown as MoneySummary, everyMs, seed.money ?? null)
 }
 
-/** The open drop closest to its date, the one the Give button fills. */
+/** The drop the Give button fills: Umanity's own drops first, then community drops, each closest to its date. */
 export function pickNextDrop(drops: DropView[] | null) {
-  return drops?.filter((d) => d.state === 'open' && !d.refundsOpen).sort((a, b) => a.deadline - b.deadline)[0] ?? null
+  return drops?.filter((d) => d.state === 'open' && !d.refundsOpen).sort((a, b) => Number(b.official) - Number(a.official) || a.deadline - b.deadline)[0] ?? null
 }
 
 /** USDC balance of an address, in dollars; null while loading. */

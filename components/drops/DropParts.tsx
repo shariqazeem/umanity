@@ -37,6 +37,17 @@ export function StatePill({ drop }: { drop: Pick<DropView, 'state' | 'refundsOpe
   )
 }
 
+/** Who runs a drop: the Umanity team, or a community runner (paid only after proof, like every drop). */
+export function RunnerBadge({ drop }: { drop: Pick<DropView, 'official' | 'payee'> }) {
+  return drop.official ? (
+    <span className="pill bg-emerald-50 text-emerald-700 !text-[10px] font-semibold">✓ By Umanity</span>
+  ) : (
+    <span className="pill bg-black/[0.04] text-[#525252] !text-[10px] font-semibold" title={`Runner ${drop.payee}`}>
+      Community · {drop.payee.slice(0, 4)}…{drop.payee.slice(-4)}
+    </span>
+  )
+}
+
 /** The pot, in dollars and in the real things it buys. */
 export function DropMeter({ drop, size = 'lg' }: { drop: DropView; size?: 'sm' | 'lg' }) {
   // After unlocking the pot is empty: count what was delivered instead.
@@ -161,6 +172,7 @@ export function DropCard({ drop }: { drop: DropView }) {
           <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-[0.1em]">
             Drop #{drop.id + 1} · {dayText(drop.deadline)}
           </p>
+          {!drop.official && <RunnerBadge drop={drop} />}
           <StatePill drop={drop} />
         </div>
         <p className="text-[15px] font-bold tracking-tight mt-0.5 truncate">{drop.title}</p>

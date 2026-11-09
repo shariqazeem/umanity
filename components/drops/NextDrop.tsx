@@ -5,7 +5,7 @@ import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Icon } from '@/components/shared/ui'
 import { amountInUnits, plural, usdText } from '@/lib/umanity/drops'
 import { pickNextDrop, useDrops } from './hooks'
-import { DropMeter, StatePill, dayText, dropHref } from './DropParts'
+import { DropMeter, RunnerBadge, StatePill, dayText, dropHref } from './DropParts'
 
 /**
  * The top of Home: the drop the Give button fills right now, with the
@@ -31,6 +31,7 @@ export function NextDrop() {
           <div className="flex items-center gap-2">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">Next drop · {dayText(drop.deadline)}</p>
             <StatePill drop={drop} />
+            <RunnerBadge drop={drop} />
           </div>
           <Link href={dropHref(drop.id)} className="block mt-2 group">
             <h2 className="text-[26px] md:text-[30px] font-black tracking-[-0.03em] leading-[1.05] group-hover:underline decoration-2 underline-offset-4">

@@ -496,8 +496,61 @@ export const drops = pgTable(
     unlockTx: text('unlock_tx'),
     lastSyncedAt: timestamp('last_synced_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    /** 'official': run by the Umanity team. 'community': proposed by a runner, who is its payee. */
+    kind: text('kind').notNull().default('official'),
+    /** The proposal a community drop came from. */
+    proposalId: text('proposal_id'),
   },
   (t) => [primaryKey({ columns: [t.cluster, t.id] })]
+)
+
+/**
+ * A drop someone outside the team wants to run. It stays off-chain until the team approves it; then the
+ * server opens it on Solana with the proposer as payee, so they can only be paid after filmed proof.
+ */
+export const dropProposals = pgTable(
+  'drop_proposals',
+  {
+    id: text('id').primaryKey(),
+    cluster: text('cluster').notNull(),
+    /** The runner's wallet: it signs the proposal and is paid when the drop unlocks. */
+    proposer: text('proposer').notNull(),
+    /** The drop description (lib/umanity/drops DropMeta), hashed on-chain once approved. */
+    meta: jsonb('meta').$type<Record<string, unknown>>().notNull(),
+    goalCents: integer('goal_cents').notNull(),
+    capCents: integer('cap_cents').notNull(),
+    deadline: timestamp('deadline', { withTimezone: true }).notNull(),
+    /** How the team can reach the runner (X, Instagram, email, phone). */
+    contact: text('contact').notNull().default(''),
+    /** pending | approved | rejected */
+    status: text('status').notNull().default('pending'),
+    reason: text('reason'),
+    dropId: integer('drop_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  },
+  (t) => [index('drop_proposals_status_idx').on(t.cluster, t.status), index('drop_proposals_proposer_idx').on(t.proposer)]
+)
+
+/** A community runner's proof, waiting for the team to check it and post it on-chain. */
+export const proofSubmissions = pgTable(
+  'proof_submissions',
+  {
+    id: text('id').primaryKey(),
+    cluster: text('cluster').notNull(),
+    dropId: integer('drop_id').notNull(),
+    runner: text('runner').notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull().default(''),
+    xPostUrl: text('x_post_url'),
+    /** Links to the receipt, photos and video. */
+    links: jsonb('links').$type<string[]>().notNull().default([]),
+    /** pending | posted | rejected */
+    status: text('status').notNull().default('pending'),
+    reason: text('reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('proof_submissions_drop_idx').on(t.cluster, t.dropId)]
 )
 
 /** A gift into a drop's pot, whichever way it arrived. `ref` is the on-chain gift_ref (hex). */

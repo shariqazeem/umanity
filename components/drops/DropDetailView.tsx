@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom'
 import { useParams } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { useDrop } from '@/components/drops/hooks'
-import { Backers, ChainFacts, DropMeter, DropSteps, MoneyRules, StatePill, dayText, dropHref, whenText } from '@/components/drops/DropParts'
+import { Backers, ChainFacts, DropMeter, DropSteps, MoneyRules, RunnerBadge, StatePill, dayText, dropHref, whenText } from '@/components/drops/DropParts'
 import { GuardCard } from '@/components/drops/GuardCard'
 import { listTotal, plural, usdText } from '@/lib/umanity/drops'
 import { explorerTx } from '@/lib/solana/constants'
@@ -64,6 +64,7 @@ export function DropDetailView() {
           <div className="flex items-start justify-between gap-4">
             <div className="w-16 h-16 rounded-[22px] bg-[#f5f5f7] flex items-center justify-center text-[32px] flex-shrink-0">{drop.emoji}</div>
             <div className="flex flex-wrap gap-1.5 justify-end">
+              <RunnerBadge drop={drop} />
               <StatePill drop={drop} />
               <span className="pill bg-black/[0.04] text-[#525252] !text-[10px]">📍 {drop.place}</span>
               <span className="pill bg-black/[0.04] text-[#525252] !text-[10px]">🗓 {dayText(drop.deadline)}</span>

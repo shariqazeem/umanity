@@ -74,7 +74,12 @@ export async function fundNextDrop(conn: Connection): Promise<string | null> {
   const fund = await tokenBalance(conn, DROPS_FUND).catch(() => 0n)
   if (fund < MIN_MICRO) return null
   const now = Date.now() / 1000
-  const open = (await fetchDrops(conn)).filter((d) => d.state === 'open' && d.deadline - now > 3600).sort((a, b) => a.deadline - b.deadline)
+  // Umanity's own drops come first, then community drops; within each, the one that closes soonest.
+  const db = await getDb()
+  const community = new Set((await db.select({ id: drops.id }).from(drops).where(and(eq(drops.cluster, SOLANA_CLUSTER), eq(drops.kind, 'community')))).map((r) => r.id))
+  const open = (await fetchDrops(conn))
+    .filter((d) => d.state === 'open' && d.deadline - now > 3600)
+    .sort((a, b) => Number(community.has(a.id)) - Number(community.has(b.id)) || a.deadline - b.deadline)
   for (const d of open) {
     const room = d.cap - (await tokenBalance(conn, new PublicKey(d.pot)))
     const amount = fund < room ? fund : room

@@ -9,7 +9,7 @@ import type { NextRequest } from 'next/server'
 import nacl from 'tweetnacl'
 import bs58 from 'bs58'
 import { PublicKey } from '@solana/web3.js'
-import { ADMIN_MESSAGE_PREFIX, ADMIN_MESSAGE_TTL_SECONDS } from '@/lib/contracts'
+import { ADMIN_MESSAGE_PREFIX, ADMIN_MESSAGE_TTL_SECONDS, WALLET_MESSAGE_PREFIX } from '@/lib/contracts'
 import { UMANITY_ORG_WALLET } from '@/lib/solana/constants'
 import { getAuthorityKeypair } from '@/lib/solana/server-signer'
 
@@ -56,4 +56,22 @@ export function verifyAdminRequest(req: NextRequest): AdminAuth {
     return { ok: false, error: 'Invalid admin signature' }
   }
   return { ok: true, address }
+}
+
+/** Verifies a request signed by any wallet over `umanity-wallet:<unix seconds>`. Never throws. */
+export function verifyWalletRequest(req: NextRequest): AdminAuth {
+  const address = req.headers.get('x-umanity-address') || ''
+  const message = req.headers.get('x-umanity-message') || ''
+  const signature = req.headers.get('x-umanity-signature') || ''
+  if (!address || !message || !signature) return { ok: false, error: 'Sign in first' }
+  if (!message.startsWith(WALLET_MESSAGE_PREFIX)) return { ok: false, error: 'Malformed signed message' }
+  const ts = Number(message.slice(WALLET_MESSAGE_PREFIX.length))
+  const age = Math.floor(Date.now() / 1000) - ts
+  if (!Number.isFinite(ts) || age > ADMIN_MESSAGE_TTL_SECONDS || age < -60) return { ok: false, error: 'Your signature expired; try again' }
+  try {
+    const valid = nacl.sign.detached.verify(new TextEncoder().encode(message), bs58.decode(signature), new PublicKey(address).toBytes())
+    return valid ? { ok: true, address } : { ok: false, error: 'Invalid signature' }
+  } catch {
+    return { ok: false, error: 'Invalid signature' }
+  }
 }

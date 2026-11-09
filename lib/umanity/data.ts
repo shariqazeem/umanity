@@ -69,6 +69,8 @@ export function dropView(d: Drop) {
     backers: d.backers,
     deadline,
     payee: d.payee,
+    /** Run by the Umanity team, or by a community runner (who is then the payee). */
+    official: d.kind !== 'community',
     state: d.state as 'open' | 'proven' | 'unlocked' | 'cancelled',
     refundsOpen: refundsOpen({ state: d.state as 'open', deadline }),
     proofHash: d.proofHash,
@@ -87,10 +89,10 @@ export async function listDrops() {
   return rows.map(dropView)
 }
 
-/** The drop the Give button fills: the open one closest to its date. */
+/** The drop the Give button fills: Umanity's own drops first, then community drops, each closest to its date. */
 export async function nextDrop() {
   const all = await listDrops()
-  return all.filter((d) => d.state === 'open' && !d.refundsOpen).sort((a, b) => a.deadline - b.deadline)[0] ?? null
+  return all.filter((d) => d.state === 'open' && !d.refundsOpen).sort((a, b) => Number(b.official) - Number(a.official) || a.deadline - b.deadline)[0] ?? null
 }
 
 export async function getDrop(id: number) {

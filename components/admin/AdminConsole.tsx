@@ -5,6 +5,7 @@ import { Btn, Card, Icon, Skeleton, Pill } from '@/components/shared/ui'
 import { short } from '@/lib/client/api'
 import { useAdmin } from './useAdmin'
 import { DropsConsole } from './DropsConsole'
+import { CommunityQueue } from './CommunityQueue'
 
 export function AdminConsole() {
   const { signer, openAuth, isMainnet } = useUmanity()
@@ -67,6 +68,7 @@ export function AdminConsole() {
           {!isMainnet && <Pill tone="gray">Devnet</Pill>}
         </div>
       </div>
+      <CommunityQueue signer={signer} />
       <DropsConsole signer={signer} />
     </div>
   )

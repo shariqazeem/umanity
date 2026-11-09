@@ -7,7 +7,10 @@ export const NAV = [
   { href: '/profile', label: 'Me', icon: 'user', match: ['/profile'] },
 ] as const
 
-export const SECONDARY_NAV = [{ href: '/agents', label: 'For agents', icon: 'bot', badge: 'x402', match: ['/agents'] }] as const
+export const SECONDARY_NAV = [
+  { href: '/start', label: 'Start a drop', icon: 'plus', badge: '', match: ['/start'] },
+  { href: '/agents', label: 'For agents', icon: 'bot', badge: 'x402', match: ['/agents'] },
+] as const
 
 export function isActive(pathname: string, match: readonly string[]) {
   return match.some((m) => pathname === m || pathname.startsWith(m.endsWith('/') ? m : `${m}/`) || pathname === m)
