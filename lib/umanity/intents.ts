@@ -17,7 +17,7 @@ import { ComputeBudgetProgram, type Connection, PublicKey, Transaction } from '@
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction } from '@solana/spl-token'
 import { and, eq, isNotNull, isNull } from 'drizzle-orm'
 import { dropGifts, getDb, intents, type Intent } from '@/lib/db'
-import { appliedFeeBps, CHAIN_LABELS, confidentialAvailable, deadlineMinutesFor, getQuote, getStatus, getTokens, SOLANA_DEST_ASSETS, type StatusResponse } from '@/lib/intents/oneclick'
+import { appliedFeeBps, CHAIN_LABELS, confidentialAvailable, deadlineMinutesFor, getQuote, getStatus, getTokens, settleSecondsFor, SOLANA_DEST_ASSETS, type StatusResponse } from '@/lib/intents/oneclick'
 import { claimIntentSuccess, createIntentRecord, getIntent, updateIntent } from '@/lib/data/intents'
 import { ensureUser } from '@/lib/data/users'
 import { getTreasuryKeypair } from '@/lib/solana/server-signer'
@@ -166,7 +166,7 @@ export async function quoteDropGift(conn: Connection, o: { dropId: number; origi
     amountInUsd: q.quote.amountInUsd ?? null,
     amountUsd: Number(micro) / 1e6,
     deadline: q.quote.deadline ?? null,
-    timeEstimate: q.quote.timeEstimate ?? null,
+    timeEstimate: settleSecondsFor(token.blockchain, q.quote.timeEstimate),
     asset: { id: token.assetId, symbol: token.symbol, chain: token.blockchain, chainLabel: CHAIN_LABELS[token.blockchain]?.label ?? token.blockchain },
     feeBps: appliedFeeBps(),
     confidential: !!o.confidential,

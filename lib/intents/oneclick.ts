@@ -135,6 +135,16 @@ export function deadlineMinutesFor(chain: string) {
   return SLOW_CHAINS.has(chain) ? 150 : 40
 }
 
+/**
+ * How long a gift usually takes to reach the pot. 1Click's estimate can run short of the origin chain's
+ * confirmations: it said 44 s for Ethereum, and the first real gift from Ethereum took 2 min 40 s from
+ * deposit to pot (9 Nov 2026). For chains that confirm in tens of minutes, no estimate beats a wrong one.
+ */
+export function settleSecondsFor(chain: string, estimate?: number | null): number | null {
+  if (!estimate || SLOW_CHAINS.has(chain)) return null
+  return chain === 'eth' ? Math.max(estimate, 180) : estimate
+}
+
 /** Decimal string → smallest units without floating point (safe for 18/24-decimal tokens). */
 export function parseUnits(value: string | number, decimals: number): bigint {
   const s = String(value).trim()

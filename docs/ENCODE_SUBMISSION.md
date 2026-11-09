@@ -34,12 +34,13 @@ Trading in the app feeds the same pots. Swaps carry a 0.5% fee, and **$UMANITY**
   - settlement into the pot in the giver's name, with overflow returned in the same transaction;
   - failed swaps refunded on the origin chain, and a settler that can never pay twice.
 
-  Demoed live on mainnet in the video.
+  Settled for real on 9 Nov: 0.000477 ETH sent on Ethereum became exactly $1.00 in Drop #1's pot, in the giver's name, 2 min 40 s after the deposit. Demoed live on mainnet in the video.
 
 ## Links
 - **Live app (Solana mainnet):** https://umanity.gives
 - **Code:** https://github.com/shariqazeem/umanity (branch `mainnet`; README "Try it", JUDGES.md)
 - **Program on mainnet:** https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3 (deploy: https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN)
+- **Real gifts on mainnet:** one each way (one tap, x402, Ethereum through Aurora Intents), with every transaction: JUDGES.md, "Proof"
 - **Demo video:** _(add the link)_
 - **Slides:** https://claude.ai/artifact/GHsj6hVeko5e8dHLvgyWwd (share it from its Share menu first, so judges can open it)
 
