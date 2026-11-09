@@ -95,7 +95,7 @@ export function PriceChart({ points, height = 168, onHover }: { points: ChartPoi
         <path d={geo.line} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         {hx != null && <line x1={hx} x2={hx} y1="0" y2={height} stroke="#1d1d1f" strokeOpacity="0.18" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
       </svg>
-      {flat && at == null && (
+      {flat && at == null && height >= 100 && (
         <span className="absolute left-1/2 -translate-x-1/2 top-3 text-[11px] text-[#86868b] bg-white/80 rounded-full px-2.5 py-0.5 pointer-events-none whitespace-nowrap">
           No price change in this window
         </span>
