@@ -20,6 +20,8 @@ type Quote = {
   timeEstimate: number | null
   asset: { id: string; symbol: string; chain: string; chainLabel: string }
   feeBps: number
+  confidential: boolean
+  secretAvailable: boolean
 }
 type IntentView = {
   id: string
@@ -74,6 +76,7 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
   const [preview, setPreview] = useState<Quote | null>(null)
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [refundTo, setRefundTo] = useState('')
+  const [secret, setSecret] = useState(false)
   const [live, setLive] = useState<Quote | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -109,12 +112,12 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
     setPreview(null)
     setPreviewError(null)
     const t = setTimeout(async () => {
-      const r = await apiSend<{ quote?: Quote; error?: string }>(`/api/drops/${dropId}/intents`, { originAsset: asset, amountUsd, backer: signer?.publicKey.toBase58() }).catch(() => ({ error: 'Could not get a price' }) as { quote?: Quote; error?: string })
+      const r = await apiSend<{ quote?: Quote; error?: string }>(`/api/drops/${dropId}/intents`, { originAsset: asset, amountUsd, backer: signer?.publicKey.toBase58(), confidential: secret }).catch(() => ({ error: 'Could not get a price' }) as { quote?: Quote; error?: string })
       if (r.quote) setPreview(r.quote)
       else setPreviewError(r.error || 'Could not get a price')
     }, 350)
     return () => clearTimeout(t)
-  }, [asset, amountUsd, dropId, live, signer])
+  }, [asset, amountUsd, dropId, live, signer, secret])
 
   // Once there's a deposit address, follow the gift until it's in the pot.
   useEffect(() => {
@@ -146,7 +149,7 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
     if (!s || !asset) return
     setBusy(true)
     setError(null)
-    const r = await apiSend<{ quote?: Quote; error?: string }>(`/api/drops/${dropId}/intents`, { originAsset: asset, amountUsd, live: true, refundTo, backer: s.publicKey.toBase58() }).catch(
+    const r = await apiSend<{ quote?: Quote; error?: string }>(`/api/drops/${dropId}/intents`, { originAsset: asset, amountUsd, live: true, refundTo, backer: s.publicKey.toBase58(), confidential: secret }).catch(
       () => ({ error: 'Could not open a deposit address' }) as { quote?: Quote; error?: string },
     )
     setBusy(false)
@@ -222,6 +225,17 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
 
           {isMainnet ? (
             <>
+              {(preview?.secretAvailable || secret) && (
+                <label className="mt-3 flex items-start gap-3 rounded-2xl border border-black/[0.08] p-3.5 cursor-pointer hover:border-black/[0.16] transition-colors">
+                  <input type="checkbox" checked={secret} onChange={(e) => setSecret(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[#1d1d1f] flex-shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-semibold">Give in secret</span>
+                    <span className="block text-[12px] text-[#86868b] mt-0.5 leading-snug">
+                      Nobody can link the {picked?.chain.label ?? ''} wallet you pay from, or the route it takes, to this gift. The gift still lands in the pot in your Umanity name, so refunds work.
+                    </span>
+                  </span>
+                </label>
+              )}
               <input value={refundTo} onChange={(e) => setRefundTo(e.target.value)} placeholder={`Your ${picked?.chain.label ?? ''} address, for a refund if the swap fails`} className="input w-full mt-3 !text-[13px]" />
               {error && <p className="mt-2 text-[12.5px] text-red-600">{error}</p>}
               <button onClick={start} disabled={busy || !preview || !refundTo.trim()} className="btn-primary w-full py-3.5 mt-3 !text-[15px]">
@@ -252,6 +266,7 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
               </button>
             )}
             {minutesLeft != null && <p className="text-[11.5px] text-[#86868b] mt-2">This address takes the deposit for about {minutesLeft} more min. Send from any wallet or exchange.</p>}
+            {live.confidential && <p className="text-[11.5px] text-[#86868b] mt-1">Given in secret: the route from your wallet to the pot stays private.</p>}
           </div>
 
           <div className={`mt-3 rounded-2xl p-4 text-[13px] ${status.tone === 'ok' ? 'bg-emerald-50 text-emerald-800' : status.tone === 'warn' ? 'bg-amber-50 text-amber-900' : 'bg-[#f5f5f7] text-[#1d1d1f]'}`}>

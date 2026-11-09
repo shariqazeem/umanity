@@ -17,7 +17,7 @@ import { ComputeBudgetProgram, type Connection, PublicKey, Transaction } from '@
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction } from '@solana/spl-token'
 import { and, eq, isNotNull, isNull } from 'drizzle-orm'
 import { dropGifts, getDb, intents, type Intent } from '@/lib/db'
-import { appliedFeeBps, CHAIN_LABELS, deadlineMinutesFor, getQuote, getStatus, getTokens, SOLANA_DEST_ASSETS, type StatusResponse } from '@/lib/intents/oneclick'
+import { appliedFeeBps, CHAIN_LABELS, confidentialAvailable, deadlineMinutesFor, getQuote, getStatus, getTokens, SOLANA_DEST_ASSETS, type StatusResponse } from '@/lib/intents/oneclick'
 import { claimIntentSuccess, createIntentRecord, getIntent, updateIntent } from '@/lib/data/intents'
 import { ensureUser } from '@/lib/data/users'
 import { getTreasuryKeypair } from '@/lib/solana/server-signer'
@@ -71,7 +71,14 @@ export type DropQuote = {
   timeEstimate: number | null
   asset: { id: string; symbol: string; chain: string; chainLabel: string }
   feeBps: number
+  /** Given in secret: Confidential Intents hides the origin wallet and the route. */
+  confidential: boolean
+  /** Whether this server can give in secret (it needs an Aurora key). */
+  secretAvailable: boolean
 }
+
+/** Confidential swaps report only a status: no amounts and no payout transaction. */
+const isConfidential = (i: Intent) => (i.quote as { quoteRequest?: { confidentiality?: string } } | null)?.quoteRequest?.confidentiality === 'advanced'
 
 /** Room left in a pot, in USDC micro (the program caps the pot's balance, not what was given). */
 async function roomMicro(conn: Connection, dropId: number) {
@@ -86,8 +93,9 @@ async function roomMicro(conn: Connection, dropId: number) {
  * also opens a deposit address and records the intent, so the status route and
  * the keeper can carry it into the pot.
  */
-export async function quoteDropGift(conn: Connection, o: { dropId: number; originAsset: string; amountUsd: number; live: boolean; refundTo?: string; backer?: string }): Promise<DropQuote> {
+export async function quoteDropGift(conn: Connection, o: { dropId: number; originAsset: string; amountUsd: number; live: boolean; refundTo?: string; backer?: string; confidential?: boolean }): Promise<DropQuote> {
   if (!(o.amountUsd >= 1)) throw new Error('The smallest gift is $1')
+  if (o.confidential && !confidentialAvailable()) throw new Error('Giving in secret is not set up on this server')
   const token = (await getTokens()).find((t) => t.assetId === o.originAsset)
   if (!token) throw new Error('That asset is not supported')
   const micro = BigInt(Math.round(o.amountUsd * 100) * 10_000)
@@ -121,7 +129,10 @@ export async function quoteDropGift(conn: Connection, o: { dropId: number; origi
     dry: !live,
     deadlineMinutes: minutes,
     referral: 'umanity',
+    confidential: !!o.confidential,
   })
+  // Settling depends on knowing a gift was confidential, so record it even if the API stops echoing it.
+  if (o.confidential) q.quoteRequest = { ...q.quoteRequest, confidentiality: 'advanced' }
 
   let intentId: string | null = null
   if (live) {
@@ -157,6 +168,8 @@ export async function quoteDropGift(conn: Connection, o: { dropId: number; origi
     timeEstimate: q.quote.timeEstimate ?? null,
     asset: { id: token.assetId, symbol: token.symbol, chain: token.blockchain, chainLabel: CHAIN_LABELS[token.blockchain]?.label ?? token.blockchain },
     feeBps: appliedFeeBps(),
+    confidential: !!o.confidential,
+    secretAvailable: confidentialAvailable(),
   }
 }
 
@@ -223,7 +236,8 @@ export async function refreshDropIntent(conn: Connection, id: string): Promise<{
     }
     const mapped = STATUS_MAP[s.status] ?? intent.status
     const dest = s.swapDetails?.destinationChainTxHashes?.[0]
-    const out = s.swapDetails?.amountOut
+    // A confidential swap withholds its details. Its quote was exact-output, so success delivers exactly the target.
+    const out = s.swapDetails?.amountOut ?? (mapped === 'success' && isConfidential(intent) && intent.targetMicro ? String(intent.targetMicro) : undefined)
     // 'success' is only written by claimIntentSuccess, so two pollers can't both move on to settling.
     intent =
       (await updateIntent(id, {
@@ -259,6 +273,11 @@ async function settle(conn: Connection, intent: Intent): Promise<{ intent: Inten
     intent = (await updateIntent(intent.id, { giveSignature: null, giveValidUntil: null })) ?? intent
   }
 
+  const received = BigInt(intent.receivedMicro ?? 0)
+  if (received <= 0n) return { intent, error: 'The delivered amount is unknown' }
+  // With no payout transaction to point to, a confidential gift waits until the treasury holds its USDC.
+  if (isConfidential(intent) && (await tokenBalance(conn, usdcAccount(treasury.publicKey))) < received) return { intent, error: 'Waiting for the swap to reach Umanity' }
+
   // One settler at a time: whoever sets the ref sends the transaction.
   if (!intent.giveRef) {
     const ref = createHash('sha256').update(`umanity:intent:${intent.id}`).digest().subarray(0, 16).toString('hex')
@@ -267,8 +286,6 @@ async function settle(conn: Connection, intent: Intent): Promise<{ intent: Inten
     intent = won[0]
   }
 
-  const received = BigInt(intent.receivedMicro ?? 0)
-  if (received <= 0n) return { intent, error: 'The delivered amount is unknown' }
   const backer = new PublicKey(intent.userAddress!)
   const { room } = await roomMicro(conn, intent.dropId!)
   const toPot = received < room ? received : room

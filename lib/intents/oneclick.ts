@@ -33,6 +33,8 @@ export interface QuoteRequest {
   slippageTolerance?: number // bps
   deadlineMinutes?: number
   referral?: string
+  /** Confidential Intents ("advanced"): hides the origin wallet and the route. Needs an authenticated key. */
+  confidential?: boolean
 }
 
 export interface QuoteResponse {
@@ -84,6 +86,9 @@ export interface StatusResponse {
 function provider(): 'aurora' | 'oneclick' {
   return process.env.AURORA_API_KEY ? 'aurora' : 'oneclick'
 }
+
+/** Confidential quotes need an authenticated key: Aurora's works, an anonymous 1Click call gets 401. */
+export const confidentialAvailable = () => provider() === 'aurora'
 
 function headers(): Record<string, string> {
   const h: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -156,6 +161,7 @@ export async function getQuote(req: QuoteRequest): Promise<QuoteResponse> {
     deadline,
     quoteWaitingTimeMs: 3000,
   }
+  if (req.confidential) body.confidentiality = 'advanced'
   // Aurora sets the referral (and the fee) per API key, so only the direct 1Click path sends them.
   if (req.referral && provider() === 'oneclick') body.referral = req.referral
   if (provider() === 'oneclick' && process.env.INTENTS_FEE_RECIPIENT) {
