@@ -1,11 +1,15 @@
 # Umanity — Crypto giving, ~~on trust~~ on camera.
 
-Umanity is the app where your crypto feeds people, on camera. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot on Solana**. The pot pays the drop's supplier only after the delivery is filmed and the proof has cleared a review window. If the drop misses its date, the program opens refunds and Umanity sends every backer their money back. Trading in the app feeds the same pots: every swap fee is split 50/50 by the program between drops and running Umanity (and, once it launches, the $UMANITY pool's fees too).
+Umanity is the app where your crypto feeds people, on camera. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot on Solana**. The pot pays the drop's supplier only after the delivery is filmed and the proof has cleared a review window. If the drop misses its date, the program opens refunds and Umanity sends every backer their money back. Trading in the app feeds the same pots: every swap fee, and every $UMANITY trading fee, is split 50/50 by the program between drops and running Umanity.
 
 - **Repository:** https://github.com/shariqazeem/umanity (3.0). Earlier versions won a **Superteam bounty** and the **Solana Graveyard Hackathon (Tapestry track)** as [umanity-social](https://github.com/shariqazeem/umanity-social).
 - **Program:** `umanity` [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
 - **Live on Solana mainnet:** https://umanity.gives. Real USDC, gifts from $1, and Umanity pays the network fee. Program [deployed 9 Nov 2026](https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN); the bytes on-chain match `target/deploy/umanity.so`.
 - **NEAR guard on NEAR mainnet:** [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near), see [NEAR.md](NEAR.md).
+- **$UMANITY:** [`E8xJU7kAhKhDqnchrNfRKYTix7Hmgz8TBqX7QXCpNFka`](https://solscan.io/token/E8xJU7kAhKhDqnchrNfRKYTix7Hmgz8TBqX7QXCpNFka), on a Meteora bonding curve ([pool](https://solscan.io/account/EcKz44PtV27rpVQbThRACUUL3MhVTt9TYVBrdiNwivYc)) since 9 Nov 2026.
+  - 1B fixed supply, with no mint or freeze authority, no team tokens and no presale.
+  - Every trading fee is claimable only by the Umanity program, which splits it 50/50 between drops and ops.
+  - Bots that bought in its first minute paid $26.99 in anti-sniping fees; the program put $13.49 into the drops fund and $13.49 to ops.
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
 - **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)
 - **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps and the token tooling, was written from 27 Oct on, inside Encode's 12 Oct to 8 Nov window.
@@ -139,7 +143,10 @@ scripts/                           test-programs.sh, mainnet-deploy.sh, umanity-
 - **Mainnet (since 9 Nov 2026):** the program runs on Solana mainnet ([`UmauiNG…`](https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3)) with real USDC, a $2,000 cap per pot and a 6-hour review after proof. The deploy was rehearsed first on a local validator with the real USDC mint, including closing the program and getting its rent back. Before that, every flow ran on devnet and on a local validator with Meteora's real program cloned from mainnet.
 - **Who can unlock a pot today:** Umanity's release key. It can only unlock a drop whose proof is on-chain and whose review window has passed, and only to that drop's payee; it cannot redirect or withdraw. The NEAR guard that replaces it is deployed on NEAR mainnet and set up ([NEAR.md](NEAR.md)). The key moves to the guard after its first live AI check passes on mainnet, and is then locked for good (`lock_release_authority`). Until then, Umanity does not claim that nobody can move a pot alone.
 - **Upgrades:** Umanity still holds the program's upgrade key, so fixes can ship. That is trust too; it moves to a multisig later.
-- **$UMANITY is not launched.** The launch tooling (`scripts/launch-umanity.ts`) is tested on a local validator and waits for the right time. The app shows no token until it exists.
+- **$UMANITY** launched on 9 Nov 2026 with `scripts/launch-umanity.ts`, rehearsed first on a local validator.
+  - Its metadata (name and logo) can still be updated by Umanity's key, but the supply is fixed.
+  - After the curve graduates (about $49k in), the locked pool's fees need one more program instruction to claim.
+  - $UMANITY is not an investment and comes with no promise of returns.
 - **Umanity is a crypto app, not a registered charity.** Gifts are not tax-deductible.
 
 MIT licence ([LICENSE](LICENSE)).

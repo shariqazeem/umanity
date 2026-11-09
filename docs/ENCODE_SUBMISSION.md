@@ -10,7 +10,7 @@ Money goes into **drops**: one real delivery each (a shopping list, a place, a d
 
 Giving takes one tap. Create a wallet with Face ID, press the black circle, and it's in the pot. Umanity pays the network fee, so nobody needs SOL. People can also give from 39 other chains with Aurora Intents, and AI agents can give over x402. Either way the giver is the backer, so refunds reach them.
 
-Trading in the app feeds the same pots: swaps carry a 0.5% fee that the program splits 50/50 between drops and running Umanity. A Money page traces every dollar from gift to payout or refund, read from the chain.
+Trading in the app feeds the same pots. Swaps carry a 0.5% fee, and **$UMANITY**, live on a Meteora bonding curve since launch day, carries a 1% fee that only the program can claim. The program splits every fee 50/50 between drops and running Umanity. In the token's first minute, sniping bots paid $26.99 in anti-sniping fees: $13.49 went to the drops fund and $13.49 to ops. A Money page traces every dollar from gift or fee to payout or refund, read from the chain.
 
 ## How Solana powers it
 - **One Anchor program** ([`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3), mainnet, 18 instructions):
@@ -22,6 +22,7 @@ Trading in the app feeds the same pots: swaps carry a 0.5% fee that the program 
 - **Sponsored transactions:** the treasury co-signs as fee payer, so new users never need SOL.
 - **x402 on Solana mainnet:** payment → settlement by PayAI → `give` with the payer as backer → ed25519-signed receipt.
 - **Jupiter Swap V2,** with the platform fee paid straight into the program's fee inbox.
+- **$UMANITY on Meteora's Dynamic Bonding Curve** (mint `E8xJU7kAhKhDqnchrNfRKYTix7Hmgz8TBqX7QXCpNFka`). The pool's fee claimer is the program's `fees` PDA, so `sweep_meteora_fees` claims trading fees by CPI and splits them in the same instruction. The supply is fixed, with no mint authority.
 - **Aurora Intents:** any-chain deposits settle as USDC on Solana and go into the pot with `give`.
 - **Tested before launch:** 7 program tests run against Meteora's real bonding-curve program cloned from mainnet. The mainnet deploy was rehearsed on a local validator with the real USDC mint, including closing the program and recovering its rent.
 

@@ -35,8 +35,8 @@ One take, with your face cam in a corner and the screen recorded at 1440p (brows
 > 402 → signed → settled → the receipt, verified in the browser.
 
 ## 2:55–3:20 · Where every dollar goes
-> **Money**: gifts, pots, unlocks, refunds, and the rules with their addresses.
-"Every dollar, read from the program. Trading feeds the pots too: swaps carry a 0.5% fee, and the program sends half of it to drops."
+> **Trade** → the $UMANITY card (price, how far the curve has filled, fees). Then **Money**: gifts, pots, fees split, and the rules with their addresses.
+"Trading feeds the pots too. $UMANITY went live today, and only this program can claim its trading fees. In the first minute, sniping bots paid twenty-seven dollars in fees. The program sent half to the drops fund, so bots are already paying for deliveries. Every dollar here is read from the chain."
 
 ## 3:20–3:40 · What's next (face cam)
 "Today Umanity's key signs the unlock. Next, that key moves to a NEAR contract that's already on NEAR mainnet. It only signs after an AI checks the filmed proof inside a secure enclave and a council has had time to say no. Proof on camera, refunds by code. Thanks!"

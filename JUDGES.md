@@ -11,7 +11,7 @@ Program [`UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3`](https://solscan.io/accou
 2. **Sign in → Create a Umanity wallet.** It's locked with Face ID or a passcode and sealed on your device. Put a few USDC in it: send from any Solana wallet to the address in the wallet sheet, or pay from another chain (see Aurora below).
 3. **Press the black circle → pick an amount → it's in the pot.** Umanity paid the network fee; you never need SOL.
 4. Open the drop → its promise (shopping list, place, date) is checked against the hash on-chain, next to the pot, the backers and four steps with a transaction each.
-5. **Money** → every dollar from gift or fee to pot, payout or refund, read from the chain. **Trade** → Jupiter swaps whose 0.5% fee lands in the program's fee inbox, half for drops. **Me** → the drops you backed, as gift tickets.
+5. **Money** → every dollar from gift or fee to pot, payout or refund, read from the chain. **Trade** → the live $UMANITY card (its trading fees can only be claimed by the program, which splits them 50/50), plus Jupiter swaps whose 0.5% fee lands in the program's fee inbox, half for drops. **Me** → the drops you backed, as gift tickets.
 
 ## Best Use of x402 (3 minutes)
 1. `/agents` → **▶ Pay into a drop via x402** → 402 → your wallet signs a USDC transfer → the PayAI facilitator settles it on Solana mainnet → the same USDC goes into the pot with your wallet as the backer → a signed receipt, verified in the browser.
