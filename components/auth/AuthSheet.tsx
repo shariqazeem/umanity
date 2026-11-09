@@ -13,7 +13,7 @@ import { apiSend } from '@/lib/client/api'
 import type { PublicUser } from '@/lib/data/users'
 
 export function AuthSheet() {
-  const { authOpen, closeAuth, signer, user, startNewWallet, connectWallet, startImport, toast, refreshUser, canUsePasskeys, signInWithPasskey } = useUmanity()
+  const { authOpen, closeAuth, signer, user, profileLoading, startNewWallet, connectWallet, startImport, toast, refreshUser, canUsePasskeys, signInWithPasskey } = useUmanity()
   const [step, setStep] = useState<'choose' | 'import' | 'protect' | 'name'>('choose')
   const [busy, setBusy] = useState(false)
   const [secret, setSecret] = useState('')
@@ -30,6 +30,15 @@ export function AuthSheet() {
       else setStep('name')
     }
   }, [signer, authOpen, step, user?.handleClaimed, closeAuth])
+
+  // The profile loads a moment after the wallet opens. A wallet that already owns a name is someone coming
+  // back (an imported key, a passkey sign-in), so welcome them instead of asking for a name again.
+  useEffect(() => {
+    if (authOpen && step === 'name' && user?.handleClaimed && signer && user.address === signer.publicKey.toBase58()) {
+      toast(`Welcome back, @${user.username}.`, 'ok')
+      closeAuth()
+    }
+  }, [authOpen, step, user, signer, toast, closeAuth])
 
   useEffect(() => {
     if (!authOpen) {
@@ -157,7 +166,14 @@ export function AuthSheet() {
         </div>
       )}
 
-      {step === 'name' && (
+      {step === 'name' && (profileLoading || (!!user && !!signer && user.address !== signer.publicKey.toBase58())) && (
+        <div className="py-10 text-center">
+          <div className="skeleton w-10 h-10 rounded-full mx-auto" />
+          <p className="text-[13px] text-[#86868b] mt-3">Opening your profile…</p>
+        </div>
+      )}
+
+      {step === 'name' && !profileLoading && !(!!user && !!signer && user.address !== signer.publicKey.toBase58()) && (
         <div className="pt-1">
           <h3 className="text-[24px] font-bold tracking-[-0.02em]">What should we call you?</h3>
           <p className="text-[14px] text-[#86868b] mt-2">Your name appears next to your gifts. You can change it later.</p>
