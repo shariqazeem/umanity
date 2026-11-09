@@ -1,51 +1,118 @@
-# Umanity: the live mainnet demo (target 3:30, limit 4:00)
+# Umanity: the demo (about 3:25, limit 4:00)
 
-One take, with your face cam in a corner and the screen recorded at 1440p (browser zoom 100%, light mode) on https://umanity.gives. Everything in it is real: real USDC, real transactions, the first real drop. Speak plainly and let the screen prove each claim.
+One take on https://umanity.gives (Solana mainnet), with your face cam in a corner. Read the plain lines aloud and do each **Do** line as you reach it. Everything is real: real USDC, real transactions, the first real drop. The same video serves the Encode × Solana submission and the NEAR HACKATHON demo post.
 
-**Rehearsed on 9 Nov:** all three ways to give settled on mainnet (JUDGES.md, "Proof"). A gift from Ethereum takes about three minutes from send to pot, because Ethereum needs a couple of minutes to confirm. So the take sends it first and comes back for it at the end.
+**Rehearsed on 9 Nov:** all three ways to give settled on mainnet (JUDGES.md, "Proof"). From Ethereum, a gift takes about three minutes, so the take sends it first and comes back to it near the end.
 
-## Before you record (10 minutes)
-1. Sign in on umanity.gives with your Umanity wallet. Each take spends **$2 USDC** from it: $1 in one tap, $1 from the agent.
-2. In Phantom, keep **0.0005 ETH on Ethereum** for each take. The $1 gift is about 0.000478 ETH, and the gas costs less than a cent.
-3. Open six tabs in this order: the landing, **Home**, **Drop #1**, **For agents**, **Trade**, **Money**.
-4. Close everything else. Turn notifications off.
+## Before you press record
+1. Phone: the teleprompter, propped just under your webcam.
+2. Mac: Safari, signed in on umanity.gives. Open seven tabs in this order: the landing, **Home**, **Drop #1**, **For agents**, **Trade**, **Money**, and [NEAR.md](https://github.com/shariqazeem/umanity/blob/mainnet/NEAR.md) on GitHub.
+3. Your Umanity wallet needs at least **$2 USDC** per take, and Phantom needs at least **0.0005 ETH on Ethereum** per take.
+4. Copy your Phantom Ethereum address (0x…) now, for the refund box.
+5. Turn on Do Not Disturb, set the browser zoom to 100%, and record the full screen with your camera on.
 
-## 0:00–0:15 · Hook (face cam, landing)
-"Crypto giving runs on trust: you send money and hope it arrives. I'm Shariq. Umanity puts every gift on camera, with the rules in a Solana program. It went live on mainnet today, and I'll give to our first real drop three ways, live."
-> The landing: *Live on Solana Mainnet*, live totals.
+## 1 · Hook · 0:00 · landing
+**Do:** Look at the camera.
 
-## 0:15–0:50 · Send a gift from Ethereum (Aurora Intents)
-> **Home** → the black circle → type **1** → **Or pay from 30+ chains** → **ETH · Ethereum** → paste your 0x address as the refund address → **Get my deposit address** → in Phantom, send exactly the amount shown.
-"Most people don't hold USDC on Solana, so you can pay from 39 chains. Aurora Intents quotes exactly what to send so that one dollar lands in the pot. If the swap fails, NEAR Intents refunds me on Ethereum. Ethereum takes a few minutes to confirm, so I'll come back to it."
-> Phantom warns that the address is new. That's expected: it's a one-off address made for this gift.
-> **Leave the Home tab on this sheet.** While it's open, it checks the swap every 6 seconds and puts the money in the pot the moment it arrives.
+When you donate, you send money and hope.
+You never see what it bought.
+I'm Shariq, and this is Umanity.
+Every gift waits in a pot on Solana, until the delivery is filmed.
+It's live on mainnet today, with real money.
+Let me show you.
 
-## 0:50–1:20 · The drop (Drop #1)
-"Every gift goes into a drop: one real delivery, with a shopping list, a place and a date. It has its own USDC pot, and the program owns it."
-> Point at the shopping list (*checked against its on-chain hash*), the pot, the date, the four steps.
-"The pot pays only after we film the delivery, hash the proof onto Solana, and a six-hour check passes. If we miss the date, the program refunds every backer. Nobody can send it anywhere else."
+## 2 · Give from Ethereum · 0:15 · Home tab
+**Do:** Click the black circle. Type **1** in "Another amount".
 
-## 1:20–1:45 · Give in one tap (Consumer)
-> **Give to this drop** → type **1** → **Give $1** → Touch ID.
-"No SOL, no gas, no seed phrase. Umanity pays the network fee. One touch and it's in the pot, in my name."
-> The success screen → **View transaction** → Solscan shows the `give`.
+I'll start with the hard one.
+Most people don't hold dollars on Solana.
+So I'll give one dollar in ETH, from Ethereum.
 
-## 1:45–2:20 · An AI agent gives over x402
-> **For agents** → $1 → **▶ Pay $1 into Drop #1 via x402**.
-"Agents can give too, with one HTTP request. The API answers 402 Payment Required, the wallet signs a USDC transfer, PayAI settles it on mainnet, and the money goes into the pot with the agent as the backer. So a missed date refunds the agent."
-> 402 → signed → settled → the receipt, verified in the browser.
+**Do:** **Or pay from 30+ chains** → **ETH · Ethereum** → paste your 0x address → **Get my deposit address**.
 
-## 2:20–2:55 · Where every dollar goes
-> **Trade** → the $UMANITY card (price, how far the curve has filled, fees). Then **Money**: gifts, pots, fees split, and the rules with their addresses.
-"Trading feeds the pots too. $UMANITY went live today, and only this program can claim its trading fees. In the first minute, sniping bots paid twenty-seven dollars in fees. The program sent half to the drops fund, and that half is already in Drop #1. Bots are paying for deliveries. Every dollar here is read from the chain."
+Aurora Intents, built on NEAR Intents, tells me exactly what to send.
+If the swap fails, I get my ETH back.
 
-## 2:55–3:15 · Back to the gift from Ethereum
-> **Home** tab: *In the pot ✓* → **View transaction** → Solscan: the treasury's `give`, with my wallet as the backer.
-"There it is: ETH sent on Ethereum, now one dollar of USDC in a Solana pot, in my name."
+**Do:** Tap the address to copy it, and paste it in Phantom. Tap the amount to copy it, and paste it. Send. Leave this tab on the sheet.
 
-## 3:15–3:40 · What's next (face cam)
-"Anyone can now propose a drop where they live, and it's paid only after its proof. Today Umanity's key signs the unlock. Next, that key moves to a NEAR contract that's already on NEAR mainnet. It only signs after an AI checks the filmed proof inside a secure enclave and a council has had time to say no. Proof on camera, refunds by code. Thanks!"
+I send it from my normal wallet, like paying anyone.
+Ethereum takes a couple of minutes, so we'll come back to it.
+
+## 3 · The drop · 0:55 · Drop #1 tab
+**Do:** Scroll slowly past the pot, the date and the shopping list.
+
+This is a drop: one real delivery.
+Ration packs for five families in Lahore, by November twentieth.
+The shopping list is fingerprinted on-chain, so nobody can quietly change it.
+The pot can only go two ways.
+To the delivery team, after we film it and post the proof.
+Or back to every giver, if we miss the date.
+
+## 4 · One tap · 1:20 · Drop #1 tab
+**Do:** **♡ Give to this drop** → type **1** → **Give $1** → Touch ID.
+
+Giving takes one tap.
+No seed phrase. No gas. Just Touch ID.
+Umanity pays the network fee.
+And it's in the pot, in my name.
+
+**Do:** **View transaction**.
+
+A real transaction, on Solana mainnet.
+
+## 5 · An AI agent gives · 1:40 · For agents tab
+**Do:** Pick **$1** → **▶ Pay $1 into Drop #1 via x402**.
+
+AI agents can give too.
+Our API answers 402: Payment Required.
+The agent signs a USDC payment, PayAI settles it on Solana,
+and it lands in the pot with the agent as the backer.
+If the drop fails, the agent gets its money back.
+
+## 6 · Trading feeds the pots · 2:05 · Trade tab, then Money
+**Do:** Trade: the UMANITY chart.
+
+Trading feeds the pots too.
+Our token, UMANITY, launched today, and only our program can claim its trading fees.
+Half goes to drops. Half keeps Umanity running.
+In the first minute, sniper bots paid twenty-seven dollars in fees.
+Half of that is already in this drop.
+The bots are buying food.
+
+**Do:** Money tab: scroll.
+
+And every dollar is here, read straight from the chain.
+
+## 7 · NEAR holds the rules · 2:30 · NEAR.md tab
+**Do:** Show the diagram.
+
+So who decides when a pot pays out?
+Today, our key. Next, NEAR.
+Solana holds the money. NEAR holds the rules.
+Our guard contract is live on NEAR mainnet. Here's how it works.
+An AI checks the proof inside a secure enclave on NEAR AI Cloud.
+A council gets time to say no.
+Only then does NEAR sign the unlock, with Chain Signatures.
+We've already run it end to end on testnet.
+
+## 8 · The gift from Ethereum · 2:55 · Home tab
+*Still swapping? Do block 9 first, then come back.*
+
+**Do:** Home tab: *In the pot ✓* → **View transaction**.
+
+And the gift from Ethereum?
+There it is. One dollar in the pot, in my name.
+NEAR Intents did the swap in the background.
+
+## 9 · Close · 3:10 · face cam
+**Do:** Look at the camera.
+
+We're starting in Lahore.
+Anyone can now propose a drop where they live, and they get paid only after the proof.
+Every delivery becomes a film, and every film brings the next giver.
+Umanity. Proof on camera. Refunds by code.
+Thank you.
 
 ---
 
-If something stalls live, say what's happening; the transactions are real. If the Home tab still says *Swapping* at 2:55, go straight to What's next and look back when it flips. If it hasn't landed by the end, add one labelled cut ("a minute later") to it landing. The rehearsal's gift from Ethereum is in JUDGES.md as backup.
+If something stalls, say what's happening: the transactions are real. If your recorder can pause, you can pause between blocks.

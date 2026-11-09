@@ -250,7 +250,11 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
         <>
           <div className="mt-4 rounded-2xl border border-black/[0.06] p-4">
             <p className="text-[12.5px] text-[#525252]">
-              Send exactly <span className="font-bold text-[#1d1d1f]">{live.amountInFormatted} {live.asset.symbol}</span> on {live.asset.chainLabel} to:
+              Send exactly{' '}
+              <button onClick={() => copy(live.amountInFormatted)} className="font-bold text-[#1d1d1f] underline decoration-dotted underline-offset-2 hover:decoration-solid" title="Copy the amount">
+                {live.amountInFormatted} {live.asset.symbol}
+              </button>{' '}
+              on {live.asset.chainLabel} to:
             </p>
             <div className="flex gap-3 items-start mt-3">
               <div className="bg-white p-1.5 rounded-xl border border-black/[0.06] flex-shrink-0">
