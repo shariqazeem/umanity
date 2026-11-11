@@ -1,30 +1,52 @@
-# Umanity Guard: Solana holds the money, NEAR holds the rules
+# Umanity on NEAR: gifts from any chain come in, and a NEAR guard decides when they go out
 
-Umanity funds real deliveries ("drops"). Each drop has a USDC pot on Solana that pays its team only after proof of the delivery is posted on-chain, and refunds every backer by code if the date passes. One decision was still a single key: who may press "unlock".
+Built for **NEAR HACKATHON** (November 2026). Live app: https://umanity.gives
 
-**The NEAR guard takes that key away from people.** The release key becomes a key that only a NEAR contract can use, through Chain Signatures. The contract signs an unlock only after:
-1. an AI has checked the proof against the promise inside a TEE (NEAR AI Cloud) and the contract has verified the TEE's signature;
-2. a council the owner cannot change has had a review window to veto.
+Umanity funds real deliveries ("drops"). Each drop has a USDC pot on Solana that pays its team only after proof of the delivery is posted on-chain, and refunds every backer by code if the date passes. NEAR does two jobs:
 
-The contract will sign nothing but that one unlock.
+1. **NEAR Intents brings the money in from any chain.** A gift can start as ETH on Ethereum, USDC on Base, BTC, NEAR or any of 220+ assets on 39 chains. NEAR Intents turns it into exactly the USDC the giver asked for, and the program records the giver as the backer, so a refund goes back to them. **Live on mainnet with real money.**
+2. **The NEAR guard decides when the money goes out.** One decision was still a single key: who may press "unlock". The guard takes that key away from people. The release key becomes a key that only a NEAR contract can use, through Chain Signatures, and the contract signs an unlock only after:
+   1. an AI has checked the proof against the promise inside a TEE (NEAR AI Cloud) and the contract has verified the TEE's signature;
+   2. a council the owner cannot change has had a review window to veto.
 
-Track: **AI Security & Defense**. It also fits **Social Money**, as a programmable treasury that releases only on proof.
+   The contract will sign nothing but that one unlock. **Deployed on NEAR mainnet; proven end to end on NEAR testnet.**
+
+Tracks: **Real-World Money** (stablecoin giving from any chain through NEAR Intents) and **AI Security & Defense** (an AI-checked, council-vetoable release of money).
+
+## Try it (do X → see Y)
+
+1. **Open https://umanity.gives/drops/1 → Give to this drop → Or pay from 30+ chains.** See 220+ assets on 39 chains. Pick ETH · Ethereum and see the exact amount to send for $1 to land in the pot. No wallet is needed for the price: the quote comes from NEAR Intents.
+2. **Follow the first real gift, 9 Nov 2026** (all times UTC):
+
+   | When | Chain | What happened | Transaction |
+   | --- | --- | --- | --- |
+   | 04:46:35 | Ethereum | 0.000477 ETH sent to a one-off deposit address | [0xf374cf6e…5d7c3e7](https://etherscan.io/tx/0xf374cf6e02742c374f9d644f6a39f684a02deb6117e5d4f0da79b72bf5d7c3e7) |
+   | 04:47:37 | NEAR | The deposit is minted on NEAR (`bridge-mng.near` → `omft.near`) | [BMsMm9e8…KUkyL](https://nearblocks.io/txns/BMsMm9e8D9RAYc7civGbBKtnbgJnygv5tnZEh7xKUkyL) |
+   | 04:48:02 | NEAR | The intent settles on `intents.near` | [7kAcDFbJ…JZZo](https://nearblocks.io/txns/7kAcDFbJ4zR4DnANSYTnT5nQ8gNcU2kcvJK3SYyeZJZo) |
+   | 04:49:12 | Solana | Exactly 1.000000 USDC arrives at Umanity's treasury | [4PyvGfn5…h6n5f](https://solscan.io/tx/4PyvGfn5EGj7vPk2c2TgmgCTUxPGuAJcnrWqARRzCLVVWfgvWshVSVryC1srBpzUaAwfp5giwoUG6fmUaRCh6n5f) |
+   | 04:49:15 | Solana | `give` puts it in Drop #1's pot with the giver as backer | [2tZXjMZJ…Bmp5](https://solscan.io/tx/2tZXjMZJiRemYr8ub7eoucNZWWRFnJtc4vsQaRGZWBRFnGxqqCf7YwKQHyyy63Hn8M8hcM6pR5PQ9vGp8avDBmp5) |
+
+   2 min 40 s from deposit to pot. The same flow ran again, live, in the demo film.
+3. **Open the guard on NEAR mainnet:** [`guard.umanity.near`](https://nearblocks.io/address/guard.umanity.near). See its owner, registrar and council, and the release key it read from NEAR's MPC network (table below).
+4. **Open the testnet run:** the drop [registered](https://testnet.nearblocks.io/txns/DdbCmJP8BzXCJi5apP4U8eDXLhfBpRwHEqiS7EXzWpEV), the [verdict recorded](https://testnet.nearblocks.io/txns/Cju47uFy5q9UCzAHRa8za5RwDi3nDpHPVPiALeYKNkkb), and NEAR's MPC network [signing the Solana unlock](https://testnet.nearblocks.io/txns/1Lc5x1PY4o2L57qUXWYfz3G3mRi14KnTs4ArUW3KbXW) 8 seconds later.
+5. **Run the guard's tests:** `cd near/guard && cargo test`. See 39 tests pass.
 
 ## What is judged
 
-Only NEAR work built during the hackathon, all of it after the `pre-hackathon` tag:
+The NEAR work, all of it written inside the hackathon's window. The window opened with the announcement on 19 Oct 2026 (rule Q-001), and this repository began on 27 Oct.
 
 | Path | What it is |
 | --- | --- |
+| [`lib/intents/oneclick.ts`](lib/intents/oneclick.ts), [`lib/umanity/intents.ts`](lib/umanity/intents.ts), [`components/drops/AnyChainGive.tsx`](components/drops/AnyChainGive.tsx), [`app/api/drops/[id]/intents/route.ts`](app/api/drops/%5Bid%5D/intents/route.ts) | NEAR Intents gifts: exact-output quotes through Aurora's Swap API on NEAR Intents 1Click, a one-off deposit address, settlement into the pot with the giver as backer, overflow returned in the same transaction, and a settler that can never pay twice. Live on mainnet since 9 Nov. |
 | [`near/guard/`](near/guard) | The guard contract (near-sdk 5.30.1): verdict checking, the council, the Solana message checker, Chain Signatures. 39 tests. |
 | [`lib/near/`](lib/near) | The server side: the TEE call, verdict submission, the guarded release (near-api-js). |
 | [`scripts/guard-e2e.ts`](scripts/guard-e2e.ts) | A guarded release end to end, against NEAR testnet and NEAR's testnet MPC network. |
 | [`scripts/near-attest.ts`](scripts/near-attest.ts) | Rechecks the TEE key the guard trusts against NEAR AI's attestation report. |
 | [`components/drops/GuardCard.tsx`](components/drops/GuardCard.tsx) | What a backer sees: the verdict, the council's window, the release. |
 
-The Solana program, the app and the other integrations existed before and are context, not entries.
+The guard's rows were built after the `pre-hackathon` tag (3 Nov). **Disclosure (rule Q-002):** Umanity's product runs on Solana. The Solana program, the app, the x402 agent gifts and the $UMANITY token are context; the NEAR integration above is the entry.
 
-## How a release works
+## How a guarded release works
 
 ```
  Solana (money)                 NEAR (rules)                          NEAR AI Cloud (TEE)

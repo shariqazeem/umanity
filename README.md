@@ -19,7 +19,7 @@ Umanity is crypto giving you can verify. Money goes into **drops**: one real del
 - **Program source:** [`programs/umanity/src/lib.rs`](programs/umanity/src/lib.rs) (Anchor 0.31, one program for pots, proof, refunds and fees)
 - **The plan:** [docs/PLAN.md](docs/PLAN.md): the flywheel, what $UMANITY is for, runners, films, and the rules that never change.
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
-- **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (work after the `pre-hackathon` tag)
+- **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (NEAR Intents gifts and the NEAR guard: see [NEAR.md](NEAR.md))
 - **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps, $UMANITY and the mainnet launch, was built from 27 Oct on, during the hackathons.
 
 ---
