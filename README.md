@@ -2,7 +2,7 @@
 
 **Live on Solana mainnet: [umanity.gives](https://umanity.gives)** · [Demo video (3:55)](https://youtu.be/45kQBtNDMBU) · [For judges: every claim with its transaction](JUDGES.md) · [Slides](https://docs.google.com/presentation/d/1w3ntxyNXFjRDFRhAU5GXaDBTN68yh5c-rOe7fNWLJWQ/edit?usp=sharing)
 
-**Judging NEAR HACKATHON?** Start at **[NEAR.md](NEAR.md)**: what NEAR does here in one minute, five commands that check it live, and every transaction.
+**Judging NEAR HACKATHON?** Start at **[NEAR.md](NEAR.md)**: what NEAR does here in one minute, six commands that check it live (one replays the AI checker against fraud), and every transaction.
 
 Umanity is crypto giving you can verify. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot owned by a Solana program**. The pot pays the drop's supplier only after the delivery is filmed, its proof is hashed on-chain and a review window passes. If the drop misses its date, the program opens refunds and every backer gets their own money back. Gifts carry no fee. Trading in the app feeds the same pots: every swap fee and every $UMANITY trading fee is split 50/50 by the program between drops and running Umanity.
 
