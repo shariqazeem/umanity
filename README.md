@@ -2,13 +2,15 @@
 
 **Live on Solana mainnet: [umanity.gives](https://umanity.gives)** · [Demo video (3:55)](https://youtu.be/45kQBtNDMBU) · [For judges: every claim with its transaction](JUDGES.md) · [Slides](https://docs.google.com/presentation/d/1w3ntxyNXFjRDFRhAU5GXaDBTN68yh5c-rOe7fNWLJWQ/edit?usp=sharing)
 
+**Judging NEAR HACKATHON?** Start at **[NEAR.md](NEAR.md)**: what NEAR does here in one minute, five commands that check it live, and every transaction.
+
 Umanity is crypto giving you can verify. Money goes into **drops**: one real delivery each (a shopping list, a place, a date), with its own **USDC pot owned by a Solana program**. The pot pays the drop's supplier only after the delivery is filmed, its proof is hashed on-chain and a review window passes. If the drop misses its date, the program opens refunds and every backer gets their own money back. Gifts carry no fee. Trading in the app feeds the same pots: every swap fee and every $UMANITY trading fee is split 50/50 by the program between drops and running Umanity.
 
 ## Live on mainnet now
 
 | What's live | Detail |
 | --- | --- |
-| **Real money in the first pot** | [Drop #1](https://umanity.gives/drops/1), ration packs for 5 families in Lahore due 20 Nov, holds **$19.49**: $13.49 from $UMANITY trading fees and $6 from 6 real gifts by 2 backers. |
+| **Real money in the first pot** | [Drop #1](https://umanity.gives/drops/1), ration packs for 5 families in Lahore due 20 Nov, holds **$19.49**: $13.49 from $UMANITY trading fees and $6 from 6 real $1 gifts, made by the team from 2 wallets to prove each way to give, on launch day and again in the demo video. |
 | **Three ways to give, each proven** | One tap with a Touch ID wallet and no SOL, ETH from Ethereum through Aurora Intents, and an AI agent over x402. Every transaction is in [JUDGES.md](JUDGES.md). |
 | **$UMANITY** | [`E8xJU7k…`](https://solscan.io/token/E8xJU7kAhKhDqnchrNfRKYTix7Hmgz8TBqX7QXCpNFka) on a Meteora bonding curve ([pool](https://solscan.io/account/EcKz44PtV27rpVQbThRACUUL3MhVTt9TYVBrdiNwivYc)) since 9 Nov. Fixed 1B supply, no mint or freeze authority, no team tokens, no presale. Only the program can claim its trading fees. Sniping bots paid $26.99 in its first minute; the program split it 50/50, and the drops fund's $13.49 is already in Drop #1. |
 | **The program** | [`UmauiNG…`](https://solscan.io/account/UmauiNGcoKaL8RS6iXfGRJZ2669EghdqUTNsRFge1H3), 18 instructions, [deployed 9 Nov](https://solscan.io/tx/2MrXvnCdxqVuGe2tDhztFZ4SQdH7abf9vd5Zdpbw3NMEdaVfxZ5hMV63zP6zYUjk6NvdWQP1SR5r5rjDGND34EZN). The bytes on-chain match `target/deploy/umanity.so`. |
@@ -20,6 +22,7 @@ Umanity is crypto giving you can verify. Money goes into **drops**: one real del
 - **The plan:** [docs/PLAN.md](docs/PLAN.md): the flywheel, what $UMANITY is for, runners, films, and the rules that never change.
 - **Built by** a solo founder: [@umanity_xyz](https://x.com/umanity_xyz) · [shariqazeem](https://github.com/shariqazeem)
 - **Entered in:** Encode × Solana Hackathon 2026 (Best Consumer App, Best Use of x402, Aurora Intents) · NEAR HACKATHON 2026 (NEAR Intents gifts and the NEAR guard: see [NEAR.md](NEAR.md))
+- **Our other NEAR HACKATHON entry:** the same founder also entered **[ParallaxPay](https://github.com/shariqazeem/parallaxpay-near)** in the NEAR HACKATHON: an AI agent that trades for you on NEAR, inside rules you set. The two are separate products with separate code.
 - **Built during the hackathons:** this repository started fresh on 27 Oct 2026. The earlier Umanity (umanity-social, above) was a SOL tipping and cause app with different programs. Everything here, the `umanity` program, the drops app, x402 gifts, Aurora any-chain gifts, swaps, $UMANITY and the mainnet launch, was built from 27 Oct on, during the hackathons.
 
 ---
@@ -94,7 +97,7 @@ Events (`Gave`, `ProofPosted`, `Unlocked`, `Refunded`, `FeesSplit`, `MeteoraFees
 - **MCP server** (`mcp/server.ts`): `list_drops`, `get_drop`, `give`, with per-gift and per-session caps, so Claude can fill a drop for you.
 
 ### Aurora Intents (`lib/umanity/intents.ts`, `components/drops/AnyChainGive.tsx`)
-- **The friction it removes:** a drop takes USDC on Solana, but most people hold money elsewhere. The give sheet's "pay from another chain" uses the Swap API (1Click on NEAR Intents) to take any of 200+ assets on 30+ chains.
+- **The friction it removes:** a drop takes USDC on Solana, but most people hold money elsewhere. The give sheet's "pay from another chain" uses the Swap API (1Click on NEAR Intents) to take any of 190+ assets on 35+ chains.
 - **Exact-output quotes:** the giver asks for $30 in the pot; the quote says what to send (`POST /api/drops/[id]/intents`). A live quote opens a one-off deposit address (QR, optional memo, expiry).
 - **Settlement into the pot:** the solver delivers USDC to Umanity's treasury on Solana; the treasury then calls `give` into the drop's pot **with the giver's Umanity wallet as the backer**, so a missed date refunds them like any other gift. If the pot filled or closed while the swap ran, what no longer fits goes to the giver's own USDC account in the same transaction.
 - **Refunds and retries:** a failed swap is refunded on the origin chain by NEAR Intents; an incomplete deposit is shown with what's missing. The settling transaction's signature is stored before it is sent and one ref lock allows a single settler, so the browser's polling (`GET /api/drops/intents/[intent]`), the keeper and the daily cron can never pay twice.

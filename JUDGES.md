@@ -30,7 +30,7 @@ On launch day the team gave $1 to [Drop #1](https://umanity.gives/drops/1) each 
 
 ## Aurora Intents (live on mainnet)
 A real gift from Ethereum settled on 9 Nov: see Proof above.
-1. Any drop → **Give** → **Or pay from 30+ chains** → pick what you hold (216 assets on 39 chains: USDC on Base, ETH, BTC, NEAR…) → the exact price for the amount you chose.
+1. Any drop → **Give** → **Or pay from 30+ chains** → pick what you hold (190+ assets on 35+ chains: USDC on Base, ETH, BTC, NEAR…) → the exact price for the amount you chose.
 2. **Get my deposit address** → send from any wallet or exchange → the status goes *waiting → swapping → in the pot ✓*, with the Solana transaction that put it there in your name.
 3. Edge cases handled:
    - an incomplete deposit shows what's missing;
