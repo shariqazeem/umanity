@@ -1,0 +1,33 @@
+# Keeps main and mainnet identical. A push to either branch fast-forwards the other, so a tool that reads
+# the repository's default branch (main) and every older link to mainnet see the same code. It never
+# force-pushes: if the branches have diverged, the run fails and says which one to merge by hand.
+name: Keep main and mainnet in step
+
+on:
+  push:
+    branches: [main, mainnet]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: branch-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fast-forward the other branch
+        run: |
+          other=$([ "$GITHUB_REF_NAME" = main ] && echo mainnet || echo main)
+          git fetch origin "$other"
+          if git merge-base --is-ancestor "origin/$other" "$GITHUB_SHA"; then
+            git push origin "$GITHUB_SHA:refs/heads/$other"
+          else
+            echo "::error::$other has commits that $GITHUB_REF_NAME doesn't. Merge them by hand; nothing was overwritten."
+            exit 1
+          fi
