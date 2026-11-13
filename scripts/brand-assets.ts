@@ -9,6 +9,7 @@
  *   public/apple-touch-icon.png  same as app/apple-icon.png
  *
  *   npx tsx scripts/brand-assets.ts [--preview <out.png>]
+ *   npx tsx scripts/brand-assets.ts --square <out.png> [size]   a square logo on white, for organizers who ask for one
  */
 import fs from 'fs'
 import path from 'path'
@@ -58,6 +59,16 @@ async function png(el: ReturnType<typeof h>, size: number) {
 }
 
 async function main() {
+  // A square logo on white (default 1024 px), written on its own without touching the app's set.
+  const sq = process.argv.indexOf('--square')
+  if (sq > 0) {
+    const file = process.argv[sq + 1]
+    const size = Number(process.argv[sq + 2]) || 1024
+    fs.writeFileSync(file, await png(badge(size, 'word', true), size))
+    console.log(`wrote ${file} (${size}px, square on white)`)
+    return
+  }
+
   const out: [string, ReturnType<typeof h>, number][] = [
     ['public/logo.png', badge(512, 'word'), 512],
     ['public/mark.png', badge(512, 'mark'), 512],
