@@ -1,6 +1,6 @@
 # Umanity on NEAR: gifts from any chain come in, and a NEAR guard decides when they go out
 
-Built for **NEAR HACKATHON** (November 2026). Live app: https://umanity.gives · [Demo video](https://youtu.be/45kQBtNDMBU) · Tracks: **Real-World Money** and **AI Security & Defense**
+Built for **NEAR HACKATHON** (November 2026). Live app: https://umanity.gives · [Demo video](https://youtu.be/45kQBtNDMBU) · Tracks: **Real-World Money**, **AI Security & Defense** and **Open Innovation**
 
 ## In one minute
 
@@ -87,6 +87,7 @@ Each command reads live data and should print what this file says. They need `cu
 | --- | --- | --- |
 | **Real-World Money** (`realworld`) | Stablecoin rails a normal organization could use tomorrow; NEAR Intents | USDC pots for real deliveries, live with real money. Gifts from any chain through NEAR Intents, settled into the pot in the giver's name, with refunds back to the giver. |
 | **AI Security & Defense** (`security`) | Policy engines, spending limits, TEE attestation: AI with money but without the keys to everything | The AI's verdict alone can't move money. The guard checks the TEE's signature on-chain, waits out a council's veto window, and lets NEAR's MPC network sign only one shape of Solana message: one `unlock`, for this drop and this approved proof. |
+| **Open Innovation** (`open`) | New ways for money, intelligence and ownership to work together; chain abstraction | All three at once, across chains. NEAR Intents brings money in from any chain, an AI in a TEE judges the proof, and Chain Signatures give the guard a key no person holds. That key signs a Solana pot's unlock only by the guard's rules. |
 
 ## What is judged
 
