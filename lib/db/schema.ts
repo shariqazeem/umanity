@@ -588,6 +588,37 @@ export const dropGifts = pgTable(
   ]
 )
 
+/**
+ * Gifts into the drops fund itself, the program's pot that backs every drop.
+ * The program only moves fund money into drop pots, and a pot that misses its
+ * date returns it to the fund, so these gifts are never refunded to the giver.
+ */
+export const fundGifts = pgTable(
+  'fund_gifts',
+  {
+    ref: text('ref').primaryKey(),
+    cluster: text('cluster').notNull(),
+    /** Whose USDC moved. */
+    giver: text('giver').notNull(),
+    /** Address of the Umanity account the gift is credited to, when it differs from the giver. */
+    userId: text('user_id'),
+    amountMicro: bigint('amount_micro', { mode: 'number' }).notNull(),
+    /** wallet | x402 | intents */
+    channel: text('channel').notNull(),
+    /** pending | confirmed | failed */
+    status: text('status').notNull().default('pending'),
+    signature: text('signature'),
+    anonymous: boolean('anonymous').notNull().default(false),
+    message: text('message'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('fund_gifts_signature_idx').on(t.signature),
+    index('fund_gifts_status_idx').on(t.cluster, t.status),
+    index('fund_gifts_user_idx').on(t.userId),
+  ]
+)
+
 /** Proof and updates posted by the field team for a drop. */
 export const dropUpdates = pgTable(
   'drop_updates',
@@ -698,6 +729,7 @@ export const syncState = pgTable('sync_state', {
 
 export type Drop = typeof drops.$inferSelect
 export type DropGift = typeof dropGifts.$inferSelect
+export type FundGift = typeof fundGifts.$inferSelect
 export type DropUpdate = typeof dropUpdates.$inferSelect
 export type MoneyEvent = typeof moneyEvents.$inferSelect
 export type Spending = typeof spending.$inferSelect

@@ -163,7 +163,7 @@ function Flow({ d }: { d: MoneySummary }) {
       <p className="text-[11.5px] text-[#86868b] mb-4">Gifts go 100% to their drop. Every fee is split by the program: half to drops, half to Umanity.</p>
       <div className="grid md:grid-cols-2 gap-4">
         <div className="rounded-3xl bg-[#f5f5f7] p-3">
-          <Node title="Gifts" value={money(d.totals.cameIn)} sub="wallets, other chains, AI agents" />
+          <Node title="Gifts" value={money(d.totals.cameIn)} sub={d.fund.gifts > 0 ? `wallets, other chains, AI agents · ${money(d.fund.gifts)} into the drops fund` : 'wallets, other chains, AI agents'} />
           <Arrow label="100%" />
           <Node title="Drop pots" value={money(d.totals.inPots)} sub="locked until proof and the check" tone="dark" />
           <Arrow />
@@ -180,6 +180,9 @@ function Flow({ d }: { d: MoneySummary }) {
             <Node title="Umanity" value={money(f.toOps)} sub="filming, team, app" />
           </div>
           {f.inboxWaiting > 0 && <p className="text-[11px] text-[#86868b] mt-2 px-1">{money(f.inboxWaiting)} of fees waiting for the next split.</p>}
+          <p className="text-[11px] text-[#86868b] mt-2 px-1">
+            The drops fund holds {money(d.fund.balance)} now{d.fund.gifts > 0 ? `, including ${money(d.fund.gifts)} given straight to it` : ''}. It only pays into drop pots.
+          </p>
         </div>
       </div>
     </section>

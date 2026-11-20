@@ -18,8 +18,10 @@ export function GiveDrops() {
   return (
     <div className="space-y-6">
       <section className="pt-2">
-        <h2 className="text-2xl font-bold tracking-[-0.02em] mb-1">Fill a drop</h2>
-        <p className="text-[#86868b] text-sm">Each drop is one real delivery. It pays out only on filmed proof.</p>
+        <h2 className="text-2xl font-bold tracking-[-0.02em] mb-1">{next || loading ? 'Fill a drop' : 'Give'}</h2>
+        <p className="text-[#86868b] text-sm">
+          {next || loading ? 'Each drop is one real delivery. It pays out only on filmed proof.' : 'Every dollar is on-chain from the moment you give.'}
+        </p>
       </section>
 
       <NextDrop />

@@ -17,7 +17,9 @@ const GITHUB = 'https://github.com/shariqazeem/umanity'
 
 export function Landing() {
   const router = useRouter()
-  const { openAuth, signer, isMainnet } = useUmanity()
+  const { openAuth, openGive, signer, isMainnet } = useUmanity()
+  const { data: drops } = useDrops()
+  const next = pickNextDrop(drops)
 
   // Returning people go straight to the app; ?stay=1 shows this page anyway.
   useEffect(() => {
@@ -87,9 +89,15 @@ export function Landing() {
                 <Link href="/home" className="btn-primary px-5 sm:px-7 py-3.5 text-[14px]">
                   Open the app
                 </Link>
-                <Link href="/give" className="btn-secondary px-5 sm:px-7 py-3.5 text-[14px] font-medium">
-                  ♡ Fill the next drop
-                </Link>
+                {next || !drops ? (
+                  <Link href="/give" className="btn-secondary px-5 sm:px-7 py-3.5 text-[14px] font-medium">
+                    ♡ Fill the next drop
+                  </Link>
+                ) : (
+                  <button onClick={() => openGive({ fund: true })} className="btn-secondary px-5 sm:px-7 py-3.5 text-[14px] font-medium">
+                    ♡ Give to the fund
+                  </button>
+                )}
               </div>
 
               <div className="hidden sm:flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-[#aeaeb2]">
@@ -322,23 +330,22 @@ const FIXES = [
       },
 ]
 
-function StatsColumn() {
+/** While no drop is open, the hero shows the fund that backs the next ones. */
+function HeroFund() {
   const { data: money } = useMoney(60_000)
-  if (!money) return <div className="skeleton h-56" />
-  const rows: [string, string][] = [
-    [usdText(money.totals.cameIn, 0), 'Given'],
-    [usdText(money.totals.inPots, 0), 'In pots now'],
-    [usdText(money.totals.unlocked, 0), 'Delivered'],
-    [usdText(money.fees.toDrops, 2), 'Fees to drops'],
-  ]
+  const { openGive } = useUmanity()
   return (
-    <div className="space-y-5">
-      {rows.map(([v, l]) => (
-        <div key={l} className="text-center">
-          <p className="text-2xl md:text-3xl font-bold counter tracking-tight text-[#1d1d1f]">{v}</p>
-          <p className="text-[10px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1">{l}</p>
-        </div>
-      ))}
+    <div className="card p-6 md:p-7 !rounded-[24px] shadow-elevated">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">The Umanity fund · on Solana</p>
+      <p className="text-[18px] font-bold tracking-tight leading-snug mt-3 [text-wrap:balance]">No drop is open right now. The fund backs the next ones.</p>
+      <div className="mt-5">
+        {money ? <p className="text-[34px] font-black tracking-[-0.03em] counter leading-none">{usdText(money.fund.balance, 2)}</p> : <div className="skeleton h-[34px] w-28" />}
+        <p className="text-[10.5px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1.5">In the fund now</p>
+      </div>
+      <button onClick={() => openGive({ fund: true })} className="btn-primary w-full py-3.5 mt-5 !text-[15px]">
+        ♡ Give to the fund
+      </button>
+      <p className="text-[11.5px] text-[#86868b] text-center mt-2.5 [text-wrap:balance]">It only pays into drop pots, and drops pay out on filmed proof.</p>
     </div>
   )
 }
@@ -349,13 +356,7 @@ function HeroDrop() {
   const { openGive } = useUmanity()
   if (!drops) return <div className="skeleton h-[320px] !rounded-[24px]" />
   const drop = pickNextDrop(drops)
-  if (!drop) {
-    return (
-      <div className="card-glass p-6 lg:w-[220px] lg:ml-auto">
-        <StatsColumn />
-      </div>
-    )
-  }
+  if (!drop) return <HeroFund />
   return (
     <div className="card p-6 md:p-7 !rounded-[24px] shadow-elevated">
       <div className="flex items-center gap-2">

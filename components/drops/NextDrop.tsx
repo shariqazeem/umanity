@@ -6,10 +6,11 @@ import { Icon } from '@/components/shared/ui'
 import { amountInUnits, plural, usdText } from '@/lib/umanity/drops'
 import { pickNextDrop, useDrops } from './hooks'
 import { DropMeter, RunnerBadge, StatePill, dayText, dropHref } from './DropParts'
+import { FundCard } from './FundCard'
 
 /**
  * The top of Home: the drop the Give button fills right now, with the
- * original black circle. Renders nothing until a real drop exists.
+ * original black circle. While no drop is open, the drops fund takes its place.
  */
 export function NextDrop() {
   const { data: drops, loading } = useDrops()
@@ -18,7 +19,7 @@ export function NextDrop() {
   const delivered = drops?.filter((d) => d.state === 'unlocked') ?? []
 
   if (loading && !drops) return <div className="skeleton h-56 mb-4" />
-  if (!drop) return null
+  if (!drop) return drops ? <FundCard /> : null
 
   const { units } = amountInUnits(drop.goalUsd, drop.unit)
   const daysLeft = Math.max(0, Math.ceil((drop.deadline * 1000 - Date.now()) / 86_400_000))

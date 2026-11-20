@@ -29,7 +29,7 @@ type Filter = (typeof FILTERS)[number]['key']
 const shows = (it: HomeItem, f: Filter) =>
   f === 'all' ||
   (f === 'deliveries' && (it.type === 'update' || it.type === 'unlocked' || it.type === 'missed')) ||
-  (f === 'gifts' && it.type === 'gift') ||
+  (f === 'gifts' && (it.type === 'gift' || it.type === 'fundGift')) ||
   (f === 'money' && (it.type === 'fees' || it.type === 'funded' || it.type === 'unlocked' || it.type === 'missed'))
 
 /** Home's stream: what happened to drops, from the chain, plus people's posts. */
@@ -75,8 +75,6 @@ export function DropFeed() {
         <p className="text-[#86868b] text-[13px]">Every gift, delivery and payout, as it happens on Solana.</p>
       </div>
 
-      {!address && drops && !next && <GuestIntro />}
-
       {/* Guests read the feed; the header already offers Sign in. */}
       {address && (
         <div className="mb-3">
@@ -107,7 +105,7 @@ export function DropFeed() {
           <p className="text-[#1d1d1f] font-semibold text-[15px] mb-1">{failed ? 'The feed could not load' : filter === 'all' ? 'Nothing has happened yet' : 'Nothing here yet'}</p>
           <p className="text-[#86868b] text-[13px] mb-5 max-w-sm mx-auto">{failed ? 'It will retry on its own.' : 'Every gift, filmed delivery and payout lands here with its transaction.'}</p>
           <Link href="/give" className="btn-primary px-5 py-2.5 text-[13px]">
-            ♡ {next ? 'Fill the next drop' : 'See drops'}
+            ♡ {next ? 'Fill the next drop' : 'Give to the fund'}
           </Link>
         </div>
       ) : (
@@ -126,6 +124,8 @@ export function DropFeed() {
                 return <FeesCard key={it.id} item={it} />
               case 'funded':
                 return <FundedCard key={it.id} item={it} />
+              case 'fundGift':
+                return <FundGiftCard key={it.id} item={it} />
               case 'post':
                 return <PostCard key={it.id} post={it.post} />
             }
@@ -354,25 +354,54 @@ function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
   )
 }
 
-/** First-visit framing for people who arrive without a wallet, when no drop is filling yet. */
-function GuestIntro() {
-  const { openAuth } = useUmanity()
+/** A gift into the drops fund, which backs every drop and only pays into their pots. */
+function FundGiftCard({ item }: { item: Extract<HomeItem, { type: 'fundGift' }> }) {
+  const { openGive } = useUmanity()
+  const w = whoName(item.who)
+  const head = <Avatar username={w.seed} url={w.avatar} size={40} />
   return (
-    <div className="card p-5 mb-3 relative overflow-hidden">
-      <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-emerald-100/50 blur-2xl pointer-events-none" />
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-600 mb-2">Your crypto feeds people, on camera</p>
-      <h3 className="text-[19px] font-bold tracking-[-0.02em] leading-snug max-w-md">Every dollar waits in a pot on Solana until the delivery is filmed and checked. If it isn&apos;t, it comes back to you.</h3>
-      <div className="flex flex-wrap gap-2 mt-4">
-        <Link href="/give" className="btn-primary px-4 py-2.5 !text-[13px]">
-          ♡ See drops
-        </Link>
-        <button onClick={openAuth} className="btn-secondary px-4 py-2.5 !text-[13px]">
-          Sign in
-        </button>
-        <Link href="/agents" className="btn-ghost px-3 py-2.5 !text-[13px]">
-          🤖 Agents can give too →
-        </Link>
+    <article className="card p-4">
+      <div className="flex items-center gap-2.5 mb-2.5">
+        {w.href ? <Link href={w.href}>{head}</Link> : head}
+        <div className="flex-1 min-w-0">
+          {w.href ? (
+            <Link href={w.href} className="text-[13px] font-semibold text-[#1d1d1f] hover:underline">
+              {w.name}
+            </Link>
+          ) : (
+            <span className="text-[13px] font-semibold text-[#1d1d1f]">{w.name}</span>
+          )}
+          <p className="text-[10px] text-[#aeaeb2]">
+            {w.handle ? `${w.handle} · ` : ''}
+            <Ago at={item.at} />
+          </p>
+        </div>
+        <span className="pill bg-emerald-50 text-emerald-600 !text-[9px] font-semibold">{item.channel === 'x402' ? 'Agent · x402' : item.channel === 'intents' ? 'Any chain' : 'Fund'}</span>
       </div>
-    </div>
+
+      {item.message && <p className="text-[14px] text-[#1d1d1f] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{item.message}</p>}
+
+      <div className="bg-emerald-50/60 rounded-xl p-3.5 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0 text-emerald-700">♡</div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-semibold text-emerald-700 counter">
+            {usdText(item.amountUsd)}
+            <span className="text-emerald-600/70 font-medium text-[12px]"> · into the Umanity fund</span>
+          </p>
+          <p className="text-[11px] text-emerald-600 truncate">It backs the next drops, and only pays into their pots.</p>
+        </div>
+        {item.signature && (
+          <a href={explorerTx(item.signature)} target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-700 font-semibold hover:underline flex-shrink-0">
+            Verify ↗
+          </a>
+        )}
+      </div>
+
+      <div className="flex items-center justify-end mt-3">
+        <button onClick={() => openGive({ fund: true, amountUsd: item.amountUsd })} className="btn-secondary h-8 px-3 !text-[12px] !rounded-lg">
+          ♡ Match {usdText(item.amountUsd)}
+        </button>
+      </div>
+    </article>
   )
 }

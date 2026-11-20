@@ -6,8 +6,8 @@
  * BN); use `usd()` / `micro()` at the edges.
  */
 import { BN, EventParser, Program, type IdlEvents } from '@coral-xyz/anchor'
-import { Connection, PublicKey, type TransactionInstruction } from '@solana/web3.js'
-import { createAssociatedTokenAccountIdempotentInstruction } from '@solana/spl-token'
+import { Connection, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction } from '@solana/spl-token'
 import idl from '@/lib/idl/umanity.json'
 import type { Umanity } from '@/lib/idl/umanity'
 import { USDC, usdcAccount } from './usdc'
@@ -192,6 +192,19 @@ export function parseEvents(logs: string[]): UmanityEvent[] {
 const ref16 = (ref: Uint8Array) => {
   if (ref.length !== 16) throw new Error('gift ref must be 16 bytes')
   return Array.from(ref)
+}
+
+const MEMO_PROGRAM = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
+
+/**
+ * A gift into the drops fund: a plain USDC transfer to the fund's account, plus a
+ * memo naming the gift. The program only moves fund money into drop pots.
+ */
+export function fundGiftIxs(a: { giver: PublicKey; amount: bigint; ref: Uint8Array }): TransactionInstruction[] {
+  return [
+    createTransferCheckedInstruction(usdcAccount(a.giver), USDC, DROPS_FUND, a.giver, a.amount, 6),
+    new TransactionInstruction({ programId: MEMO_PROGRAM, keys: [], data: Buffer.from(`umanity:fund:${Buffer.from(a.ref).toString('hex')}`) }),
+  ]
 }
 
 /** A gift from `giver`'s USDC. `backer` gets any refund; `payer` covers the record's rent. */

@@ -71,6 +71,13 @@
       "when": 1794196110136,
       "tag": "0009_wallet_vaults",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795199110801,
+      "tag": "0010_fund_gifts",
+      "breakpoints": true
     }
   ]
 }

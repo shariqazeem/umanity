@@ -4,7 +4,7 @@
  * comes from the chain mirror; nothing here is composed for show.
  */
 import { and, desc, eq, inArray, sql } from 'drizzle-orm'
-import { dropGifts, drops, dropUpdates, getDb, moneyEvents, posts, users } from '@/lib/db'
+import { dropGifts, drops, dropUpdates, fundGifts, getDb, moneyEvents, posts, users } from '@/lib/db'
 import type { MediaItem } from '@/lib/db/schema'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { hydratePosts, type FeedPost } from '@/lib/data/social'
@@ -22,6 +22,7 @@ export type HomeItem =
   | { type: 'missed'; id: string; at: string; drop: FeedDrop; potUsd: number; cancelled: boolean }
   | { type: 'fees'; id: string; at: string; totalUsd: number; toDropsUsd: number; toOpsUsd: number; signature: string }
   | { type: 'funded'; id: string; at: string; drop: FeedDrop; amountUsd: number; signature: string }
+  | { type: 'fundGift'; id: string; at: string; amountUsd: number; channel: string; signature: string | null; who: FeedWho; message: string | null }
   | { type: 'post'; id: string; at: string; post: FeedPost }
 
 export async function homeFeed(opts: { viewer?: string | null; limit?: number } = {}) {
@@ -36,7 +37,7 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
     })
   )
 
-  const [gifts, updates, events, postRows] = await Promise.all([
+  const [gifts, updates, events, postRows, fundRows] = await Promise.all([
     db
       .select({
         ref: dropGifts.ref,
@@ -66,6 +67,25 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
       .orderBy(desc(moneyEvents.slot))
       .limit(20),
     db.select().from(posts).where(eq(posts.type, 'manual')).orderBy(desc(posts.createdAt)).limit(20),
+    db
+      .select({
+        ref: fundGifts.ref,
+        giver: fundGifts.giver,
+        amountMicro: fundGifts.amountMicro,
+        channel: fundGifts.channel,
+        anonymous: fundGifts.anonymous,
+        message: fundGifts.message,
+        signature: fundGifts.signature,
+        createdAt: fundGifts.createdAt,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(fundGifts)
+      .leftJoin(users, eq(users.address, sql`coalesce(${fundGifts.userId}, ${fundGifts.giver})`))
+      .where(and(eq(fundGifts.cluster, SOLANA_CLUSTER), eq(fundGifts.status, 'confirmed')))
+      .orderBy(desc(fundGifts.createdAt))
+      .limit(limit),
   ])
 
   const items: HomeItem[] = []
@@ -84,6 +104,18 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
       signature: g.signature,
       message: g.anonymous ? null : g.message,
       who: g.anonymous ? null : g.username ? { username: g.username, displayName: g.displayName, avatarUrl: g.avatarUrl } : { address: g.backer },
+    })
+  }
+  for (const g of fundRows) {
+    items.push({
+      type: 'fundGift',
+      id: `fund_${g.ref}`,
+      at: g.createdAt.toISOString(),
+      amountUsd: g.amountMicro / 1e6,
+      channel: g.channel,
+      signature: g.signature,
+      message: g.anonymous ? null : g.message,
+      who: g.anonymous ? null : g.username ? { username: g.username, displayName: g.displayName, avatarUrl: g.avatarUrl } : { address: g.giver },
     })
   }
   for (const u of updates) {

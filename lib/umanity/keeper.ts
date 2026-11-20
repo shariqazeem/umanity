@@ -3,7 +3,7 @@
  * holds a dollar it is split (half to drops, half to Umanity); once
  * $UMANITY's Meteora pool owes a dollar in trading fees they are claimed and
  * split in the same step; when a drop misses its date its backers are
- * refunded; and cross-chain gifts that arrived while nobody was watching are
+ * refunded and any fund money in its pot goes back to the fund; and cross-chain gifts that arrived while nobody was watching are
  * put into their pots, and the drops fund pours into the drop that closes
  * soonest. The first three are permissionless instructions where
  * the treasury only pays the network fee. Runs from page reads, at most every few minutes per server
@@ -17,7 +17,7 @@ import { IS_MAINNET } from '@/lib/solana/constants'
 import { and, eq, gt } from 'drizzle-orm'
 import { drops, getDb } from '@/lib/db'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
-import { DROPS_FUND, FEE_INBOX, fetchConfig, fetchDrops, fundDropIx, refundsOpen, splitFeesIxs, sweepMeteoraFeesIxs, tokenBalance } from './program'
+import { DROPS_FUND, FEE_INBOX, fetchConfig, fetchDrop, fetchDrops, fundDropIx, potAddress, refundsOpen, returnToFundIx, splitFeesIxs, sweepMeteoraFeesIxs, tokenBalance } from './program'
 import { refundBackers } from './admin'
 import { reconcileDropIntents } from './intents'
 
@@ -106,5 +106,27 @@ async function refundMissedDrops(conn: Connection) {
   for (const d of rows) {
     if (!refundsOpen({ state: d.state as 'open', deadline: Math.floor(d.deadline.getTime() / 1000) })) continue
     await refundBackers(conn, d.id, 6).catch((e) => console.warn('[keeper] refunds failed:', (e as Error).message))
+    await returnSpareToFund(conn, d.id).catch((e) => console.warn('[keeper] return to fund failed:', (e as Error).message))
   }
+}
+
+/**
+ * What a missed drop's pot holds beyond what its backers are owed (money from the drops fund, plain
+ * transfers) goes back to the fund through the permissionless return_to_fund. The treasury only pays the
+ * network fee, and the money never leaves the program.
+ */
+async function returnSpareToFund(conn: Connection, dropId: number) {
+  const payer = getTreasuryKeypair()
+  const drop = payer && (await fetchDrop(conn, dropId))
+  if (!payer || !drop || !refundsOpen(drop)) return null
+  const pot = await tokenBalance(conn, potAddress(dropId))
+  if (pot - (drop.given - drop.refunded) <= 0n) return null
+  const tx = new Transaction()
+  if (IS_MAINNET) tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 60_000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_MICROLAMPORTS }))
+  tx.add(await returnToFundIx(conn, { dropId }))
+  tx.feePayer = payer.publicKey
+  const latest = await conn.getLatestBlockhash('confirmed')
+  tx.recentBlockhash = latest.blockhash
+  tx.sign(payer)
+  return (await sendAndLand(conn, tx.serialize(), { lastValidBlockHeight: latest.lastValidBlockHeight, timeoutMs: 30_000 })).signature
 }

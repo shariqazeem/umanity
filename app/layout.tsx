@@ -4,6 +4,7 @@ import { WalletProvider } from '@/components/wallet/WalletProvider'
 import { UmanityProvider } from '@/components/providers/UmanityProvider'
 import { Toasts } from '@/components/layout/Toasts'
 import { DropGiveSheet } from '@/components/drops/DropGiveSheet'
+import { FundGiveSheet } from '@/components/drops/FundGiveSheet'
 import { AuthSheet } from '@/components/auth/AuthSheet'
 import { ProfileEditor } from '@/components/profile/ProfileEditor'
 import { WalletSheet } from '@/components/wallet/WalletSheet'
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <UmanityProvider>
             {children}
             <DropGiveSheet />
+            <FundGiveSheet />
             <AuthSheet />
             <ProfileEditor />
             <WalletSheet />

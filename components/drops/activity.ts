@@ -21,6 +21,10 @@ export function activityLine(a: HomeItem): string {
       return `⇄ ${usdText(a.toDropsUsd, 2)} of fees went to drops`
     case 'funded':
       return `⇄ Trading fees put ${usdText(a.amountUsd, 2)} into Drop #${a.drop.id + 1}`
+    case 'fundGift': {
+      const who = !a.who ? 'Someone' : 'address' in a.who ? short(a.who.address) : `@${a.who.username}`
+      return `${who} put ${usdText(a.amountUsd, a.amountUsd % 1 ? 2 : 0)} into the Umanity fund`
+    }
     default:
       return ''
   }

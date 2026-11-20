@@ -5,8 +5,8 @@
  * the database and the next read sees the chain's latest.
  */
 import { after } from 'next/server'
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
-import { dropGifts, drops, dropUpdates, getDb, moneyEvents, spending, trades, users, type Drop } from '@/lib/db'
+import { and, asc, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import { dropGifts, drops, dropUpdates, fundGifts, getDb, moneyEvents, spending, trades, users, type Drop } from '@/lib/db'
 import { getConnection } from '@/lib/solana/chain'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { CONFIG, DROPS_FUND, FEE_INBOX, UMANITY_PROGRAM_ID, fetchConfig, refundsOpen, tokenBalance, usd } from './program'
@@ -172,11 +172,40 @@ export async function getDrop(id: number) {
 export type DropDetail = NonNullable<Awaited<ReturnType<typeof getDrop>>>
 
 /** The Money page: every total checked against the chain, plus the flows behind it. */
+/** Gifts into the drops fund: confirms any that landed after their request timed out, then totals them. */
+export async function fundGiftTotals() {
+  const db = await getDb()
+  const pending = await db
+    .select({ ref: fundGifts.ref, signature: fundGifts.signature })
+    .from(fundGifts)
+    .where(and(eq(fundGifts.cluster, SOLANA_CLUSTER), eq(fundGifts.status, 'pending'), isNotNull(fundGifts.signature)))
+    .limit(20)
+  if (pending.length) {
+    const st = await getConnection()
+      .getSignatureStatuses(pending.map((p) => p.signature!), { searchTransactionHistory: true })
+      .catch(() => null)
+    for (const [i, p] of pending.entries()) {
+      const s = st?.value[i]
+      if (s?.err) await db.update(fundGifts).set({ status: 'failed' }).where(eq(fundGifts.ref, p.ref))
+      else if (s?.confirmationStatus === 'confirmed' || s?.confirmationStatus === 'finalized') await db.update(fundGifts).set({ status: 'confirmed' }).where(eq(fundGifts.ref, p.ref))
+    }
+  }
+  const [row] = await db
+    .select({
+      total: sql<string>`coalesce(sum(${fundGifts.amountMicro}), 0)`,
+      gifts: sql<number>`count(*)::int`,
+      givers: sql<number>`count(distinct coalesce(${fundGifts.userId}, ${fundGifts.giver}))::int`,
+    })
+    .from(fundGifts)
+    .where(and(eq(fundGifts.cluster, SOLANA_CLUSTER), eq(fundGifts.status, 'confirmed')))
+  return { usd: Number(row?.total ?? 0) / 1e6, gifts: row?.gifts ?? 0, givers: row?.givers ?? 0 }
+}
+
 export async function moneySummary() {
   await freshen()
   const db = await getDb()
   const conn = getConnection()
-  const [config, inbox, fund, totals, recent, spent, swaps, claimed] = await Promise.all([
+  const [config, inbox, fund, totals, recent, spent, swaps, claimed, fundGiven] = await Promise.all([
     fetchConfig(conn).catch(() => null),
     tokenBalance(conn, FEE_INBOX).catch(() => 0n),
     tokenBalance(conn, DROPS_FUND).catch(() => 0n),
@@ -200,6 +229,7 @@ export async function moneySummary() {
       .select({ total: sql<string>`coalesce(sum(${moneyEvents.amountMicro}), 0)` })
       .from(moneyEvents)
       .where(and(eq(moneyEvents.cluster, SOLANA_CLUSTER), eq(moneyEvents.kind, 'meteoraFeesClaimed'))),
+    fundGiftTotals().catch(() => ({ usd: 0, gifts: 0, givers: 0 })),
   ])
   const sum = (kind: string) => Number(totals.find((t) => t.kind === kind)?.total ?? 0) / 1e6
   const count = (kind: string) => totals.find((t) => t.kind === kind)?.count ?? 0
@@ -207,8 +237,9 @@ export async function moneySummary() {
   return {
     cluster: SOLANA_CLUSTER,
     totals: {
-      cameIn: sum('gave'),
-      gifts: count('gave'),
+      /** Gifts into drop pots plus gifts into the fund. Fees and fund top-ups are not gifts. */
+      cameIn: sum('gave') + fundGiven.usd,
+      gifts: count('gave') + fundGiven.gifts,
       inPots: all.reduce((s, d) => s + (d.state === 'unlocked' ? 0 : d.potUsd), 0),
       unlocked: sum('unlocked'),
       refunded: sum('refunded'),
@@ -225,6 +256,16 @@ export async function moneySummary() {
       inboxWaiting: usd(inbox),
       /** Of the fees split, how much came from $UMANITY's Meteora pool. */
       fromToken: Number(claimed[0]?.total ?? 0) / 1e6,
+    },
+    /** The drops fund: what's in it now, and what fed it. It only pays into drop pots. */
+    fund: {
+      balance: usd(fund),
+      gifts: fundGiven.usd,
+      giftCount: fundGiven.gifts,
+      givers: fundGiven.givers,
+      fromFees: config ? usd(config.fundIn) : 0,
+      intoPots: config ? usd(config.fundOut) : 0,
+      returned: config ? usd(config.fundBack) : 0,
     },
     swaps: { count: swaps[0]?.n ?? 0, volumeUsd: Number(swaps[0]?.usd ?? 0) / 1e6, feesUsd: Number(swaps[0]?.fees ?? 0) / 1e6 },
     config: config && {
