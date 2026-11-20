@@ -3,7 +3,7 @@
  * by `id`, so changing an id means a new vault (free before the mainnet
  * deployment, a migration after it).
  *
- * All six are delivered in person by Umanity's field team in Pakistan: the
+ * All six are delivered in person by Umanity's field team: the
  * team buys the goods, delivers them, posts photos and receipts, the Impact
  * Oracle audits the proof, and the donors of that cause approve the release
  * from escrow. Nothing leaves a vault before that.
@@ -49,7 +49,7 @@ export const CAUSES: CauseMeta[] = [
     shortName: 'Orphan care',
     tagline: 'Meals, school kits and winter clothing for children growing up in orphanages.',
     story:
-      'Umanity visits orphanages in and around Karachi with the things the children actually asked for: hot meals, stationery and school bags, shoes and warm clothes before winter. Every visit is photographed, every purchase is receipted, and the donors who funded it approve the release before the money moves.',
+      'Umanity visits orphanages near the team with the things the children actually asked for: hot meals, stationery and school bags, shoes and warm clothes before winter. Every visit is photographed, every purchase is receipted, and the donors who funded it approve the release before the money moves.',
     description: 'Meals, school kits and winter clothing for children in orphanages — delivered in person by the Umanity team.',
     category: 'Children',
     emoji: '🎒',
@@ -60,7 +60,7 @@ export const CAUSES: CauseMeta[] = [
     ],
     impact: '$8 is a full school kit for one child.',
     deliveryMode: 'field',
-    location: 'Karachi, Pakistan',
+    location: 'On the ground',
     color: 'bg-emerald-50 text-emerald-700',
     plan: {
       targetSol: 20,
@@ -78,7 +78,7 @@ export const CAUSES: CauseMeta[] = [
     shortName: 'Animal rescue',
     tagline: 'Food, vaccines and vet treatment for the dogs and cats who live on the street.',
     story:
-      'Thousands of dogs and cats live on the streets of Karachi with no one responsible for them. The Umanity team runs feeding rounds, vaccinates against rabies and takes the injured ones to a vet. You see the animals you helped, the vet invoices, and the before-and-after.',
+      'Thousands of dogs and cats live on city streets with no one responsible for them. The Umanity team runs feeding rounds, vaccinates against rabies and takes the injured ones to a vet. You see the animals you helped, the vet invoices, and the before-and-after.',
     description: 'Food, vaccines and vet care for street dogs and cats — delivered on the street by the Umanity team.',
     category: 'Animals',
     emoji: '🐾',
@@ -89,7 +89,7 @@ export const CAUSES: CauseMeta[] = [
     ],
     impact: '$6 vaccinates one street dog against rabies.',
     deliveryMode: 'field',
-    location: 'Karachi, Pakistan',
+    location: 'On the ground',
     color: 'bg-emerald-50 text-emerald-700',
     plan: {
       targetSol: 8,
@@ -117,7 +117,7 @@ export const CAUSES: CauseMeta[] = [
     ],
     impact: '$30 feeds a family of five for a month.',
     deliveryMode: 'field',
-    location: 'Karachi & interior Sindh, Pakistan',
+    location: 'On the ground',
     color: 'bg-emerald-50 text-emerald-700',
     plan: {
       targetSol: 15,
@@ -135,7 +135,7 @@ export const CAUSES: CauseMeta[] = [
     shortName: 'Medical help',
     tagline: 'Medicines, tests and treatment for patients who would otherwise go without.',
     story:
-      'Public hospitals in Pakistan are free to enter and expensive to be treated in: patients are sent out to buy their own medicines, tests and supplies. Umanity pays the pharmacy and the lab directly for patients referred by hospital social workers, and posts the prescriptions and invoices.',
+      'Many public hospitals are free to enter and expensive to be treated in: patients are sent out to buy their own medicines, tests and supplies. Umanity pays the pharmacy and the lab directly for patients referred by hospital social workers, and posts the prescriptions and invoices.',
     description: 'Medicines, lab tests and treatment costs paid directly to pharmacies and labs for patients who cannot afford them.',
     category: 'Health',
     emoji: '💊',
@@ -146,7 +146,7 @@ export const CAUSES: CauseMeta[] = [
     ],
     impact: '$20 covers a consultation and the tests that go with it.',
     deliveryMode: 'field',
-    location: 'Karachi, Pakistan',
+    location: 'On the ground',
     color: 'bg-emerald-50 text-emerald-700',
     plan: {
       targetSol: 15,
@@ -164,7 +164,7 @@ export const CAUSES: CauseMeta[] = [
     shortName: 'Clean water',
     tagline: 'Hand pumps and household filters for villages without safe drinking water.',
     story:
-      'In parts of interior Sindh the nearest safe water is hours away and the nearest water is not safe. A household filter removes the bacteria that make children sick; a hand pump serves a whole hamlet for years. The team installs with local masons and posts the location of every pump.',
+      'In some villages the nearest safe water is hours away and the nearest water is not safe. A household filter removes the bacteria that make children sick; a hand pump serves a whole hamlet for years. The team installs with local masons and posts the location of every pump.',
     description: 'Hand pumps and household water filters installed in villages without safe drinking water, with the location of every pump published.',
     category: 'Water',
     emoji: '💧',
@@ -174,7 +174,7 @@ export const CAUSES: CauseMeta[] = [
     ],
     impact: '$10 gives one family a water filter.',
     deliveryMode: 'field',
-    location: 'Interior Sindh, Pakistan',
+    location: 'On the ground',
     color: 'bg-emerald-50 text-emerald-700',
     plan: {
       targetSol: 25,
@@ -203,7 +203,7 @@ export const CAUSES: CauseMeta[] = [
     ],
     impact: '$25 is a complete relief kit for one family.',
     deliveryMode: 'field',
-    location: 'Sindh & Balochistan, Pakistan',
+    location: 'On the ground',
     color: 'bg-emerald-50 text-emerald-700',
     plan: {
       targetSol: 20,

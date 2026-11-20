@@ -36,6 +36,6 @@ Only as a real feature: a *discreet gift* route that sends from the donor's wall
 ## The company
 
 - **Model:** gifts carry no platform fee. Revenue comes from the rails: dare settlement fees (1.5%, on-chain), cross-chain integrator fees (50 bps), paid API calls over x402 (audits, sponsored dares, impact data for grant-makers), and later sponsored causes and Guardian perks.
-- **Field operations:** the founder delivers in Karachi and interior Sindh, films it and posts it. Next: vetted field partners in other cities post deliveries from the same console and are paid from escrow on approval.
+- **Field operations:** the team delivers, films it and posts it. Next: vetted runners anywhere post deliveries from the same console and are paid from escrow on approval.
 - **Growth loop:** every delivery is content on X, every gift and dare is a Blink or a share card, every gift page shows its own progress. Ramadan 2027 (Feb–Mar) is the first big season: zakat-eligible causes, a zakat calculator, and discreet giving.
 - **Token:** not before the product has real deliveries and real donors. Points and the Guardian pass come first; if a token ever exists it must have a job (governance over releases, fee rebates), not be the product.

@@ -23,7 +23,7 @@ Crypto giving runs on trust: you send money to a wallet and never learn what hap
 Money goes into drops: one real delivery each (a shopping list, a place, a date), with its own USDC pot owned by the program. The pot pays the drop's supplier only after the delivery is filmed, the proof bundle is hashed on-chain and a review window passes. If the drop misses its date, refunds open and every backer gets their own money back.
 
 LIVE ON MAINNET TODAY
-- Drop #1, ration packs for 5 families in Lahore (due 20 Nov), holds $19.49: $13.49 from $UMANITY trading fees and $6 from 6 real gifts by 2 backers.
+- Drop #1, ration packs for 5 families (due 20 Nov), holds $19.49: $13.49 from $UMANITY trading fees and $6 from 6 real gifts by 2 backers.
 - All three ways to give are proven with real money: one tap with a Touch ID wallet, ETH from Ethereum through Aurora Intents, and an AI agent over x402. Each was done on launch day and again live in the demo video, and every transaction is listed in JUDGES.md.
 - $UMANITY trades on a Meteora bonding curve, and only the program can claim its fees. In its first minute, sniping bots paid $26.99 in anti-sniping fees. The program split it 50/50, and the drops fund's $13.49 is already in Drop #1.
 - Anyone can propose a community drop where they live. The team reviews it, and the runner is paid only after proof.

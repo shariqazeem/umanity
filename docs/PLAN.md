@@ -92,7 +92,7 @@ description fingerprinted, and opens the pot.
 5. Fees work exactly as for Umanity's drops: gifts 100% to the pot, fees split 50/50.
 
 **Next: runners, anywhere.** A runner is a person or group that can buy and hand over goods where they live,
-such as a shelter in Nairobi, a community kitchen in Karachi, or a volunteer in Gaza or Lagos. Most people
+such as a shelter in Nairobi, a community kitchen in Manila, or a volunteer in Gaza or Lagos. Most people
 will only give; runners are the supply side, and they are how Umanity goes global.
 
 1. **Apply:** profile, place, X or Instagram, and a short video of where they work.
@@ -146,7 +146,7 @@ The film is the proof and the marketing at once, so it has a standard.
 3. One sentence from the runner: what was delivered, where, and how many people it helped.
 
 **Consent:** ask before filming anyone. Never show children's faces, and film hands, goods and places
-instead. Never film anyone who says no. This follows UNICEF's norms and Pakistan's PECA s.24.
+instead. Never film anyone who says no. This follows UNICEF's norms.
 
 **Pipeline:**
 1. The runner uploads to their console.
@@ -189,7 +189,7 @@ guard holds the unlock key. A post is drafted automatically from the proof; a pe
 | Weak spot | Fix |
 | --- | --- |
 | $UMANITY's only job is fees | Bonds and votes (sections 3, 8) |
-| Only the team creates drops, only in Lahore | Runners (section 4) |
+| Only the team creates drops, in one city | Runners (section 4) |
 | Runners must front the money | Two-step payouts (section 5) |
 | Umanity's key signs unlocks and upgrades | NEAR guard on, unlock key locked; upgrade key to a multisig |
 | Few users yet | A film for every delivery, the X launch, round-ups, weekly gifts |

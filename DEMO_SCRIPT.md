@@ -42,7 +42,7 @@ And the feed shows every gift and every fee, live, each with its transaction.
 **Do:** Scroll slowly past the pot, the date and the shopping list.
 
 A drop is one real delivery.
-This one is ration packs for five families in Lahore, by November twentieth.
+This one is ration packs for five families, by November twentieth.
 The shopping list is fingerprinted on-chain, so nobody can quietly change it.
 The pot can only go two ways.
 To the team, after we film the delivery and post the proof.
@@ -133,7 +133,7 @@ They only get paid after the proof.
 ## 13 · Close · face cam
 **Do:** Look at the camera.
 
-We're starting in Lahore.
+We're starting with food.
 Every delivery becomes a film, and every film brings the next giver.
 Umanity. Proof on camera. Refunds by code.
 Thank you.
