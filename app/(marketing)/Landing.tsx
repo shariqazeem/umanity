@@ -354,6 +354,11 @@ function HeroFund() {
           <p className="text-[34px] font-black tracking-[-0.03em] counter leading-none">{usdText(money.fund.balance, 2)}</p>
         )}
         <p className="text-[10.5px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1.5">{FUND_GOAL ? 'Givers so far, team not counted' : 'In the fund now'}</p>
+        {process.env.NEXT_PUBLIC_CIRCLES_COLLECTION && (
+          <Link href="/circles" className="inline-block text-[12.5px] font-semibold text-[#1d1d1f] hover:underline mt-3">
+            The first hundred each hold a Circle →
+          </Link>
+        )}
       </div>
       <button onClick={() => openGive({ fund: true })} className="btn-primary w-full py-3.5 mt-5 !text-[15px]">
         ♡ Give to the fund

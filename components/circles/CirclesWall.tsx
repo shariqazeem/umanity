@@ -37,9 +37,9 @@ export function CirclesWall() {
     <div className="space-y-5">
       <header className="pt-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">Season 0 · The Hundred</p>
-        <h1 className="text-[28px] md:text-[36px] font-black tracking-[-0.035em] leading-[1.05] mt-1 [text-wrap:balance]">One hundred Circles. One for each of the first hundred who gave.</h1>
+        <h1 className="text-[28px] md:text-[36px] font-black tracking-[-0.035em] leading-[1.05] mt-1 [text-wrap:balance]">The hundred who gave before there was anything to see.</h1>
         <p className="text-[14px] text-[#86868b] mt-2 max-w-xl [text-wrap:balance]">
-          Give $1 or more to the fund and your Circle is minted to your wallet: a one-of-one artwork, numbered in the order people gave. It stays locked until the first filmed drop pays out. Then it is yours to keep, or to pass on.
+          Give $1 or more to the fund and a Circle is minted to your wallet: one of one, numbered in the order people gave, shown to you first. It stays locked until the first film rolls. Then it is yours to keep, or to pass on.
         </p>
       </header>
 
@@ -95,7 +95,7 @@ export function CirclesWall() {
         <ul className="space-y-2 text-[13px] text-[#525252]">
           <li className="flex gap-2"><span className="text-emerald-600">●</span> One per wallet, numbered in the order people gave. Team wallets never hold one.</li>
           <li className="flex gap-2"><span className="text-emerald-600">●</span> Each is a one-of-one artwork, revealed to its holder first, minted on Solana.</li>
-          <li className="flex gap-2"><span className="text-emerald-600">●</span> Locked until the first filmed drop pays out. Then it is yours to keep or pass on.</li>
+          <li className="flex gap-2"><span className="text-emerald-600">●</span> Locked until the first film rolls, the moment the first filmed drop pays out. Then the lock is thrown away for good.</li>
           <li className="flex gap-2"><span className="text-emerald-600">●</span> 5% of every resale goes to the giving fund.</li>
           <li className="flex gap-2"><span className="text-[#c7c7cc]">●</span> A record, not an investment. It promises no value and no airdrop.</li>
         </ul>

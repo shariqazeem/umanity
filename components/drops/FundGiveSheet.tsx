@@ -153,6 +153,11 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
       </div>
 
       <ul className="mt-4 space-y-1.5 text-[12.5px] text-[#525252]">
+        {process.env.NEXT_PUBLIC_CIRCLES_COLLECTION && (
+          <li className="flex gap-2">
+            <span className="text-emerald-600">◐</span> If you are one of the first hundred, a Circle is minted to your wallet.
+          </li>
+        )}
         <li className="flex gap-2">
           <span className="text-emerald-600">✓</span> The fund only pays into drop pots, and a pot pays only after its delivery is filmed.
         </li>

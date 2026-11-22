@@ -8,6 +8,8 @@ import { usdText } from '@/lib/umanity/drops'
 import { FUND_GOAL, FUND_GOAL_DATE, goalDateText } from '@/lib/umanity/goal'
 import { useMoney } from './hooks'
 
+const CIRCLES_ON = !!process.env.NEXT_PUBLIC_CIRCLES_COLLECTION
+
 /**
  * The top of Home and Give while no drop is open: the drops fund, live, with
  * the original black circle. Gifts and trading fees wait here and fill the next drops first.
@@ -71,7 +73,12 @@ export function FundCard() {
             <span className="inline-flex items-center gap-1.5">
               <Icon name="camera" size={14} className="text-emerald-600" /> Drops pay out on filmed proof
             </span>
-            {token && (
+            {CIRCLES_ON && (
+              <Link href="/circles" className="font-semibold text-[#1d1d1f] hover:underline">
+                The first hundred each hold a Circle →
+              </Link>
+            )}
+            {token && !CIRCLES_ON && (
               <Link href="/trade" className="font-semibold text-[#1d1d1f] hover:underline">
                 Every $UMANITY trade adds 0.4% →
               </Link>
