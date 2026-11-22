@@ -3,7 +3,7 @@
  * unlocks, missed dates, fee splits) plus people's own posts. Every money row
  * comes from the chain mirror; nothing here is composed for show.
  */
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, ne, notInArray, sql } from 'drizzle-orm'
 import { dropGifts, drops, dropUpdates, fundGifts, getDb, moneyEvents, posts, users } from '@/lib/db'
 import type { MediaItem } from '@/lib/db/schema'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
@@ -11,18 +11,19 @@ import { hydratePosts, type FeedPost } from '@/lib/data/social'
 import { freshen } from './data'
 import { refundsOpen } from './program'
 import type { DropMeta } from './drops'
+import { TEAM_WALLETS, isTeam } from './team'
 
 export type FeedDrop = { id: number; title: string; emoji: string; place: string; unitName: string; unitUsd: number; people: number }
 export type FeedWho = { username: string; displayName: string | null; avatarUrl: string | null } | { address: string } | null
 
 export type HomeItem =
-  | { type: 'gift'; id: string; at: string; drop: FeedDrop; amountUsd: number; channel: string; sourceChain: string | null; signature: string | null; who: FeedWho; message: string | null }
+  | { type: 'gift'; id: string; at: string; drop: FeedDrop; amountUsd: number; channel: string; sourceChain: string | null; signature: string | null; who: FeedWho; message: string | null; team: boolean }
   | { type: 'update'; id: string; at: string; drop: FeedDrop; kind: string; title: string; body: string; media: MediaItem[]; proofTx: string | null; xPostUrl: string | null }
   | { type: 'unlocked'; id: string; at: string; drop: FeedDrop; amountUsd: number; signature: string }
   | { type: 'missed'; id: string; at: string; drop: FeedDrop; potUsd: number; cancelled: boolean }
   | { type: 'fees'; id: string; at: string; totalUsd: number; toDropsUsd: number; toOpsUsd: number; signature: string }
   | { type: 'funded'; id: string; at: string; drop: FeedDrop; amountUsd: number; signature: string }
-  | { type: 'fundGift'; id: string; at: string; amountUsd: number; channel: string; signature: string | null; who: FeedWho; message: string | null }
+  | { type: 'fundGift'; id: string; at: string; amountUsd: number; channel: string; signature: string | null; who: FeedWho; message: string | null; team: boolean }
   | { type: 'post'; id: string; at: string; post: FeedPost }
 
 export async function homeFeed(opts: { viewer?: string | null; limit?: number } = {}) {
@@ -43,6 +44,7 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
         ref: dropGifts.ref,
         dropId: dropGifts.dropId,
         backer: dropGifts.backer,
+        userId: dropGifts.userId,
         amountMicro: dropGifts.amountMicro,
         channel: dropGifts.channel,
         anonymous: dropGifts.anonymous,
@@ -71,6 +73,7 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
       .select({
         ref: fundGifts.ref,
         giver: fundGifts.giver,
+        userId: fundGifts.userId,
         amountMicro: fundGifts.amountMicro,
         channel: fundGifts.channel,
         anonymous: fundGifts.anonymous,
@@ -104,6 +107,7 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
       signature: g.signature,
       message: g.anonymous ? null : g.message,
       who: g.anonymous ? null : g.username ? { username: g.username, displayName: g.displayName, avatarUrl: g.avatarUrl } : { address: g.backer },
+      team: isTeam(g.backer, g.userId),
     })
   }
   for (const g of fundRows) {
@@ -116,6 +120,7 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
       signature: g.signature,
       message: g.anonymous ? null : g.message,
       who: g.anonymous ? null : g.username ? { username: g.username, displayName: g.displayName, avatarUrl: g.avatarUrl } : { address: g.giver },
+      team: isTeam(g.giver, g.userId),
     })
   }
   for (const u of updates) {
@@ -151,7 +156,7 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
   return items.slice(0, limit)
 }
 
-/** The rail's "Top backers": confirmed, named gifts only. */
+/** The rail's "Top backers": confirmed, named gifts from outside the team only. */
 export async function topBackers(limit = 5) {
   await freshen()
   const db = await getDb()
@@ -164,7 +169,16 @@ export async function topBackers(limit = 5) {
       dropsBacked: sql<number>`count(distinct ${dropGifts.dropId})::int`,
     })
     .from(dropGifts)
-    .where(and(eq(dropGifts.cluster, SOLANA_CLUSTER), eq(dropGifts.status, 'confirmed'), eq(dropGifts.anonymous, false)))
+    .where(
+      and(
+        eq(dropGifts.cluster, SOLANA_CLUSTER),
+        eq(dropGifts.status, 'confirmed'),
+        eq(dropGifts.anonymous, false),
+        ne(dropGifts.channel, 'fund'),
+        notInArray(dropGifts.backer, TEAM_WALLETS),
+        notInArray(credited, TEAM_WALLETS),
+      )
+    )
     .groupBy(credited)
     .orderBy(desc(sql`sum(${dropGifts.amountMicro})`))
     .limit(limit)

@@ -80,12 +80,13 @@ function StatsWidget() {
   const { data: money } = useMoney(30_000)
   if (!money) return <div className="card p-4 h-[196px] skeleton" />
   const t = money.totals
+  const outside = money.outside
   const rows: [string, string, string?][] = [
-    ['Given', usdText(t.cameIn, 2), `${t.gifts.toLocaleString()} ${t.gifts === 1 ? 'gift' : 'gifts'}`],
-    ['In pots', usdText(t.inPots, 2)],
-    ['Delivered', usdText(t.unlocked, 2)],
-    ['Fees to drops', usdText(money.fees.toDrops, 2)],
-    ['Refunded', usdText(t.refunded, 2)],
+    ['In the fund', usdText(money.fund.balance, 2)],
+    ['Outside givers', outside.givers.toLocaleString('en-US'), outside.givers > 0 ? `${usdText(outside.usd, 2)} given` : 'the first one starts the count'],
+    ['From trading fees', usdText(money.fees.toDrops, 2), 'to the fund'],
+    ['Delivered', usdText(t.unlocked, 2), t.unlocked > 0 ? undefined : 'first filmed drop not yet run'],
+    ['Refunded by code', usdText(t.refunded, 2)],
   ]
   return (
     <Link href="/money" className="card-interactive p-4 block">
@@ -148,6 +149,8 @@ function LeaderboardWidget() {
       .catch(() => setRows([]))
   }, [])
   const sorted = [...(rows ?? [])].sort((a, b) => (tab === 'usd' ? b.totalUsd - a.totalUsd : tab === 'gifts' ? b.gifts - a.gifts : b.drops - a.drops)).slice(0, 5)
+  // Only outside backers are listed, and the board stays hidden until there is one.
+  if (!rows || rows.length === 0) return null
   return (
     <div className="card p-4">
       <h3 className="font-bold text-[15px] mb-3">Top backers</h3>

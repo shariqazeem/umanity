@@ -67,6 +67,8 @@ export function DropFeed() {
   }
 
   const visible = (items ?? []).filter((it) => shows(it, filter))
+  const teamGifts = visible.filter((it): it is Extract<HomeItem, { type: 'gift' | 'fundGift' }> => (it.type === 'gift' || it.type === 'fundGift') && it.team)
+  const firstTeamGift = teamGifts[teamGifts.length - 1]?.id
 
   return (
     <div>
@@ -111,6 +113,9 @@ export function DropFeed() {
       ) : (
         <div className="space-y-2.5 animate-stagger">
           {visible.map((it) => {
+            if ((it.type === 'gift' || it.type === 'fundGift') && it.team) {
+              return it.id === firstTeamGift ? <TeamGiftsCard key="team-gifts" gifts={teamGifts.length} usd={teamGifts.reduce((s, g) => s + g.amountUsd, 0)} /> : null
+            }
             switch (it.type) {
               case 'gift':
                 return <GiftCard key={it.id} item={it} />
@@ -349,6 +354,24 @@ function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
             See the drop →
           </Link>
         </div>
+      </div>
+    </article>
+  )
+}
+
+/** The team's own test gifts, folded into one line: shown on Money, never counted as community. */
+function TeamGiftsCard({ gifts, usd }: { gifts: number; usd: number }) {
+  return (
+    <article className="card p-4 flex items-start gap-3">
+      <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] flex items-center justify-center text-lg flex-shrink-0">🧪</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13.5px] font-semibold">The team tested every way to give</p>
+        <p className="text-[12px] text-[#86868b] mt-0.5">
+          {gifts} {gifts === 1 ? 'gift' : 'gifts'}, {usdText(usd, usd % 1 ? 2 : 0)} in all, from our own wallets. They never count as community.
+        </p>
+        <Link href="/money" className="inline-block text-[11.5px] font-semibold text-emerald-600 hover:underline mt-2">
+          Where they went →
+        </Link>
       </div>
     </article>
   )

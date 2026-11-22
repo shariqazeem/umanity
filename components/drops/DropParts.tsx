@@ -176,9 +176,11 @@ export function DropCard({ drop }: { drop: DropView }) {
           <StatePill drop={drop} />
         </div>
         <p className="text-[15px] font-bold tracking-tight mt-0.5 truncate">{drop.title}</p>
-        <p className="text-[12px] text-[#86868b] truncate inline-flex items-center gap-1 max-w-full">
-          <Icon name="pin" size={12} className="flex-shrink-0" /> <span className="truncate">{drop.place}</span>
-        </p>
+        {!(drop.refundsOpen || drop.state === 'cancelled') && (
+          <p className="text-[12px] text-[#86868b] truncate inline-flex items-center gap-1 max-w-full">
+            <Icon name="pin" size={12} className="flex-shrink-0" /> <span className="truncate">{drop.place}</span>
+          </p>
+        )}
         <div className="mt-3">
           <DropMeter drop={drop} size="sm" />
         </div>
@@ -319,7 +321,8 @@ export function GiftTicket({ drop, amountUsd, refundedUsd = 0 }: { drop: TicketD
           <span className="block text-[14px] font-semibold truncate">{drop.title}</span>
           <span className="block text-[12px] text-[#86868b] truncate">
             {usdText(amountUsd, amountUsd % 1 ? 2 : 0)}
-            {whole > 0 ? ` · ${plural(whole, drop.unit.name)}` : ''} · {drop.place}
+            {whole > 0 ? ` · ${plural(whole, drop.unit.name)}` : ''}
+            {drop.refundsOpen || drop.state === 'cancelled' ? '' : ` · ${drop.place}`}
           </span>
         </span>
         <StatePill drop={drop} />

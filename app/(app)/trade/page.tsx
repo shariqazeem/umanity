@@ -51,7 +51,7 @@ export default function TradePage() {
   const [tf, setTf] = useState<Timeframe>('1d')
   const token = useTokenSummary()
   const market = useMarket(token ? tf : null)
-  const [amount, setAmount] = useState('20')
+  const [amount, setAmount] = useState('1')
   const [quote, setQuote] = useState<Quote | null>(null)
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' })
   const fromToken = tradeToken(from)
@@ -255,6 +255,21 @@ const FRAMES: [Timeframe, string][] = [
 ]
 
 /** $UMANITY: its price and line, how far the curve has filled, and what its fees have sent to drops. Hidden until the token exists. */
+/** The token's address, to copy or open on Solscan, so anyone can check what they're buying. */
+function MintLine({ mint }: { mint: string }) {
+  const { toast } = useUmanity()
+  return (
+    <p className="flex items-center gap-2 mt-2 text-[11.5px] text-[#86868b]">
+      <button onClick={() => navigator.clipboard.writeText(mint).then(() => toast('Token address copied', 'ok'))} className="font-mono hover:text-[#1d1d1f]" title="Copy the token address">
+        {short(mint)} ⧉
+      </button>
+      <a href={`https://solscan.io/token/${mint}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
+        Solscan ↗
+      </a>
+    </p>
+  )
+}
+
 function TokenCard({ token, market, tf, onTf, onBuy, onSell }: { token: TokenSummary | null; market: Market | null; tf: Timeframe; onTf: (tf: Timeframe) => void; onBuy: () => void; onSell: () => void }) {
   const { data: money } = useMoney(60_000)
   const [hover, setHover] = useState<ChartPoint | null>(null)
@@ -278,9 +293,10 @@ function TokenCard({ token, market, tf, onTf, onBuy, onSell }: { token: TokenSum
               )}
             </div>
             <p className="text-[12.5px] text-[#86868b] mt-1.5 counter">
-              Market cap {usdText(token.marketCapUsd, 0)}
+              {usdText(token.raisedUsd, 2)} in the curve · {usdText(token.marketCapUsd, 0)} fully diluted at the curve&apos;s price
               {market?.volume24hUsd != null && ` · 24h volume ${usdText(market.volume24hUsd, 0)}`}
             </p>
+            <MintLine mint={token.mint} />
           </div>
           <div className="hidden md:flex flex-col gap-2 w-36 flex-shrink-0">
             <button onClick={onBuy} className="btn-primary py-2.5 !text-[13px]">

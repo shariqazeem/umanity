@@ -10,6 +10,8 @@
 /.next/
 /.next-build/
 /.next-mainnet/
+# any other local build folder (NEXT_DIST_DIR)
+/.next-*/
 /out/
 
 # production

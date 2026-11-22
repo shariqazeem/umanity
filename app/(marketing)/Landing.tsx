@@ -11,9 +11,12 @@ import { pickNextDrop, useDrops, useMoney } from '@/components/drops/hooks'
 import { DropMeter, StatePill, dayText, dropHref } from '@/components/drops/DropParts'
 import { usdText } from '@/lib/umanity/drops'
 import { UMANITY_MINT } from '@/lib/umanity/tokens'
+import { FUND_GOAL, FUND_GOAL_DATE, goalDateText } from '@/lib/umanity/goal'
 import type { HomeItem } from '@/lib/umanity/feed'
 
 const GITHUB = 'https://github.com/shariqazeem/umanity'
+/** Drop #1's refunds, sent by the keeper two minutes after its date passed (mainnet, 20 Nov 2026). */
+const REFUND_TX = 'https://solscan.io/tx/56MrmTmFf9Dg94LL8kH2hFdneoYGgHbk6Z7BUYwKoDgVfRHhojPWn8k9NUU27oYvZ9EznkDrZGtTKKLEE9Y2UPbD'
 
 export function Landing() {
   const router = useRouter()
@@ -222,14 +225,14 @@ export function Landing() {
         {/* ===== CTA ===== */}
         <section className="py-20 md:py-28 bg-white">
           <div className="max-w-2xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Feed someone today.</h2>
-            <p className="text-[#86868b] text-base mb-8 max-w-md mx-auto">Browse without a wallet. Give in one tap. Watch the delivery it pays for.</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Back the first filmed drop.</h2>
+            <p className="text-[#86868b] text-base mb-8 max-w-md mx-auto [text-wrap:balance]">Browse without a wallet. Give $1 in one tap. Every dollar stays on-chain until a delivery is filmed.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/home" className="btn-primary px-7 py-3.5 text-[14px]">
                 Open the app
               </Link>
-              <Link href="/agents" className="btn-secondary px-7 py-3.5 text-[14px] font-medium">
-                🤖 Give from an agent
+              <Link href="/money" className="btn-secondary px-7 py-3.5 text-[14px] font-medium">
+                Follow every dollar →
               </Link>
             </div>
           </div>
@@ -336,16 +339,28 @@ function HeroFund() {
   const { openGive } = useUmanity()
   return (
     <div className="card p-6 md:p-7 !rounded-[24px] shadow-elevated">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">The Umanity fund · on Solana</p>
-      <p className="text-[18px] font-bold tracking-tight leading-snug mt-3 [text-wrap:balance]">No drop is open right now. The fund backs the next ones.</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">{FUND_GOAL ? 'The first filmed drop' : 'The Umanity fund'} · on Solana</p>
+      <p className="text-[18px] font-bold tracking-tight leading-snug mt-3 [text-wrap:balance]">
+        {FUND_GOAL ? `${FUND_GOAL} givers open the first filmed drop.${FUND_GOAL_DATE ? ` Or ${goalDateText(FUND_GOAL_DATE)}, whichever comes first.` : ''}` : 'No drop is open right now. The fund backs the next ones.'}
+      </p>
       <div className="mt-5">
-        {money ? <p className="text-[34px] font-black tracking-[-0.03em] counter leading-none">{usdText(money.fund.balance, 2)}</p> : <div className="skeleton h-[34px] w-28" />}
-        <p className="text-[10.5px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1.5">In the fund now</p>
+        {!money ? (
+          <div className="skeleton h-[34px] w-28" />
+        ) : FUND_GOAL ? (
+          <p className="text-[34px] font-black tracking-[-0.03em] counter leading-none">
+            {money.outside.fundGivers.toLocaleString('en-US')} <span className="text-[#c7c7cc]">of {FUND_GOAL}</span>
+          </p>
+        ) : (
+          <p className="text-[34px] font-black tracking-[-0.03em] counter leading-none">{usdText(money.fund.balance, 2)}</p>
+        )}
+        <p className="text-[10.5px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1.5">{FUND_GOAL ? 'Givers so far, team not counted' : 'In the fund now'}</p>
       </div>
       <button onClick={() => openGive({ fund: true })} className="btn-primary w-full py-3.5 mt-5 !text-[15px]">
         ♡ Give to the fund
       </button>
-      <p className="text-[11.5px] text-[#86868b] text-center mt-2.5 [text-wrap:balance]">It only pays into drop pots, and drops pay out on filmed proof.</p>
+      <p className="text-[11.5px] text-[#86868b] text-center mt-2.5 [text-wrap:balance]">
+        {FUND_GOAL ? 'From $1, with no refunds: the fund only pays into drops, and drops pay out on filmed proof.' : 'It only pays into drop pots, and drops pay out on filmed proof.'}
+      </p>
     </div>
   )
 }
@@ -386,7 +401,8 @@ function HeroDrop() {
 /** Live totals under the hero, once there is something real to count. */
 function StatsRow() {
   const { data: money } = useMoney(60_000)
-  if (!money || money.totals.cameIn <= 0) return null
+  // Until a delivery has been paid for, the fund card above carries the live number.
+  if (!money || money.totals.unlocked <= 0) return null
   return (
     <div className="flex items-center justify-center gap-10 px-6 py-6 border-y border-black/[0.04] bg-white/80">
       {[
@@ -461,14 +477,27 @@ function FieldSection() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid lg:grid-cols-[1fr_1.4fr] gap-12 items-center">
           <div>
-            <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">Real world, real hands</p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">We deliver it ourselves. On camera.</h2>
-            <p className="text-[#86868b] text-base leading-relaxed mb-6">
-              The team buys the food, the medicine, the water filters, and hands them over in person. Every delivery is filmed and posted, here and on X, before a single dollar leaves its pot.
-            </p>
-            <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="inline-block text-[13px] font-semibold text-emerald-600 hover:underline">
-              Follow the deliveries on X →
-            </a>
+            {proofs && proofs.length > 0 ? (
+              <>
+                <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">Real world, real hands</p>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Real deliveries. On camera.</h2>
+                <p className="text-[#86868b] text-base leading-relaxed mb-6">Every delivery is filmed and posted, here and on X, before a single dollar leaves its pot.</p>
+                <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="inline-block text-[13px] font-semibold text-emerald-600 hover:underline">
+                  Follow the deliveries on X →
+                </a>
+              </>
+            ) : (
+              <>
+                <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">The rule, already tested</p>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Filmed or refunded.</h2>
+                <p className="text-[#86868b] text-base leading-relaxed mb-6">
+                  Our first drop missed its date on 20 November. Nobody pressed a button: the code sent back the $6 our own team gave, and the fee money goes back to the fund. From the next drop on, every delivery is filmed before a dollar leaves its pot.
+                </p>
+                <a href={REFUND_TX} target="_blank" rel="noopener noreferrer" className="inline-block text-[13px] font-semibold text-emerald-600 hover:underline">
+                  See the refund on Solana ↗
+                </a>
+              </>
+            )}
           </div>
           <div>
             {proofs && proofs.length > 0 ? (

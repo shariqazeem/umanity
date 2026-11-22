@@ -35,9 +35,11 @@ export function DropDetailView() {
   if (!drop) return <div className="space-y-3 pt-2"><div className="skeleton h-72" /><div className="skeleton h-40" /></div>
 
   const giving = drop.state === 'open' && !drop.refundsOpen
+  // A drop that missed its date or was called off keeps its original promise one tap away, unchanged.
+  const missed = drop.refundsOpen || drop.state === 'cancelled'
   const give = () => openGive({ dropId: drop.id })
   const share = () => {
-    const text = `${drop.title}, ${drop.place}. ${usdText(drop.potUsd)} of ${usdText(drop.goalUsd)} so far on @umanity_xyz. It pays out only once the delivery is filmed and checked.\n\n${window.location.origin}${dropHref(drop.id)}`
+    const text = `${drop.title}${missed ? '' : `, ${drop.place}`}. ${usdText(drop.potUsd)} of ${usdText(drop.goalUsd)} so far on @umanity_xyz. It pays out only once the delivery is filmed and checked.\n\n${window.location.origin}${dropHref(drop.id)}`
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener')
   }
   const proof = drop.updates.filter((u) => u.kind === 'proof')
@@ -66,13 +68,21 @@ export function DropDetailView() {
             <div className="flex flex-wrap gap-1.5 justify-end">
               <RunnerBadge drop={drop} />
               <StatePill drop={drop} />
-              <span className="pill bg-black/[0.04] text-[#525252] !text-[10px]">📍 {drop.place}</span>
+              {!missed && <span className="pill bg-black/[0.04] text-[#525252] !text-[10px]">📍 {drop.place}</span>}
               <span className="pill bg-black/[0.04] text-[#525252] !text-[10px]">🗓 {dayText(drop.deadline)}</span>
             </div>
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600 mt-5">Drop #{drop.id + 1}</p>
           <h1 className="text-[30px] md:text-[38px] font-black tracking-[-0.035em] leading-[1.02] mt-1">{drop.title}</h1>
-          {drop.story && <p className="text-[14.5px] text-[#525252] mt-3 leading-relaxed max-w-xl">{drop.story}</p>}
+          {drop.story &&
+            (missed ? (
+              <details className="mt-3 max-w-xl group">
+                <summary className="text-[13px] font-semibold text-[#1d1d1f] cursor-pointer select-none list-none hover:underline">The original promise ▸</summary>
+                <p className="text-[14.5px] text-[#525252] mt-2 leading-relaxed">{drop.story}</p>
+              </details>
+            ) : (
+              <p className="text-[14.5px] text-[#525252] mt-3 leading-relaxed max-w-xl">{drop.story}</p>
+            ))}
 
           <div className="mt-6 pt-5 border-t border-black/[0.04]">
             <DropMeter drop={drop} />

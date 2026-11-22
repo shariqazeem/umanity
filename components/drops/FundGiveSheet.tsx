@@ -7,6 +7,7 @@ import { Sheet } from '@/components/shared/ui'
 import { apiSend } from '@/lib/client/api'
 import { explorerTx } from '@/lib/solana/constants'
 import { usdText } from '@/lib/umanity/drops'
+import { FUND_GOAL } from '@/lib/umanity/goal'
 import { useMoney, useUsdcBalance } from './hooks'
 
 type Phase = { kind: 'pick' } | { kind: 'signing' } | { kind: 'done'; signature: string; amount: number; pending: boolean } | { kind: 'error'; message: string }
@@ -111,9 +112,10 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
         <div className="w-11 h-11 rounded-[14px] bg-emerald-50 flex items-center justify-center text-[20px] text-emerald-700 flex-shrink-0">♡</div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#86868b]">
-            The Umanity fund{money ? ` · ${usdText(money.fund.balance, 2)} in it now` : ''}
+            The Umanity fund
+            {money ? (FUND_GOAL ? ` · ${money.outside.fundGivers} of ${FUND_GOAL} givers` : ` · ${usdText(money.fund.balance, 2)} in it now`) : ''}
           </p>
-          <p className="text-[16px] font-bold tracking-tight">Back the next drops</p>
+          <p className="text-[16px] font-bold tracking-tight">{FUND_GOAL ? 'Open the first filmed drop' : 'Back the next drops'}</p>
         </div>
         <button onClick={onClose} className="btn-ghost h-8 w-8 !p-0 !rounded-full" aria-label="Close">
           ✕

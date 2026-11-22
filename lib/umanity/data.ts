@@ -5,7 +5,7 @@
  * the database and the next read sees the chain's latest.
  */
 import { after } from 'next/server'
-import { and, asc, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNotNull, ne, notInArray, sql } from 'drizzle-orm'
 import { dropGifts, drops, dropUpdates, fundGifts, getDb, moneyEvents, spending, trades, users, type Drop } from '@/lib/db'
 import { getConnection } from '@/lib/solana/chain'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
@@ -14,6 +14,7 @@ import { syncChain } from './indexer'
 import { keepFeesMoving } from './keeper'
 import { metaMatches, sha256Hex, type DropMeta } from './drops'
 import { guardView } from '@/lib/near/flow'
+import { TEAM_WALLETS } from './team'
 
 const FRESH_MS = 8_000
 let lastSync = 0
@@ -201,6 +202,33 @@ export async function fundGiftTotals() {
   return { usd: Number(row?.total ?? 0) / 1e6, gifts: row?.gifts ?? 0, givers: row?.givers ?? 0 }
 }
 
+/**
+ * Giving from outside the team: distinct wallets, gifts and dollars, across drop pots and the fund.
+ * Team wallets (lib/umanity/team.ts) never count, and fund-to-drop top-ups are not gifts.
+ */
+export async function outsideGiving() {
+  const db = await getDb()
+  const credited = sql<string>`coalesce(${dropGifts.userId}, ${dropGifts.backer})`
+  const fundCredited = sql<string>`coalesce(${fundGifts.userId}, ${fundGifts.giver})`
+  const [toDrops, toFund] = await Promise.all([
+    db
+      .select({ who: credited, micro: dropGifts.amountMicro })
+      .from(dropGifts)
+      .where(and(eq(dropGifts.cluster, SOLANA_CLUSTER), eq(dropGifts.status, 'confirmed'), ne(dropGifts.channel, 'fund'), notInArray(dropGifts.backer, TEAM_WALLETS), notInArray(credited, TEAM_WALLETS))),
+    db
+      .select({ who: fundCredited, micro: fundGifts.amountMicro })
+      .from(fundGifts)
+      .where(and(eq(fundGifts.cluster, SOLANA_CLUSTER), eq(fundGifts.status, 'confirmed'), notInArray(fundGifts.giver, TEAM_WALLETS), notInArray(fundCredited, TEAM_WALLETS))),
+  ])
+  const all = [...toDrops, ...toFund]
+  return {
+    givers: new Set(all.map((r) => r.who)).size,
+    fundGivers: new Set(toFund.map((r) => r.who)).size,
+    gifts: all.length,
+    usd: all.reduce((s, r) => s + r.micro, 0) / 1e6,
+  }
+}
+
 export async function moneySummary() {
   await freshen()
   const db = await getDb()
@@ -231,6 +259,7 @@ export async function moneySummary() {
       .where(and(eq(moneyEvents.cluster, SOLANA_CLUSTER), eq(moneyEvents.kind, 'meteoraFeesClaimed'))),
     fundGiftTotals().catch(() => ({ usd: 0, gifts: 0, givers: 0 })),
   ])
+  const outside = await outsideGiving().catch(() => ({ givers: 0, fundGivers: 0, gifts: 0, usd: 0 }))
   const sum = (kind: string) => Number(totals.find((t) => t.kind === kind)?.total ?? 0) / 1e6
   const count = (kind: string) => totals.find((t) => t.kind === kind)?.count ?? 0
   const all = await listDrops()
@@ -257,6 +286,8 @@ export async function moneySummary() {
       /** Of the fees split, how much came from $UMANITY's Meteora pool. */
       fromToken: Number(claimed[0]?.total ?? 0) / 1e6,
     },
+    /** Giving from outside the team only. Team gifts stay in the totals above, never here. */
+    outside,
     /** The drops fund: what's in it now, and what fed it. It only pays into drop pots. */
     fund: {
       balance: usd(fund),

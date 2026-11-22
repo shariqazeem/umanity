@@ -15,7 +15,8 @@ export function LiveTicker() {
       apiGet<{ items?: HomeItem[] }>('/api/feed/drops?limit=16')
         .then((d) => {
           if (!alive) return
-          setItems((d.items ?? []).filter((i) => i.type !== 'post').slice(0, 12).map(activityLine).filter(Boolean))
+          // The team's own test gifts never pass as live activity.
+          setItems((d.items ?? []).filter((i) => i.type !== 'post' && !('team' in i && i.team)).slice(0, 12).map(activityLine).filter(Boolean))
         })
         .catch(() => {})
     load()
