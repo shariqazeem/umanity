@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import { getDb, users } from '@/lib/db'
 import { inArray } from 'drizzle-orm'
-import { CIRCLES_COLLECTION, CIRCLES_LIMIT, circleName, circleScene, isCirclesOn, listCircles } from '@/lib/umanity/circles'
+import { CIRCLES_COLLECTION, CIRCLES_LIMIT, circleName, circleScene, hundredClosed, isCirclesOn, listCircles } from '@/lib/umanity/circles'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +14,7 @@ export async function GET() {
   const byAddress = new Map(named.map((n) => [n.address, n.username]))
   return NextResponse.json({
     on: true,
+    closed: await hundredClosed(),
     limit: CIRCLES_LIMIT,
     collection: CIRCLES_COLLECTION,
     circles: rows.map((r) => ({

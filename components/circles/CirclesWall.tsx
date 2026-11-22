@@ -6,7 +6,7 @@ import { Sheet } from '@/components/shared/ui'
 import { apiGet, short } from '@/lib/client/api'
 
 type CircleRow = { number: number; name: string; owner: string; username: string | null; minted: boolean; frozen: boolean; asset: string | null; scene: string | null; at: string }
-type Wall = { on: boolean; limit: number; collection?: string; circles: CircleRow[] }
+type Wall = { on: boolean; closed?: boolean; limit: number; collection?: string; circles: CircleRow[] }
 
 const MARKET = process.env.NEXT_PUBLIC_CIRCLES_MARKET_URL || ''
 const pad = (n: number) => String(n).padStart(3, '0')
@@ -58,6 +58,8 @@ export function CirclesWall() {
           <button onClick={() => setOpen(mine.number)} className="btn-primary px-6 py-3 !text-[14px]">
             Your Circle · No. {pad(mine.number)} →
           </button>
+        ) : wall?.closed ? (
+          <span className="text-[13px] text-[#86868b]">The Hundred closed when the first film rolled.</span>
         ) : held < 100 ? (
           <button onClick={() => openGive({ fund: true })} className="btn-primary px-6 py-3 !text-[14px]">
             ♡ Give $1 and open yours
@@ -94,10 +96,12 @@ export function CirclesWall() {
         <h3 className="font-bold text-[15px] mb-3">How a Circle works</h3>
         <ul className="space-y-2 text-[13px] text-[#525252]">
           <li className="flex gap-2"><span className="text-emerald-600">●</span> One per wallet, numbered in the order people gave. Team wallets never hold one.</li>
+          <li className="flex gap-2"><span className="text-emerald-600">●</span> The season closes when the first film rolls, even if fewer than a hundred have given.</li>
           <li className="flex gap-2"><span className="text-emerald-600">●</span> Each is a one-of-one artwork, revealed to its holder first, minted on Solana.</li>
           <li className="flex gap-2"><span className="text-emerald-600">●</span> Locked until the first film rolls, the moment the first filmed drop pays out. Then the lock is thrown away for good.</li>
           <li className="flex gap-2"><span className="text-emerald-600">●</span> 5% of every resale goes to the giving fund.</li>
-          <li className="flex gap-2"><span className="text-[#c7c7cc]">●</span> A record, not an investment. It promises no value and no airdrop.</li>
+          <li className="flex gap-2"><span className="text-emerald-600">●</span> The wall keeps who opened each Circle, for good, wherever it travels.</li>
+          <li className="flex gap-2"><span className="text-[#c7c7cc]">●</span> A keepsake and a record. It carries no token rights, no airdrop and no promise of value.</li>
         </ul>
       </section>
 
@@ -127,7 +131,7 @@ export function CirclesWall() {
                     <span className={`pill !text-[10px] font-semibold whitespace-nowrap ${shown.frozen ? 'bg-[#f5f5f7] text-[#525252]' : 'bg-emerald-50 text-emerald-700'}`}>{shown.frozen ? 'Locked until the first film' : 'Unlocked'}</span>
                   </div>
                   <p className="text-[24px] font-black tracking-[-0.02em] mt-0.5">{shown.name}</p>
-                  <p className="text-[12.5px] text-[#86868b] mt-0.5">Held by {shown.username ? `@${shown.username}` : short(shown.owner)}</p>
+                  <p className="text-[12.5px] text-[#86868b] mt-0.5">Opened by {shown.username ? `@${shown.username}` : short(shown.owner)}, giver No. {pad(shown.number)}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 mt-4 text-[12.5px]">
                   {shown.asset && (
@@ -142,7 +146,7 @@ export function CirclesWall() {
                   )}
                   <button
                     onClick={() => {
-                      const text = `${shown.owner === me ? 'I hold' : 'This is'} ${shown.name}, one of the hundred on @umanity_xyz.\n\n${window.location.origin}/circles?n=${open}`
+                      const text = `${shown.owner === me ? 'I opened' : 'This is'} ${shown.name}, one of the hundred on @umanity_xyz.\n\n${window.location.origin}/circles?n=${open}`
                       window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener')
                     }}
                     className="font-semibold text-[#1d1d1f] hover:underline"
@@ -158,8 +162,8 @@ export function CirclesWall() {
               <div className="text-center py-8">
                 <div className="w-20 h-20 rounded-full bg-[#1d1d1f] mx-auto" />
                 <p className="text-[20px] font-black tracking-[-0.02em] mt-5">Circle No. {pad(open)}</p>
-                <p className="text-[13px] text-[#86868b] mt-1.5 max-w-xs mx-auto">{shown ? 'Being minted to its holder. It is revealed to them first.' : `Not given yet. It goes to the ${ordinal(open)} person who gives $1 or more to the fund.`}</p>
-                {!shown && held < 100 && (
+                <p className="text-[13px] text-[#86868b] mt-1.5 max-w-xs mx-auto">{shown ? 'Being minted to its holder. It is revealed to them first.' : wall?.closed ? 'Never opened. The Hundred closed when the first film rolled.' : `Not given yet. It goes to the ${ordinal(open)} person who gives $1 or more to the fund.`}</p>
+                {!shown && !wall?.closed && held < 100 && (
                   <button onClick={() => (setOpen(null), openGive({ fund: true }))} className="btn-primary px-6 py-3 mt-5 !text-[14px]">
                     ♡ Give $1 and open yours
                   </button>

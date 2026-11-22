@@ -19,13 +19,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ n: stri
     {
       name: circleName(n),
       symbol: 'CIRCLE',
-      description: `One of the hundred. Circle No. ${String(n).padStart(3, '0')} belongs to one of the first hundred people who gave to Umanity, where every gift waits until the delivery is filmed. It stays locked until the first filmed drop pays out. Then it is yours to keep or pass on, and part of every resale goes to the giving fund.`,
+      description: `One of the hundred. Circle No. ${String(n).padStart(3, '0')} was opened by the ${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'} person to give to Umanity, where every gift waits until the delivery is filmed. It stays locked until the first filmed drop pays out, and only then. After that it can be kept or passed on, and 5% of every resale goes to the giving fund. A keepsake and a record: it carries no token rights, no airdrop and no promise of value.`,
       image,
       external_url: `${APP}/circles?n=${n}`,
       attributes: [
         { trait_type: 'Season', value: '0 · The Hundred' },
         { trait_type: 'Number', value: n },
         { trait_type: 'Scene', value: SCENE[circleScene(n)] ?? 'Circle' },
+        { trait_type: 'Opened by', value: `Giver No. ${String(n).padStart(3, '0')}` },
       ],
       properties: { category: 'image', files: [{ uri: image, type: 'image/jpeg' }] },
     },

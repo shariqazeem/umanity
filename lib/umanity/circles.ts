@@ -18,7 +18,7 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { fromWeb3JsKeypair, toWeb3JsInstruction } from '@metaplex-foundation/umi-web3js-adapters'
 import { createSignerFromKeypair } from '@metaplex-foundation/umi'
 import { approveCollectionPluginAuthority, create, fetchAssetV1, fetchCollection, mplCore, revokeCollectionPluginAuthority, updateCollectionPlugin } from '@metaplex-foundation/mpl-core'
-import { circles, getDb, type Circle } from '@/lib/db'
+import { circles, drops, getDb, type Circle } from '@/lib/db'
 import { getConnection } from '@/lib/solana/chain'
 import { getAuthorityKeypair, getTreasuryKeypair } from '@/lib/solana/server-signer'
 import { signAndLand } from '@/lib/solana/send'
@@ -41,6 +41,10 @@ export const circleScene = (n: number) => (manifest as Record<string, string>)[S
 export async function claimCircle(owner: string, giftRef: string | null): Promise<number | null> {
   if (!CIRCLES_COLLECTION || isTeam(owner)) return null
   const db = await getDb()
+  // The Hundred are the people who gave before there was anything to see: the season closes for good
+  // once the first filmed drop pays out, even with fewer than a hundred (Circles minted after the thaw
+  // would be born unlocked).
+  if (await hundredClosed()) return null
   const mine = async () => (await db.select({ number: circles.number }).from(circles).where(and(eq(circles.cluster, SOLANA_CLUSTER), eq(circles.owner, owner))))[0]?.number ?? null
   const had = await mine()
   if (had != null) return had
@@ -58,6 +62,13 @@ export async function claimCircle(owner: string, giftRef: string | null): Promis
     }
   }
   return null
+}
+
+/** True once the first filmed drop has paid out: no new Circles after that. */
+export async function hundredClosed() {
+  const db = await getDb()
+  const delivered = await db.select({ id: drops.id }).from(drops).where(and(eq(drops.cluster, SOLANA_CLUSTER), eq(drops.state, 'unlocked'))).limit(1)
+  return delivered.length > 0
 }
 
 let umiCache: ReturnType<typeof createUmi> | null = null
