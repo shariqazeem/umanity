@@ -11,7 +11,7 @@
  * The sponsor signs the exact message first, so a giver can't change it and
  * still have Umanity pay for it.
  */
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { randomBytes } from 'crypto'
 import { eq } from 'drizzle-orm'
 import { ComputeBudgetProgram, PublicKey, Transaction } from '@solana/web3.js'
@@ -21,6 +21,7 @@ import { getTreasuryKeypair } from '@/lib/solana/server-signer'
 import { PRIORITY_MICROLAMPORTS, sendAndLand } from '@/lib/solana/send'
 import { IS_MAINNET, SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { fundGiftIxs, tokenBalance, usdcAccount } from '@/lib/umanity/program'
+import { claimCircle, mintPendingCircles } from '@/lib/umanity/circles'
 
 export const dynamic = 'force-dynamic'
 
@@ -100,7 +101,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ signature, pending: true })
       }
       await db.update(fundGifts).set({ status: 'confirmed', signature }).where(eq(fundGifts.ref, ref))
-      return NextResponse.json({ signature })
+      // One of the first hundred from outside the team? Their Circle gets its number now and is minted right after.
+      const circle = await claimCircle(gift.userId ?? gift.giver, ref).catch(() => null)
+      if (circle) after(() => mintPendingCircles().then(() => undefined, () => undefined))
+      return NextResponse.json({ signature, circle })
     } catch (e) {
       await db.update(fundGifts).set({ status: 'failed' }).where(eq(fundGifts.ref, ref))
       return bad((e as Error).message.slice(0, 300), 502)

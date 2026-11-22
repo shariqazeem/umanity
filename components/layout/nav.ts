@@ -8,6 +8,7 @@ export const NAV = [
 ] as const
 
 export const SECONDARY_NAV = [
+  { href: '/circles', label: 'The Hundred', icon: 'spark', badge: 'S0', match: ['/circles'] },
   { href: '/start', label: 'Start a drop', icon: 'plus', badge: '', match: ['/start'] },
   { href: '/agents', label: 'For agents', icon: 'bot', badge: 'x402', match: ['/agents'] },
 ] as const

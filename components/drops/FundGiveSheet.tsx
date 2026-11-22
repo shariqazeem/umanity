@@ -10,7 +10,7 @@ import { usdText } from '@/lib/umanity/drops'
 import { FUND_GOAL } from '@/lib/umanity/goal'
 import { useMoney, useUsdcBalance } from './hooks'
 
-type Phase = { kind: 'pick' } | { kind: 'signing' } | { kind: 'done'; signature: string; amount: number; pending: boolean } | { kind: 'error'; message: string }
+type Phase = { kind: 'pick' } | { kind: 'signing' } | { kind: 'done'; signature: string; amount: number; pending: boolean; circle: number | null } | { kind: 'error'; message: string }
 
 const PRESETS = [1, 5, 10, 25]
 
@@ -57,13 +57,13 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
       })
       if (!prep.tx || !prep.ref) throw new Error(prep.error || 'Could not prepare the gift')
       const signed = await s.signTransaction(Transaction.from(Buffer.from(prep.tx, 'base64')))
-      const sent = await apiSend<{ signature?: string; pending?: boolean; error?: string }>('/api/fund/give', {
+      const sent = await apiSend<{ signature?: string; pending?: boolean; circle?: number | null; error?: string }>('/api/fund/give', {
         action: 'submit',
         ref: prep.ref,
         tx: signed.serialize({ requireAllSignatures: false }).toString('base64'),
       })
       if (!sent.signature) throw new Error(sent.error || 'The gift did not go through')
-      setPhase({ kind: 'done', signature: sent.signature, amount: value, pending: !!sent.pending })
+      setPhase({ kind: 'done', signature: sent.signature, amount: value, pending: !!sent.pending, circle: sent.circle ?? null })
       refresh()
       reload()
     } catch (e) {
@@ -75,7 +75,9 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
 
   if (phase.kind === 'done') {
     const share = () => {
-      const text = `I just put ${usdText(phase.amount)} into the Umanity fund on @umanity_xyz. It can only pay into drops, and a drop pays out only once its delivery is filmed.\n\n${window.location.origin}`
+      const text = phase.circle
+        ? `I'm one of the hundred. Circle No. ${String(phase.circle).padStart(3, '0')} on @umanity_xyz, where every gift waits until the delivery is filmed.\n\n${window.location.origin}/circles?n=${phase.circle}`
+        : `I just put ${usdText(phase.amount)} into the Umanity fund on @umanity_xyz. It can only pay into drops, and a drop pays out only once its delivery is filmed.\n\n${window.location.origin}`
       window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener')
     }
     return (
@@ -83,6 +85,13 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
         <div className="w-14 h-14 rounded-full border-2 border-white/20 flex items-center justify-center mx-auto mb-4 text-emerald-400 text-2xl">✓</div>
         <p className="text-[20px] font-bold">{phase.pending ? `${usdText(phase.amount)} is on its way to the fund` : `${usdText(phase.amount)} is in the fund`}</p>
         <p className="text-white/60 text-[13.5px] mt-1.5 max-w-xs mx-auto">It fills the next drops first, and it only pays out once a delivery is filmed.</p>
+        {phase.circle && (
+          <a href={`/circles?n=${phase.circle}`} className="block mt-5 mx-auto max-w-xs rounded-2xl border border-white/15 px-4 py-3 hover:border-white/30 transition-colors">
+            <span className="block text-[10.5px] uppercase tracking-[0.14em] text-emerald-400 font-semibold">The Hundred · Season 0</span>
+            <span className="block text-[17px] font-bold mt-0.5">Circle No. {String(phase.circle).padStart(3, '0')} is yours</span>
+            <span className="block text-[12px] text-white/50 mt-0.5">It is being minted to your wallet now. See it first →</span>
+          </a>
+        )}
         <div className="flex items-center gap-1.5 mt-6 max-w-xs mx-auto text-left" aria-label="In the fund, step 1 of 3">
           {['In the fund', 'In a drop', 'Delivered'].map((label, i) => (
             <div key={label} className="flex-1 min-w-0">

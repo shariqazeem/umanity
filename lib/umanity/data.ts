@@ -15,6 +15,7 @@ import { keepFeesMoving } from './keeper'
 import { metaMatches, sha256Hex, type DropMeta } from './drops'
 import { guardView } from '@/lib/near/flow'
 import { TEAM_WALLETS } from './team'
+import { claimCircle } from './circles'
 
 const FRESH_MS = 8_000
 let lastSync = 0
@@ -188,7 +189,11 @@ export async function fundGiftTotals() {
     for (const [i, p] of pending.entries()) {
       const s = st?.value[i]
       if (s?.err) await db.update(fundGifts).set({ status: 'failed' }).where(eq(fundGifts.ref, p.ref))
-      else if (s?.confirmationStatus === 'confirmed' || s?.confirmationStatus === 'finalized') await db.update(fundGifts).set({ status: 'confirmed' }).where(eq(fundGifts.ref, p.ref))
+      else if (s?.confirmationStatus === 'confirmed' || s?.confirmationStatus === 'finalized') {
+        await db.update(fundGifts).set({ status: 'confirmed' }).where(eq(fundGifts.ref, p.ref))
+        const [g] = await db.select({ giver: fundGifts.giver, userId: fundGifts.userId }).from(fundGifts).where(eq(fundGifts.ref, p.ref))
+        if (g) await claimCircle(g.userId ?? g.giver, p.ref).catch(() => null)
+      }
     }
   }
   const [row] = await db

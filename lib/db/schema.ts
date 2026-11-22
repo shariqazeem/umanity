@@ -619,6 +619,36 @@ export const fundGifts = pgTable(
   ]
 )
 
+/**
+ * The Hundred (Season 0): one Circle for each of the first 100 wallets from outside the team that give
+ * to the fund. Numbers are handed out in order of the gifts; each Circle is a Metaplex Core asset,
+ * frozen until the first filmed drop pays out.
+ */
+export const circles = pgTable(
+  'circles',
+  {
+    cluster: text('cluster').notNull(),
+    number: integer('number').notNull(),
+    /** The wallet that gave, and that receives the Circle. */
+    owner: text('owner').notNull(),
+    /** The fund gift that earned it. */
+    giftRef: text('gift_ref'),
+    /** The Core asset's address, once minted. */
+    asset: text('asset'),
+    signature: text('signature'),
+    /** assigned | minting | minted | failed */
+    status: text('status').notNull().default('assigned'),
+    /** Frozen at mint; thawed for good once the first filmed drop pays out. */
+    frozen: boolean('frozen').notNull().default(true),
+    error: text('error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    /** When the last mint attempt started (a stuck attempt is retried after a few minutes). */
+    attemptedAt: timestamp('attempted_at', { withTimezone: true }),
+    mintedAt: timestamp('minted_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('circles_number_idx').on(t.cluster, t.number), uniqueIndex('circles_owner_idx').on(t.cluster, t.owner)]
+)
+
 /** Proof and updates posted by the field team for a drop. */
 export const dropUpdates = pgTable(
   'drop_updates',
@@ -730,6 +760,7 @@ export const syncState = pgTable('sync_state', {
 export type Drop = typeof drops.$inferSelect
 export type DropGift = typeof dropGifts.$inferSelect
 export type FundGift = typeof fundGifts.$inferSelect
+export type Circle = typeof circles.$inferSelect
 export type DropUpdate = typeof dropUpdates.$inferSelect
 export type MoneyEvent = typeof moneyEvents.$inferSelect
 export type Spending = typeof spending.$inferSelect

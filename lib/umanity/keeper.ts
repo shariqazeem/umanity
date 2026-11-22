@@ -15,10 +15,11 @@ import { getAuthorityKeypair, getTreasuryKeypair } from '@/lib/solana/server-sig
 import { PRIORITY_MICROLAMPORTS, sendAndLand } from '@/lib/solana/send'
 import { IS_MAINNET } from '@/lib/solana/constants'
 import { and, eq, gt } from 'drizzle-orm'
-import { drops, getDb } from '@/lib/db'
+import { circles, drops, getDb } from '@/lib/db'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { DROPS_FUND, FEE_INBOX, fetchConfig, fetchDrop, fetchDrops, fundDropIx, potAddress, refundsOpen, returnToFundIx, splitFeesIxs, sweepMeteoraFeesIxs, tokenBalance } from './program'
 import { refundBackers } from './admin'
+import { isCirclesOn, mintPendingCircles, thawCircles } from './circles'
 import { reconcileDropIntents } from './intents'
 
 const EVERY_MS = 5 * 60_000
@@ -45,6 +46,7 @@ export async function keepFeesMoving(conn: Connection) {
   await refundMissedDrops(conn)
   await reconcileDropIntents(conn).catch((e) => console.warn('[keeper] cross-chain gifts failed:', (e as Error).message))
   await fundNextDrop(conn).catch((e) => console.warn('[keeper] funding a drop failed:', (e as Error).message))
+  await keepCirclesMoving().catch((e) => console.warn('[keeper] circles failed:', (e as Error).message))
   if (!ixs.length) return null
 
   const tx = new Transaction()
@@ -129,4 +131,18 @@ async function returnSpareToFund(conn: Connection, dropId: number) {
   tx.recentBlockhash = latest.blockhash
   tx.sign(payer)
   return (await sendAndLand(conn, tx.serialize(), { lastValidBlockHeight: latest.lastValidBlockHeight, timeoutMs: 30_000 })).signature
+}
+
+/**
+ * Circles that have a number get minted; and once the first filmed drop has paid out, every Circle
+ * thaws for good, so its holder can keep it or sell it.
+ */
+async function keepCirclesMoving() {
+  if (!isCirclesOn()) return
+  await mintPendingCircles()
+  const db = await getDb()
+  const delivered = await db.select({ id: drops.id }).from(drops).where(and(eq(drops.cluster, SOLANA_CLUSTER), eq(drops.state, 'unlocked'))).limit(1)
+  if (!delivered.length) return
+  const stillFrozen = await db.select({ n: circles.number }).from(circles).where(and(eq(circles.cluster, SOLANA_CLUSTER), eq(circles.frozen, true))).limit(1)
+  if (stillFrozen.length) await thawCircles()
 }
