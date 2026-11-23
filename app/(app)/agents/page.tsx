@@ -195,7 +195,7 @@ function Console({ onDone }: { onDone: () => void }) {
               {open.length === 0 && <p className="text-[12px] text-[#7D898C] h-8 flex items-center">No drop is filling right now.</p>}
               {open.map((d) => (
                 <button key={d.id} onClick={() => setPicked(d.id)} className={`h-8 px-2.5 rounded-full text-[12px] font-medium transition-all ${d.id === drop?.id ? 'bg-[#111111] text-white' : 'bg-black/[0.04] text-[#3A4548] hover:bg-black/[0.07]'}`}>
-                  {d.emoji} #{d.id + 1} {d.title}
+                  #{d.id + 1} {d.title}
                 </button>
               ))}
             </div>

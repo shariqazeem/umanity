@@ -50,7 +50,7 @@ export function CommunityQueue({ signer }: { signer: Signer }) {
       {pending.map((p) => (
         <article key={p.id} className="rounded-2xl border border-black/[0.06] p-4">
           <p className="font-semibold text-[14px]">
-            {p.emoji} {p.title} <span className="text-[#4F5B5E] font-normal">· {p.place}</span>
+            {p.title} <span className="text-[#4F5B5E] font-normal">· {p.place}</span>
           </p>
           <p className="text-[12px] text-[#4F5B5E] mt-0.5">
             {usdText(p.goalUsd, 2)} goal (list {usdText(listTotal(p.meta.items), 2)}) · cap {usdText(p.capUsd, 0)} · by {new Date(p.deadline).toLocaleDateString()} · runner {p.proposer.slice(0, 4)}…{p.proposer.slice(-4)} · {p.contact}

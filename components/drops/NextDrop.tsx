@@ -36,7 +36,7 @@ export function NextDrop() {
           </div>
           <Link href={dropHref(drop.id)} className="block mt-2 group">
             <h2 className="text-[26px] md:text-[30px] font-black tracking-[-0.03em] leading-[1.05] group-hover:underline decoration-2 underline-offset-4">
-              <span className="mr-2.5">{drop.emoji}</span>
+              
               {drop.title}
             </h2>
           </Link>

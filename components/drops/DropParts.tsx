@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { DropMark } from '@/components/drops/DropMark'
 import { useState, type ReactNode } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { explorerAccount, explorerTx } from '@/lib/solana/constants'
@@ -166,7 +167,7 @@ export function DropSteps({ drop, reviewHours }: { drop: DropDetail; reviewHours
 export function DropCard({ drop }: { drop: DropView }) {
   return (
     <Link href={dropHref(drop.id)} className="card card-interactive p-4 flex gap-4 items-start">
-      <div className="w-12 h-12 rounded-[16px] bg-[#E8EDEE] flex items-center justify-center text-[24px] flex-shrink-0">{drop.emoji}</div>
+      <div className="w-12 h-12 rounded-[16px] bg-[#E8EDEE] flex items-center justify-center flex-shrink-0"><DropMark drop={drop} size={34} /></div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[11px] font-semibold text-[#4F5B5E] uppercase tracking-[0.1em]">
@@ -316,7 +317,7 @@ export function GiftTicket({ drop, amountUsd, refundedUsd = 0 }: { drop: TicketD
   return (
     <Link href={dropHref(drop.id)} className="card p-4 block hover:border-black/[0.1] transition-colors">
       <div className="flex items-center gap-3">
-        <span className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[20px] flex-shrink-0">{drop.emoji}</span>
+        <span className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center flex-shrink-0"><DropMark drop={drop} size={30} /></span>
         <span className="flex-1 min-w-0">
           <span className="block text-[14px] font-semibold truncate">{drop.title}</span>
           <span className="block text-[12px] text-[#4F5B5E] truncate">

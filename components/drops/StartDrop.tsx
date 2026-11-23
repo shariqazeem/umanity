@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { DropMark } from '@/components/drops/DropMark'
 import Link from 'next/link'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { walletFetch } from '@/lib/client/admin'
@@ -23,7 +24,7 @@ const RULES: [string, string][] = [
 /** Anyone, anywhere, can run a drop: propose it, deliver it, film it, get paid from its pot. */
 export function StartDrop() {
   const { signer, openAuth, toast } = useUmanity()
-  const [f, setF] = useState({ emoji: '🍲', title: '', place: '', story: '', unitName: 'food pack', unitUsd: '25', people: '5', covers: 'a family of five for a week', deadline: inDays(14), cap: '', contact: '' })
+  const [f, setF] = useState({ emoji: '', title: '', place: '', story: '', unitName: 'food pack', unitUsd: '25', people: '5', covers: 'a family of five for a week', deadline: inDays(14), cap: '', contact: '' })
   const [items, setItems] = useState<Item[]>([blank()])
   const [busy, setBusy] = useState(false)
   const [mine, setMine] = useState<Proposal[] | null>(null)
@@ -45,7 +46,7 @@ export function StartDrop() {
     setBusy(true)
     const r = await walletFetch<{ id?: string; error?: string }>(signer, '/api/proposals', {
       body: {
-        meta: { title: f.title.trim(), place: f.place.trim(), story: f.story.trim(), emoji: f.emoji || '🍲', unit: { name: f.unitName.trim(), usd: Number(f.unitUsd), people: Number(f.people) || 0, covers: f.covers.trim() }, items: list },
+        meta: { title: f.title.trim(), place: f.place.trim(), story: f.story.trim(), emoji: '', unit: { name: f.unitName.trim(), usd: Number(f.unitUsd), people: Number(f.people) || 0, covers: f.covers.trim() }, items: list },
         goalUsd: goal,
         capUsd: Number(f.cap) || goal,
         deadline: new Date(`${f.deadline}T18:00:00Z`).toISOString(),
@@ -82,10 +83,7 @@ export function StartDrop() {
 
       <section className="card p-5 space-y-3">
         <h2 className="font-bold text-[16px]">Your drop</h2>
-        <div className="grid grid-cols-[64px_1fr] gap-2">
-          <input value={f.emoji} onChange={set('emoji')} className="input text-center !text-[20px]" aria-label="Emoji" />
-          <input value={f.title} onChange={set('title')} placeholder="Food packs for 10 families" className="input" />
-        </div>
+        <input value={f.title} onChange={set('title')} placeholder="Food packs for 10 families" className="input w-full" />
         <input value={f.place} onChange={set('place')} placeholder="Where: area, city, country" className="input w-full" />
         <textarea value={f.story} onChange={set('story')} rows={3} placeholder="Who it helps, how you found them, and how you'll deliver and film it" className="input w-full" />
 
@@ -155,7 +153,7 @@ function MyProposals({ mine, onSent }: { mine: Proposal[]; onSent: () => void })
           return (
             <li key={p.id} className="py-3">
               <div className="flex items-center gap-3">
-                <span className="text-[20px]">{p.emoji}</span>
+                <DropMark drop={{}} size={24} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[13.5px] font-semibold truncate">{p.title}</p>
                   <p className="text-[11.5px] text-[#4F5B5E]">

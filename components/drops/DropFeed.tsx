@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { DropMark } from '@/components/drops/DropMark'
 import Link from 'next/link'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar, Img } from '@/components/shared/ui'
@@ -191,7 +192,7 @@ function GiftCard({ item }: { item: Extract<HomeItem, { type: 'gift' }> }) {
       {item.message && <p className="text-[14px] text-[#111111] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{item.message}</p>}
 
       <div className="bg-emerald-50/60 rounded-xl p-3.5 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0">{item.drop.emoji}</div>
+        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0"><DropMark drop={item.drop} size={28} /></div>
         <div className="flex-1 min-w-0">
           <p className="text-[14px] font-semibold text-emerald-700 counter">
             {usdText(item.amountUsd)}
@@ -242,7 +243,7 @@ function UpdateCard({ item }: { item: Extract<HomeItem, { type: 'update' }> }) {
         <div className="flex items-center gap-2 mb-1.5">
           <span className={`pill !text-[9px] font-semibold ${proof ? 'bg-[#111111] text-white' : 'bg-[#E8EDEE] text-[#3A4548]'}`}>{proof ? 'Proof' : 'Update'}</span>
           <span className="text-[10px] text-[#7D898C] truncate">
-            {item.drop.emoji} Drop #{item.drop.id + 1} · <Ago at={item.at} />
+            Drop #{item.drop.id + 1} · <Ago at={item.at} />
           </span>
         </div>
         <p className="text-[15px] font-bold tracking-tight">{item.title}</p>
@@ -275,7 +276,7 @@ function UnlockedCard({ item }: { item: Extract<HomeItem, { type: 'unlocked' }> 
         <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-400">Delivered · <Ago at={item.at} /></span>
       </div>
       <p className="text-[17px] font-bold tracking-tight">
-        {item.drop.emoji} Drop #{item.drop.id + 1} unlocked {usdText(item.amountUsd)}
+        Drop #{item.drop.id + 1} unlocked {usdText(item.amountUsd)}
       </p>
       <p className="text-[13px] text-white/60 mt-1">
         {item.drop.title} for {item.drop.place}. The pot paid the supplier only after the filmed proof passed review.
@@ -299,7 +300,7 @@ function MissedCard({ item }: { item: Extract<HomeItem, { type: 'missed' }> }) {
         {item.cancelled ? 'Called off' : 'Missed its date'} · <Ago at={item.at} />
       </p>
       <p className="text-[15px] font-bold tracking-tight">
-        {item.drop.emoji} Drop #{item.drop.id + 1}: every backer gets their money back
+        Drop #{item.drop.id + 1}: every backer gets their money back
       </p>
       <p className="text-[13px] text-[#3A4548] mt-1">
         {item.drop.title} {item.cancelled ? 'was called off' : 'was not proven in time'}, so the program opened refunds{item.potUsd > 0 ? ` for the ${usdText(item.potUsd, 2)} still in the pot` : ''}. Each refund can only go back to the wallet that gave.
@@ -339,7 +340,7 @@ function FeesCard({ item }: { item: Extract<HomeItem, { type: 'fees' }> }) {
 function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
   return (
     <article className="card p-4 flex items-start gap-3">
-      <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0">{item.drop.emoji}</div>
+      <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0"><DropMark drop={item.drop} size={28} /></div>
       <div className="flex-1 min-w-0">
         <p className="text-[13.5px] font-semibold">
           Trading fees put <span className="text-emerald-700">{usdText(item.amountUsd, 2)}</span> into Drop #{item.drop.id + 1}

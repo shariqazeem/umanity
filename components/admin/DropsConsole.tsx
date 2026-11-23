@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { DropMark } from '@/components/drops/DropMark'
 import Link from 'next/link'
 import type { Signer } from '@/components/providers/UmanityProvider'
 import { useUmanity } from '@/components/providers/UmanityProvider'
@@ -44,7 +45,7 @@ const blankItem = () => ({ name: '', qty: 1, unitUsd: 0 })
 
 function NewDrop({ signer, onCreated }: { signer: Signer; onCreated: () => void }) {
   const { toast } = useUmanity()
-  const [f, setF] = useState({ title: '', place: '', emoji: '🍲', story: '', unitName: 'ration pack', unitUsd: 30, people: 5, covers: 'a family of five for a month', payee: '', deadline: '', goal: '', cap: '' })
+  const [f, setF] = useState({ title: '', place: '', emoji: '', story: '', unitName: 'ration pack', unitUsd: 30, people: 5, covers: 'a family of five for a month', payee: '', deadline: '', goal: '', cap: '' })
   const [items, setItems] = useState([blankItem()])
   const [busy, setBusy] = useState(false)
   const total = listTotal(items.filter((i) => i.name && i.unitUsd > 0 && i.qty > 0))
@@ -58,7 +59,7 @@ function NewDrop({ signer, onCreated }: { signer: Signer; onCreated: () => void 
       title: f.title.trim(),
       place: f.place.trim(),
       story: f.story.trim(),
-      emoji: f.emoji.trim() || '🍲',
+      emoji: '',
       unit: { name: f.unitName.trim(), usd: Number(f.unitUsd), people: Number(f.people), covers: f.covers.trim() },
       items: items.filter((i) => i.name.trim()).map((i) => ({ name: i.name.trim(), qty: Number(i.qty), unitUsd: Number(i.unitUsd) })),
     }
@@ -78,10 +79,7 @@ function NewDrop({ signer, onCreated }: { signer: Signer; onCreated: () => void 
   return (
     <div className="space-y-3">
       <p className="text-[12.5px] text-[#4F5B5E]">The description below is hashed and the hash goes on-chain with the drop, so it can&apos;t be changed quietly later. Money can only ever go to the payee, and only after proof.</p>
-      <div className="grid sm:grid-cols-[64px_1fr] gap-2">
-        <input value={f.emoji} onChange={set('emoji')} className="input text-center !text-[20px]" aria-label="Emoji" />
-        <input value={f.title} onChange={set('title')} placeholder="Ration packs for 25 families" className="input" />
-      </div>
+      <input value={f.title} onChange={set('title')} placeholder="Ration packs for 25 families" className="input w-full" />
       <input value={f.place} onChange={set('place')} placeholder="Where (area, city)" className="input w-full" />
       <textarea value={f.story} onChange={set('story')} rows={3} placeholder="Who it is for, how they were found, who delivers and films it" className="input w-full resize-none" />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -153,7 +151,7 @@ function DropAdmin({ signer, drop, onChange }: { signer: Signer; drop: DropView;
   return (
     <Card className="p-5">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</div>
+        <div className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center flex-shrink-0"><DropMark drop={drop} size={30} /></div>
         <div className="flex-1 min-w-0">
           <Link href={dropHref(drop.id)} className="text-[15px] font-bold tracking-tight hover:underline">
             #{drop.id + 1} {drop.title}

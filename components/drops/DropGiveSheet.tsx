@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { DropMark } from '@/components/drops/DropMark'
 import { Transaction } from '@solana/web3.js'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Sheet } from '@/components/shared/ui'
@@ -137,7 +138,7 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
   return (
     <div className="p-6">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</div>
+        <div className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center flex-shrink-0"><DropMark drop={drop} size={30} /></div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#4F5B5E]">Drop #{drop.id + 1} · {dayText(drop.deadline)}</p>
           <p className="text-[16px] font-bold tracking-tight truncate">{drop.title}</p>

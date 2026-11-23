@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { DropMark } from '@/components/drops/DropMark'
 import { useEffect, useState } from 'react'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar } from '@/components/shared/ui'
@@ -313,7 +314,7 @@ function Receipts({ gifts }: { gifts: BackerProfile['gifts'] }) {
     <div className="card divide-y divide-black/[0.04]">
       {gifts.map((g) => (
         <div key={g.ref} className="flex items-center gap-3 px-4 py-3 hover:bg-black/[0.015] transition-colors">
-          <span className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">{g.emoji}</span>
+          <span className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0"><DropMark drop={{}} size={24} /></span>
           <Link href={dropHref(g.dropId)} className="flex-1 min-w-0 group">
             <p className="text-[13px] font-semibold truncate group-hover:underline">
               #{g.dropId + 1} {g.title}

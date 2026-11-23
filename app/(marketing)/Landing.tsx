@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { DropMark } from '@/components/drops/DropMark'
 import Link from 'next/link'
 import { Lockup, Mark } from '@/components/brand/Logo'
 import { circleSvg, type TallyState } from '@/lib/umanity/tally'
@@ -370,7 +371,7 @@ function HeroDrop() {
         <StatePill drop={drop} />
       </div>
       <Link href={dropHref(drop.id)} className="flex items-start gap-3 mt-3 group">
-        <span className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</span>
+        <span className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center flex-shrink-0"><DropMark drop={drop} size={30} /></span>
         <span className="min-w-0">
           <span className="block text-[18px] font-bold tracking-tight leading-snug group-hover:underline [text-wrap:balance]">{drop.title}</span>
           <span className="block text-[12.5px] text-[#4F5B5E] mt-0.5 truncate">{drop.place}</span>
@@ -508,7 +509,7 @@ function FieldSection() {
                       </div>
                       <div className="p-3">
                         <p className="text-[10px] text-[#4F5B5E]">
-                          {u.drop.emoji} Drop #{u.drop.id + 1} · {timeAgo(u.at)}
+                          Drop #{u.drop.id + 1} · {timeAgo(u.at)}
                         </p>
                         <p className="text-[12px] font-semibold leading-snug mt-0.5 line-clamp-2">{u.title}</p>
                       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { DropMark } from '@/components/drops/DropMark'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { StateIcon } from '@/components/shared/ProofOrb'
@@ -65,7 +66,7 @@ export function DropDetailView() {
         <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-emerald-100/50 blur-3xl pointer-events-none" />
         <div className="relative">
           <div className="flex items-start justify-between gap-4">
-            <div className="w-16 h-16 rounded-[22px] bg-[#E8EDEE] flex items-center justify-center text-[32px] flex-shrink-0">{drop.emoji}</div>
+            <div className="w-16 h-16 rounded-[22px] bg-[#E8EDEE] flex items-center justify-center flex-shrink-0"><DropMark drop={drop} size={44} /></div>
             <div className="flex flex-wrap gap-1.5 justify-end">
               <RunnerBadge drop={drop} />
               <StatePill drop={drop} />
