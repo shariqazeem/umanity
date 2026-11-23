@@ -126,7 +126,7 @@ function GuardianWidget() {
           <span style={{ width: `${Math.round(g.progress * 100)}%` }} />
         </div>
         <p className="text-[11px] text-[#4F5B5E] mt-1 counter">
-          {user.rewardPoints.toLocaleString()} pts{user.streakCurrent > 0 ? ` · 🔥 ${user.streakCurrent}-day streak` : ''}
+          {user.rewardPoints.toLocaleString()} pts{user.streakCurrent > 0 ? ` · ${user.streakCurrent}-day streak` : ''}
         </p>
       </div>
     </Link>

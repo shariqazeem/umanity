@@ -115,7 +115,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
           {own ? (
             <>
               <button onClick={openProfileEditor} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
-                {p.handleClaimed ? 'Edit profile' : '✦ Pick your name'}
+                {p.handleClaimed ? 'Edit profile' : 'Pick your name'}
               </button>
               <button onClick={openWalletSheet} className="btn-secondary h-9 px-3.5 !text-[12.5px]">
                 Wallet
@@ -128,7 +128,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
               </button>
               {isAdmin && (
                 <Link href="/admin" className="btn-primary h-9 px-3.5 !text-[12.5px]">
-                  🚚 Team console
+                  Team console
                 </Link>
               )}
             </>
@@ -274,15 +274,12 @@ function StreakCard({ current, longest, days }: { current: number; longest: numb
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className={`text-2xl ${onFire ? 'animate-pulse' : ''}`} style={onFire ? { filter: 'drop-shadow(0 0 8px rgba(251,146,60,0.7))' } : undefined}>
-            🔥
-          </span>
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold counter">{current}</span>
               <span className="text-xs text-[#4F5B5E]">day streak</span>
             </div>
-            {onFire && <span className="inline-block pill !text-[10px] font-semibold text-orange-600 bg-orange-50 mt-0.5">On fire</span>}
+            {onFire && <span className="inline-block pill !text-[10px] font-semibold text-[#111111] bg-[#E8EDEE] mt-0.5">On fire</span>}
           </div>
         </div>
         <div className="text-right">

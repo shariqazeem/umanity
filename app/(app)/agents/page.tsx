@@ -53,13 +53,13 @@ export default function AgentsPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
-          { icon: '♡', title: 'Fill a drop', path: 'POST /api/x402/give', price: '$1 and up', body: 'The payment is the gift. It lands in the pot in the same request, and a signed receipt comes back.' },
-          { icon: '📋', title: 'See what is filling', path: 'GET /api/x402/give', price: 'free', body: 'Open drops, the room left in each pot, their dates, and how to pay.' },
-          { icon: '🧾', title: 'Check the receipts', path: 'GET /api/x402/receipts', price: 'free', body: 'Every paid call with its settlement transaction on Solana.' },
+          { icon: '01', title: 'Fill a drop', path: 'POST /api/x402/give', price: '$1 and up', body: 'The payment is the gift. It lands in the pot in the same request, and a signed receipt comes back.' },
+          { icon: '02', title: 'See what is filling', path: 'GET /api/x402/give', price: 'free', body: 'Open drops, the room left in each pot, their dates, and how to pay.' },
+          { icon: '03', title: 'Check the receipts', path: 'GET /api/x402/receipts', price: 'free', body: 'Every paid call with its settlement transaction on Solana.' },
         ].map((e) => (
           <div key={e.title} className="card p-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-xl bg-[#E8EDEE] flex items-center justify-center text-base">{e.icon}</div>
+              <div className="w-9 h-9 rounded-xl bg-[#E8EDEE] flex items-center justify-center font-mono text-[11px] font-bold">{e.icon}</div>
               <span className="text-[11px] font-bold counter text-emerald-600">{e.price}</span>
             </div>
             <p className="font-semibold text-[14px]">{e.title}</p>

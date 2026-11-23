@@ -59,9 +59,9 @@ export function guardianFor(input: { rewardPoints: number; streakCurrent: number
 }
 
 export const TIER_COLORS: Record<GuardianTier, { from: string; to: string; accent: string; glyph: string }> = {
-  Seed: { from: '#f4f4f2', to: '#e6e6e1', accent: '#6b7280', glyph: '🌰' },
-  Sprout: { from: '#F2F5F5', to: '#d1fae5', accent: '#111111', glyph: '🌱' },
-  Bloom: { from: '#fdf2f8', to: '#fce7f3', accent: '#db2777', glyph: '🌸' },
-  Guardian: { from: '#eef2ff', to: '#e0e7ff', accent: '#4f46e5', glyph: '🛡️' },
-  Sovereign: { from: '#111111', to: '#3f3f46', accent: '#fbbf24', glyph: '👑' },
+  Seed: { from: '#f4f4f2', to: '#e6e6e1', accent: '#6b7280', glyph: '01' },
+  Sprout: { from: '#F2F5F5', to: '#d1fae5', accent: '#111111', glyph: '02' },
+  Bloom: { from: '#fdf2f8', to: '#fce7f3', accent: '#db2777', glyph: '03' },
+  Guardian: { from: '#eef2ff', to: '#e0e7ff', accent: '#4f46e5', glyph: '04' },
+  Sovereign: { from: '#111111', to: '#3f3f46', accent: '#fbbf24', glyph: '05' },
 }

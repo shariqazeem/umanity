@@ -17,6 +17,7 @@ import { pickNextDrop, useDrops } from './hooks'
 import { useSeed } from './seed'
 import { dropHref } from './DropParts'
 import { Ago } from '@/components/shared/Ago'
+import { StateIcon } from '@/components/shared/ProofOrb'
 
 const FILTERS = [
   { key: 'all', label: 'For you' },
@@ -62,7 +63,7 @@ export function DropFeed() {
   const dare = () => {
     const where = next ? `${window.location.origin}${dropHref(next.id)}` : window.location.origin
     const what = next ? `${next.title} (${next.place})` : 'the next Umanity drop'
-    const text = `I'm putting money into ${what} on @umanity_xyz. It only pays out once the delivery is filmed and checked, and comes back if it isn't.\n\nI dare you to match me 👇\n${where}`
+    const text = `I'm putting money into ${what} on @umanity_xyz. It only pays out once the delivery is filmed and checked, and comes back if it isn't.\n\nI dare you to match me:\n${where}`
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener')
   }
 
@@ -102,7 +103,7 @@ export function DropFeed() {
       ) : visible.length === 0 ? (
         <div className="card p-10 text-center">
           <div className="w-12 h-12 rounded-full bg-[#E8EDEE] flex items-center justify-center mx-auto mb-3">
-            <span className="text-xl">✦</span>
+            <StateIcon state="open" size={28} />
           </div>
           <p className="text-[#111111] font-semibold text-[15px] mb-1">{failed ? 'The feed could not load' : filter === 'all' ? 'Nothing has happened yet' : 'Nothing here yet'}</p>
           <p className="text-[#4F5B5E] text-[13px] mb-5 max-w-sm mx-auto">{failed ? 'It will retry on its own.' : 'Every gift, filmed delivery and payout lands here with its transaction.'}</p>
@@ -363,7 +364,7 @@ function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
 function TeamGiftsCard({ gifts, usd }: { gifts: number; usd: number }) {
   return (
     <article className="card p-4 flex items-start gap-3">
-      <div className="w-10 h-10 rounded-xl bg-[#E8EDEE] flex items-center justify-center text-lg flex-shrink-0">🧪</div>
+      <div className="w-10 h-10 rounded-xl bg-[#E8EDEE] flex items-center justify-center font-mono text-[10px] font-bold uppercase flex-shrink-0">Test</div>
       <div className="flex-1 min-w-0">
         <p className="text-[13.5px] font-semibold">The team tested every way to give</p>
         <p className="text-[12px] text-[#4F5B5E] mt-0.5">
@@ -405,7 +406,7 @@ function FundGiftCard({ item }: { item: Extract<HomeItem, { type: 'fundGift' }> 
       {item.message && <p className="text-[14px] text-[#111111] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{item.message}</p>}
 
       <div className="bg-emerald-50/60 rounded-xl p-3.5 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0 text-emerald-700">♡</div>
+        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0"><StateIcon state="open" size={26} /></div>
         <div className="flex-1 min-w-0">
           <p className="text-[14px] font-semibold text-emerald-700 counter">
             {usdText(item.amountUsd)}

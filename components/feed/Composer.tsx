@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { StateIcon } from '@/components/shared/ProofOrb'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Avatar } from '@/components/shared/ui'
 import { apiSend } from '@/lib/client/api'
@@ -16,7 +17,7 @@ export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => v
     return (
       <div className="card p-4 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-[#E8EDEE] flex items-center justify-center flex-shrink-0">
-          <span className="text-xs">✦</span>
+          <StateIcon state="open" size={16} />
         </div>
         <div className="flex-1">
           <p className="text-[13px] font-medium">Sign in to post, give and dare friends</p>
@@ -54,7 +55,7 @@ export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => v
           <div className="flex justify-between items-center mt-2 gap-2">
             {onDare ? (
               <button onClick={onDare} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 text-[12px] font-semibold hover:bg-amber-100 transition-colors">
-                ⚡ Dare a friend
+                Dare a friend
               </button>
             ) : (
               <span />

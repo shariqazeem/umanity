@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
+import { StateIcon } from '@/components/shared/ProofOrb'
 import { useParams } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { useDrop } from '@/components/drops/hooks'
@@ -68,8 +69,8 @@ export function DropDetailView() {
             <div className="flex flex-wrap gap-1.5 justify-end">
               <RunnerBadge drop={drop} />
               <StatePill drop={drop} />
-              {!missed && <span className="pill bg-black/[0.04] text-[#3A4548] !text-[10px]">📍 {drop.place}</span>}
-              <span className="pill bg-black/[0.04] text-[#3A4548] !text-[10px]">🗓 {dayText(drop.deadline)}</span>
+              {!missed && <span className="pill bg-black/[0.04] text-[#3A4548] !text-[10px]">{drop.place}</span>}
+              <span className="pill bg-black/[0.04] text-[#3A4548] !text-[10px]">{dayText(drop.deadline)}</span>
             </div>
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600 mt-5">Drop #{drop.id + 1}</p>
@@ -146,7 +147,7 @@ export function DropDetailView() {
           </div>
         ) : (
           <div className="card p-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#E8EDEE] flex items-center justify-center mx-auto mb-3 text-xl">🎥</div>
+            <div className="w-12 h-12 rounded-full bg-[#E8EDEE] flex items-center justify-center mx-auto mb-3"><StateIcon state="open" size={28} /></div>
             {drop.refundsOpen ? (
               <>
                 <p className="font-semibold text-[15px]">{drop.state === 'cancelled' ? 'Called off before delivery' : 'Not delivered in time'}</p>

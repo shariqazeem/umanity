@@ -1,15 +1,22 @@
 'use client'
 
+import { circleSvg, type TallyState } from '@/lib/umanity/tally'
+
+/** A small Tally state: open (waiting, in the pot), closed (filmed, unlocked), home (refunded, missed). */
+export function StateIcon({ state, size = 20, className = '' }: { state: TallyState; size?: number; className?: string }) {
+  return <span className={`inline-block shrink-0 leading-none ${className}`} style={{ width: size, height: size }} aria-hidden="true" dangerouslySetInnerHTML={{ __html: circleSvg({ n: 0, gifts: 0 }, { state, turn: -30, held: 'plain', gap: 16, slide: 10, rim: 9 }, size, 112) }} />
+}
+
 /**
  * The Proof Orb from the original Umanity: a living badge that grows and glows
  * with what someone has given and how much the network engaged with it.
  * Emerald → silver → gold → diamond as lifetime giving crosses each tier.
  */
 export function orbColors(totalDonated: number) {
-  if (totalDonated >= 1.0) return { primary: '#3b82f6', secondary: '#8b5cf6', glyph: '💎', tier: 'Diamond' }
-  if (totalDonated >= 0.5) return { primary: '#eab308', secondary: '#f59e0b', glyph: '🥇', tier: 'Gold' }
-  if (totalDonated >= 0.1) return { primary: '#9ca3af', secondary: '#d1d5db', glyph: '🥈', tier: 'Silver' }
-  return { primary: '#111111', secondary: '#34d399', glyph: '✦', tier: 'Bronze' }
+  if (totalDonated >= 1.0) return { primary: '#3b82f6', secondary: '#8b5cf6', glyph: '04', tier: 'Diamond' }
+  if (totalDonated >= 0.5) return { primary: '#eab308', secondary: '#f59e0b', glyph: '03', tier: 'Gold' }
+  if (totalDonated >= 0.1) return { primary: '#9ca3af', secondary: '#d1d5db', glyph: '02', tier: 'Silver' }
+  return { primary: '#111111', secondary: '#34d399', glyph: '01', tier: 'Bronze' }
 }
 
 export function ProofOrb({ totalDonated, engagement = 0, size = 'md', className = '' }: { totalDonated: number; engagement?: number; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }) {
@@ -39,7 +46,7 @@ export function ProofOrb({ totalDonated, engagement = 0, size = 'md', className 
           boxShadow: `inset 0 -2px 6px rgba(0,0,0,0.15), 0 2px 8px ${c.primary}50`,
         }}
       >
-        <span className="font-bold text-white" style={{ fontSize: baseSize * 0.16 }}>
+        <span className="font-mono font-bold text-white" style={{ fontSize: baseSize * 0.16 }}>
           {c.glyph}
         </span>
       </div>

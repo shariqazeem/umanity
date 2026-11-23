@@ -2,6 +2,7 @@
 
 import { NextDrop } from '@/components/drops/NextDrop'
 import Link from 'next/link'
+import { StateIcon } from '@/components/shared/ProofOrb'
 import { DropCard } from '@/components/drops/DropParts'
 import { pickNextDrop, useDrops } from '@/components/drops/hooks'
 import { TokenStrip } from '@/components/trade/TokenStrip'
@@ -29,7 +30,7 @@ export function GiveDrops() {
 
       {!loading && drops && drops.length === 0 && (
         <div className="card p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-[#E8EDEE] flex items-center justify-center mx-auto mb-3 text-xl">🍲</div>
+          <div className="w-12 h-12 rounded-full bg-[#E8EDEE] flex items-center justify-center mx-auto mb-3"><StateIcon state="open" size={28} /></div>
           <p className="font-semibold text-[15px]">The first drop opens soon</p>
           <p className="text-[13px] text-[#4F5B5E] mt-1 max-w-sm mx-auto">Each drop lists what it buys, where it goes and the date it must be delivered by.</p>
         </div>

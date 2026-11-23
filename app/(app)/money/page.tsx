@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { StateIcon } from '@/components/shared/ProofOrb'
 import { useMoney } from '@/components/drops/hooks'
 import { DropCard, dropHref } from '@/components/drops/DropParts'
 import { explorerAccount, explorerTx } from '@/lib/solana/constants'
@@ -46,7 +47,7 @@ export default function MoneyPage() {
             <ul className="divide-y divide-black/[0.04]">
               {data.recent.map((e) => (
                 <li key={e.id} className="flex items-center gap-3 py-2.5 text-[13px]">
-                  <span className="w-7 text-center text-[15px]">{MOVE[e.kind]?.icon ?? '•'}</span>
+                  <span className="w-7 flex items-center justify-center text-[15px]">{MOVE[e.kind]?.icon ?? '•'}</span>
                   <span className="flex-1 min-w-0 truncate">
                     {MOVE[e.kind]?.text(e) ?? e.kind}
                     {e.dropId != null && (
@@ -102,11 +103,11 @@ export default function MoneyPage() {
 }
 
 type Move = MoneySummary['recent'][number]
-const MOVE: Record<string, { icon: string; text: (e: Move) => ReactNode }> = {
-  gave: { icon: '♡', text: (e) => <>Gift from {e.party ? short(e.party) : 'someone'}</> },
+const MOVE: Record<string, { icon: ReactNode; text: (e: Move) => ReactNode }> = {
+  gave: { icon: <StateIcon state="open" size={20} />, text: (e) => <>Gift from {e.party ? short(e.party) : 'someone'}</> },
   fundedDrop: { icon: '↘', text: () => 'Trading fees put into a pot' },
-  unlocked: { icon: '🔓', text: (e) => <>Unlocked to the delivery wallet {e.party ? short(e.party) : ''}</> },
-  refunded: { icon: '↩️', text: (e) => <>Refund to {e.party ? short(e.party) : 'a backer'}</> },
+  unlocked: { icon: <StateIcon state="closed" size={20} />, text: (e) => <>Unlocked to the delivery wallet {e.party ? short(e.party) : ''}</> },
+  refunded: { icon: <StateIcon state="home" size={20} />, text: (e) => <>Refund to {e.party ? short(e.party) : 'a backer'}</> },
   returnedToFund: { icon: '↻', text: () => 'Returned to the drops fund' },
   feesSplit: { icon: '½', text: () => 'Fees split, half to drops, half to Umanity' },
   meteoraFeesClaimed: { icon: '⇄', text: () => '$UMANITY trading fees claimed' },

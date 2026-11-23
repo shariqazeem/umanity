@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { StateIcon } from '@/components/shared/ProofOrb'
 import { Transaction } from '@solana/web3.js'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { Sheet } from '@/components/shared/ui'
@@ -118,7 +119,7 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
   return (
     <div className="p-6">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-[14px] bg-emerald-50 flex items-center justify-center text-[20px] text-emerald-700 flex-shrink-0">♡</div>
+        <div className="w-11 h-11 rounded-[14px] bg-emerald-50 flex items-center justify-center flex-shrink-0"><StateIcon state="open" size={30} /></div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#4F5B5E]">
             The Umanity fund

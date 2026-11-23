@@ -14,10 +14,10 @@ const blank = (): Item => ({ name: '', qty: 1, unitUsd: 0 })
 const inDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10)
 
 const RULES: [string, string][] = [
-  ['🎥', 'You are paid only after your delivery is filmed and checked: the receipt, the goods and the handover.'],
-  ['↩︎', 'Miss your date and every giver gets their money back, by code.'],
-  ['✓', 'The Umanity team reviews each drop before it opens, and checks each proof before it pays.'],
-  ['⚖️', 'Same rules as Umanity’s own drops: gifts go 100% to the pot, and Umanity takes nothing from them.'],
+  ['01', 'You are paid only after your delivery is filmed and checked: the receipt, the goods and the handover.'],
+  ['02', 'Miss your date and every giver gets their money back, by code.'],
+  ['03', 'The Umanity team reviews each drop before it opens, and checks each proof before it pays.'],
+  ['04', 'Same rules as Umanity’s own drops: gifts go 100% to the pot, and Umanity takes nothing from them.'],
 ]
 
 /** Anyone, anywhere, can run a drop: propose it, deliver it, film it, get paid from its pot. */
@@ -72,7 +72,7 @@ export function StartDrop() {
       <section className="card p-5 grid sm:grid-cols-2 gap-3">
         {RULES.map(([icon, text]) => (
           <div key={text} className="flex gap-3">
-            <span className="w-8 h-8 rounded-xl bg-[#E8EDEE] flex items-center justify-center text-[15px] flex-shrink-0">{icon}</span>
+            <span className="w-8 h-8 rounded-xl bg-[#E8EDEE] flex items-center justify-center font-mono text-[11px] font-bold flex-shrink-0">{icon}</span>
             <p className="text-[13px] text-[#3A4548] leading-snug">{text}</p>
           </div>
         ))}

@@ -75,7 +75,7 @@ export function LeftNav() {
                 <span className="block text-[13px] font-semibold truncate">{user ? `@${user.username}` : short(signer.publicKey.toBase58())}</span>
                 <span className="block text-[11px] text-[#4F5B5E] counter">
                   {usdc == null ? '…' : `$${usdc.toFixed(2)} USDC`}
-                  {user && user.streakCurrent > 0 && <span className="ml-1.5">· 🔥 {user.streakCurrent}</span>}
+                  {user && user.streakCurrent > 0 && <span className="ml-1.5">· {user.streakCurrent}-day streak</span>}
                 </span>
               </span>
             </button>
