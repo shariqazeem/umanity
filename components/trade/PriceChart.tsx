@@ -31,7 +31,7 @@ export function PriceChart({ points, height = 168, onHover }: { points: ChartPoi
   const span = points.length > 1 ? points[points.length - 1].t - points[0].t : 1
   const up = points.length < 2 || points[points.length - 1].p >= points[0].p
   const flat = points.every((p) => p.p === points[0]?.p)
-  const color = up ? '#10b981' : '#ef4444'
+  const color = up ? '#111111' : '#ef4444'
 
   const geo = useMemo(() => {
     const t0 = points[0]?.t ?? 0
@@ -93,10 +93,10 @@ export function PriceChart({ points, height = 168, onHover }: { points: ChartPoi
         </defs>
         <path d={geo.area} fill={`url(#${fillId})`} />
         <path d={geo.line} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-        {hx != null && <line x1={hx} x2={hx} y1="0" y2={height} stroke="#1d1d1f" strokeOpacity="0.18" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
+        {hx != null && <line x1={hx} x2={hx} y1="0" y2={height} stroke="#111111" strokeOpacity="0.18" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
       </svg>
       {flat && at == null && height >= 100 && (
-        <span className="absolute left-1/2 -translate-x-1/2 top-3 text-[11px] text-[#86868b] bg-white/80 rounded-full px-2.5 py-0.5 pointer-events-none whitespace-nowrap">
+        <span className="absolute left-1/2 -translate-x-1/2 top-3 text-[11px] text-[#4F5B5E] bg-white/80 rounded-full px-2.5 py-0.5 pointer-events-none whitespace-nowrap">
           No price change in this window
         </span>
       )}
@@ -104,7 +104,7 @@ export function PriceChart({ points, height = 168, onHover }: { points: ChartPoi
         <>
           <span className="absolute w-2.5 h-2.5 rounded-full border-2 border-white pointer-events-none" style={{ left: `calc(${(hx / W) * 100}% - 5px)`, top: hy - 5, background: color }} />
           <span
-            className="absolute -top-1 px-2 py-0.5 rounded-full bg-[#1d1d1f] text-white text-[10.5px] font-semibold counter pointer-events-none whitespace-nowrap"
+            className="absolute -top-1 px-2 py-0.5 rounded-full bg-[#111111] text-white text-[10.5px] font-semibold counter pointer-events-none whitespace-nowrap"
             style={{ left: `clamp(0px, calc(${(hx / W) * 100}% - 40px), calc(100% - 92px))` }}
           >
             {clock(points[at].t, span)}

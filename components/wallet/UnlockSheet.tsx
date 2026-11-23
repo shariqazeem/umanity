@@ -29,7 +29,7 @@ export function UnlockSheet() {
       {unlockPrompt?.mode === 'protect' && (
         <div className="pt-1">
           <ProtectChoice intro={unlockPrompt.reason} onDone={() => answerUnlock(true)} />
-          <button onClick={() => answerUnlock(false)} className="block mx-auto mt-4 text-[12.5px] text-[#86868b] hover:text-[#1d1d1f]">
+          <button onClick={() => answerUnlock(false)} className="block mx-auto mt-4 text-[12.5px] text-[#4F5B5E] hover:text-[#111111]">
             Not now
           </button>
         </div>
@@ -74,11 +74,11 @@ function Unlock({ vault, reason, onDone }: { vault: Vault; reason: string; onDon
 
   return (
     <div className="pt-1">
-      <span className="w-12 h-12 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center">
+      <span className="w-12 h-12 rounded-full bg-[#111111] text-white flex items-center justify-center">
         <Icon name="lock" size={22} />
       </span>
       <h3 className="text-[22px] font-bold tracking-[-0.02em] mt-4">Unlock your wallet</h3>
-      <p className="text-[14px] text-[#86868b] mt-1.5">{reason}</p>
+      <p className="text-[14px] text-[#4F5B5E] mt-1.5">{reason}</p>
 
       {vault.method === 'passkey' ? (
         <Btn full size="lg" className="mt-5" onClick={withPasskey} loading={busy} icon="key">
@@ -99,7 +99,7 @@ function Unlock({ vault, reason, onDone }: { vault: Vault; reason: string; onDon
         </form>
       )}
       {error && <p className="text-[12.5px] text-[#c53030] mt-3">{error}</p>}
-      <button onClick={() => onDone(false)} className="block mx-auto mt-4 text-[12.5px] text-[#86868b] hover:text-[#1d1d1f]">
+      <button onClick={() => onDone(false)} className="block mx-auto mt-4 text-[12.5px] text-[#4F5B5E] hover:text-[#111111]">
         Cancel
       </button>
     </div>
@@ -144,33 +144,33 @@ export function ProtectChoice({ onDone, intro }: { onDone: () => void; intro?: s
 
   return (
     <div>
-      <h3 className="text-[24px] font-bold tracking-[-0.02em] text-[#1d1d1f]">Lock your wallet</h3>
-      <p className="text-[14px] text-[#86868b] mt-2 leading-relaxed">{intro ?? 'Your key is sealed on this device. Only you can open it, and only to sign.'}</p>
+      <h3 className="text-[24px] font-bold tracking-[-0.02em] text-[#111111]">Lock your wallet</h3>
+      <p className="text-[14px] text-[#4F5B5E] mt-2 leading-relaxed">{intro ?? 'Your key is sealed on this device. Only you can open it, and only to sign.'}</p>
 
       {mode === 'choose' ? (
         <>
-          <button onClick={withPasskey} disabled={busy} className="mt-6 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group disabled:opacity-60">
+          <button onClick={withPasskey} disabled={busy} className="mt-6 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#111111] p-4 transition-colors group disabled:opacity-60">
             <div className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center">
+              <span className="w-11 h-11 rounded-full bg-[#111111] text-white flex items-center justify-center">
                 <Icon name="key" size={20} />
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[15px] font-semibold">{busy ? 'Waiting for you…' : `Use ${name}`}</span>
-                <span className="block text-[12.5px] text-[#86868b]">A passkey on this device or your phone. Nothing to remember.</span>
+                <span className="block text-[12.5px] text-[#4F5B5E]">A passkey on this device or your phone. Nothing to remember.</span>
               </span>
-              <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
+              <Icon name="arrowRight" size={18} className="text-[#7D898C] group-hover:text-[#111111] transition-colors" />
             </div>
           </button>
-          <button onClick={() => (setMode('passcode'), setError(''))} className="mt-2.5 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group">
+          <button onClick={() => (setMode('passcode'), setError(''))} className="mt-2.5 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#111111] p-4 transition-colors group">
             <div className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full bg-black/[0.05] text-[#1d1d1f] flex items-center justify-center">
+              <span className="w-11 h-11 rounded-full bg-black/[0.05] text-[#111111] flex items-center justify-center">
                 <Icon name="lock" size={20} />
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[15px] font-semibold">Use a passcode</span>
-                <span className="block text-[12.5px] text-[#86868b]">{MIN_PASSCODE} or more characters, asked when you give.</span>
+                <span className="block text-[12.5px] text-[#4F5B5E]">{MIN_PASSCODE} or more characters, asked when you give.</span>
               </span>
-              <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
+              <Icon name="arrowRight" size={18} className="text-[#7D898C] group-hover:text-[#111111] transition-colors" />
             </div>
           </button>
         </>
@@ -187,9 +187,9 @@ export function ProtectChoice({ onDone, intro }: { onDone: () => void; intro?: s
           <Btn full size="lg" type="submit" loading={busy} disabled={!passcode || !repeat}>
             Lock wallet
           </Btn>
-          <p className="text-[12px] text-[#86868b] leading-relaxed">If you forget it and lose your backup, nobody can open this wallet. Back it up from Wallet once it has money in it.</p>
+          <p className="text-[12px] text-[#4F5B5E] leading-relaxed">If you forget it and lose your backup, nobody can open this wallet. Back it up from Wallet once it has money in it.</p>
           {canUsePasskeys && (
-            <button type="button" onClick={() => (setMode('choose'), setError(''))} className="text-[12.5px] text-[#86868b] hover:text-[#1d1d1f]">
+            <button type="button" onClick={() => (setMode('choose'), setError(''))} className="text-[12.5px] text-[#4F5B5E] hover:text-[#111111]">
               Use {name} instead
             </button>
           )}

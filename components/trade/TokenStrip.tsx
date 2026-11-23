@@ -25,12 +25,12 @@ export function TokenStrip() {
           {priceText(token.priceUsd)}
           {change != null && <span className={`ml-2 text-[11.5px] font-bold ${up ? 'text-emerald-600' : 'text-red-500'}`}>{up ? '▲' : '▼'} {Math.abs(change) < 0.05 ? '0.0' : Math.abs(change).toFixed(1)}%</span>}
         </p>
-        <p className="text-[11.5px] text-[#86868b] mt-0.5">
+        <p className="text-[11.5px] text-[#4F5B5E] mt-0.5">
           Its fees sent <span className="font-semibold text-emerald-600 counter">{usdText((money?.fees.fromToken ?? 0) / 2, 2)}</span> to drops
         </p>
       </div>
       <div className="flex-1 min-w-[72px] pointer-events-none">{market ? <PriceChart points={market.points} height={40} /> : <div className="skeleton h-[40px]" />}</div>
-      <span className="text-[12.5px] font-semibold text-[#1d1d1f] whitespace-nowrap">Trade →</span>
+      <span className="text-[12.5px] font-semibold text-[#111111] whitespace-nowrap">Trade →</span>
     </Link>
   )
 }

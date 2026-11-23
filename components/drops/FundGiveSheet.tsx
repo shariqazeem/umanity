@@ -120,7 +120,7 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
       <div className="flex items-start gap-3">
         <div className="w-11 h-11 rounded-[14px] bg-emerald-50 flex items-center justify-center text-[20px] text-emerald-700 flex-shrink-0">♡</div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#86868b]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#4F5B5E]">
             The Umanity fund
             {money ? (FUND_GOAL ? ` · ${money.outside.fundGivers} of ${FUND_GOAL} givers` : ` · ${usdText(money.fund.balance, 2)} in it now`) : ''}
           </p>
@@ -141,7 +141,7 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
                 setCustom('')
                 setAmount(usd)
               }}
-              className={`hit rounded-2xl py-3 text-[17px] font-bold counter transition-all border ${active ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white border-black/[0.06] hover:border-black/[0.15]'}`}
+              className={`hit rounded-2xl py-3 text-[17px] font-bold counter transition-all border ${active ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-black/[0.06] hover:border-black/[0.15]'}`}
             >
               {usdText(usd)}
             </button>
@@ -152,7 +152,7 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
         <input inputMode="decimal" placeholder="Another amount, in $" value={custom} onChange={(e) => setCustom(e.target.value.replace(/[^0-9.]/g, ''))} className="input w-full" />
       </div>
 
-      <ul className="mt-4 space-y-1.5 text-[12.5px] text-[#525252]">
+      <ul className="mt-4 space-y-1.5 text-[12.5px] text-[#3A4548]">
         {process.env.NEXT_PUBLIC_CIRCLES_COLLECTION && (
           <li className="flex gap-2">
             <span className="text-emerald-600">◐</span> If you are one of the first hundred, a Circle is minted to your wallet.
@@ -165,13 +165,13 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
           <span className="text-emerald-600">✓</span> If a drop misses its date, its money comes back to the fund, not to anyone&apos;s wallet.
         </li>
         <li className="flex gap-2">
-          <span className="text-[#aeaeb2]">·</span> A gift to the fund can&apos;t be refunded to you.
+          <span className="text-[#7D898C]">·</span> A gift to the fund can&apos;t be refunded to you.
         </li>
       </ul>
 
-      {!valid && <p className="text-[12.5px] text-[#525252] mt-3">{value > 25_000 ? 'The biggest single gift is $25,000' : 'The smallest gift is $1'}</p>}
+      {!valid && <p className="text-[12.5px] text-[#3A4548] mt-3">{value > 25_000 ? 'The biggest single gift is $25,000' : 'The smallest gift is $1'}</p>}
 
-      <label className="flex items-center gap-2 mt-3 text-[12.5px] text-[#525252] cursor-pointer select-none">
+      <label className="flex items-center gap-2 mt-3 text-[12.5px] text-[#3A4548] cursor-pointer select-none">
         <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="accent-black" />
         Leave my name out of the credits
       </label>
@@ -179,9 +179,9 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
       {phase.kind === 'error' && <p className="mt-3 text-[12.5px] text-red-600">{phase.message}</p>}
 
       {short ? (
-        <div className="mt-5 rounded-2xl bg-[#f5f5f7] p-4">
+        <div className="mt-5 rounded-2xl bg-[#E8EDEE] p-4">
           <p className="text-[13.5px] font-semibold">You have {usdText(balance ?? 0, 2)} USDC on Solana</p>
-          <p className="text-[12.5px] text-[#86868b] mt-1">Send USDC on Solana to your wallet, then come back. Your address:</p>
+          <p className="text-[12.5px] text-[#4F5B5E] mt-1">Send USDC on Solana to your wallet, then come back. Your address:</p>
           <button onClick={() => navigator.clipboard.writeText(signer!.publicKey.toBase58()).then(() => toast('Address copied', 'ok'))} className="mt-2 w-full text-left font-mono text-[11.5px] bg-white rounded-xl px-3 py-2.5 border border-black/[0.06] hover:border-black/[0.15] break-all">
             {signer!.publicKey.toBase58()}
           </button>
@@ -194,7 +194,7 @@ function GiveToFund({ presetUsd, onClose }: { presetUsd?: number; onClose: () =>
           {phase.kind === 'signing' ? 'Confirm in your wallet…' : signer ? `Give ${valid ? usdText(value, value % 1 ? 2 : 0) : ''}` : 'Sign in to give'}
         </button>
       )}
-      <p className="text-[11px] text-[#aeaeb2] text-center mt-3">Umanity pays the network fee. Every dollar in the fund is on-chain.</p>
+      <p className="text-[11px] text-[#7D898C] text-center mt-3">Umanity pays the network fee. Every dollar in the fund is on-chain.</p>
     </div>
   )
 }

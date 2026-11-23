@@ -113,7 +113,7 @@ export function Btn({ tone = 'primary', size = 'md', loading, full, icon, iconRi
 
 export function IconBtn({ icon, label, size = 36, className = '', ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { icon: string; label: string; size?: number }) {
   return (
-    <button aria-label={label} title={label} className={`inline-flex items-center justify-center rounded-full text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/[0.05] transition-colors ${className}`} style={{ width: size, height: size }} {...rest}>
+    <button aria-label={label} title={label} className={`inline-flex items-center justify-center rounded-full text-[#4F5B5E] hover:text-[#111111] hover:bg-black/[0.05] transition-colors ${className}`} style={{ width: size, height: size }} {...rest}>
       <Icon name={icon} size={Math.round(size * 0.5)} />
     </button>
   )
@@ -137,17 +137,17 @@ export function Card({ children, className = '', onClick, as = 'div', style }: {
 
 export function Pill({ children, tone = 'gray', className = '', dot }: { children: ReactNode; tone?: 'gray' | 'green' | 'amber' | 'red' | 'blue' | 'dark' | 'white'; className?: string; dot?: boolean }) {
   const tones: Record<string, string> = {
-    gray: 'bg-black/[0.05] text-[#86868b]',
-    green: 'bg-[#ecfdf5] text-[#047857]',
+    gray: 'bg-black/[0.05] text-[#4F5B5E]',
+    green: 'bg-[#F2F5F5] text-[#111111]',
     amber: 'bg-[#fffbeb] text-[#b45309]',
     red: 'bg-[#fff1f1] text-[#c53030]',
     blue: 'bg-[#eff6ff] text-[#1d4ed8]',
-    dark: 'bg-[#1d1d1f] text-white',
-    white: 'bg-white/90 text-[#1d1d1f] shadow-sm',
+    dark: 'bg-[#111111] text-white',
+    white: 'bg-white/90 text-[#111111] shadow-sm',
   }
   return (
     <span className={`pill ${tones[tone]} ${className}`}>
-      {dot && <span className={`w-1.5 h-1.5 rounded-full ${tone === 'green' ? 'bg-[#10b981]' : tone === 'red' ? 'bg-[#e5484d]' : tone === 'amber' ? 'bg-[#d97706]' : 'bg-current'} ${tone === 'green' ? 'animate-pulse' : ''}`} />}
+      {dot && <span className={`w-1.5 h-1.5 rounded-full ${tone === 'green' ? 'bg-[#111111]' : tone === 'red' ? 'bg-[#e5484d]' : tone === 'amber' ? 'bg-[#d97706]' : 'bg-current'} ${tone === 'green' ? 'animate-pulse' : ''}`} />}
       {children}
     </span>
   )
@@ -173,11 +173,11 @@ export function Progress({ value, max, className = '' }: { value: number; max: n
 export function Empty({ title, sub, action, icon = 'spark' }: { title: string; sub?: string; action?: ReactNode; icon?: string }) {
   return (
     <div className="text-center py-14 px-6">
-      <div className="w-12 h-12 rounded-full bg-black/[0.04] text-[#aeaeb2] flex items-center justify-center mx-auto mb-4">
+      <div className="w-12 h-12 rounded-full bg-black/[0.04] text-[#7D898C] flex items-center justify-center mx-auto mb-4">
         <Icon name={icon} size={22} />
       </div>
-      <p className="font-semibold text-[15px] text-[#1d1d1f]">{title}</p>
-      {sub && <p className="text-[13.5px] text-[#86868b] mt-1 max-w-sm mx-auto leading-relaxed">{sub}</p>}
+      <p className="font-semibold text-[15px] text-[#111111]">{title}</p>
+      {sub && <p className="text-[13.5px] text-[#4F5B5E] mt-1 max-w-sm mx-auto leading-relaxed">{sub}</p>}
       {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   )
@@ -188,8 +188,8 @@ export function Stat({ label, value, sub, size = 'md', className = '' }: { label
   return (
     <div className={className}>
       <p className="eyebrow">{label}</p>
-      <p className={`num font-bold text-[#1d1d1f] mt-1 leading-none ${v}`}>{value}</p>
-      {sub && <p className="text-[12px] text-[#86868b] mt-1.5">{sub}</p>}
+      <p className={`num font-bold text-[#111111] mt-1 leading-none ${v}`}>{value}</p>
+      {sub && <p className="text-[12px] text-[#4F5B5E] mt-1.5">{sub}</p>}
     </div>
   )
 }
@@ -198,11 +198,11 @@ export function Field({ label, hint, children, right }: { label: string; hint?: 
   return (
     <label className="block">
       <span className="flex items-center justify-between mb-1.5">
-        <span className="text-[12.5px] font-semibold text-[#1d1d1f]">{label}</span>
+        <span className="text-[12.5px] font-semibold text-[#111111]">{label}</span>
         {right}
       </span>
       {children}
-      {hint && <span className="block text-[11.5px] text-[#aeaeb2] mt-1.5">{hint}</span>}
+      {hint && <span className="block text-[11.5px] text-[#7D898C] mt-1.5">{hint}</span>}
     </label>
   )
 }
@@ -211,7 +211,7 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
   return (
     <div className={`inline-flex bg-black/[0.05] rounded-full p-1 ${className}`}>
       {options.map((o) => (
-        <button key={o.value} onClick={() => onChange(o.value)} className={`px-3.5 h-8 rounded-full text-[12.5px] font-semibold transition-all ${value === o.value ? 'bg-white shadow-sm text-[#1d1d1f]' : 'text-[#86868b] hover:text-[#1d1d1f]'}`}>
+        <button key={o.value} onClick={() => onChange(o.value)} className={`px-3.5 h-8 rounded-full text-[12.5px] font-semibold transition-all ${value === o.value ? 'bg-white shadow-sm text-[#111111]' : 'text-[#4F5B5E] hover:text-[#111111]'}`}>
           {o.label}
         </button>
       ))}
@@ -222,10 +222,10 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label?: ReactNode }) {
   return (
     <button type="button" onClick={() => onChange(!on)} className="flex items-center gap-2.5" aria-pressed={on}>
-      <span className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors ${on ? 'bg-[#10b981]' : 'bg-black/[0.12]'}`}>
+      <span className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors ${on ? 'bg-[#111111]' : 'bg-black/[0.12]'}`}>
         <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${on ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
       </span>
-      {label && <span className="text-[13.5px] font-medium text-[#1d1d1f]">{label}</span>}
+      {label && <span className="text-[13.5px] font-medium text-[#111111]">{label}</span>}
     </button>
   )
 }
@@ -298,7 +298,7 @@ export function Sheet({ open, onClose, children, width = 'md', title, noPadding,
 export function TxLink({ sig, label = 'View transaction', cluster, className = '' }: { sig: string | null | undefined; label?: string; cluster?: string; className?: string }) {
   if (!sig || sig.startsWith('offchain') || sig.startsWith('intent_')) return null
   return (
-    <a href={explorerTx(sig, cluster)} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1 text-[12px] font-medium text-[#047857] hover:underline ${className}`}>
+    <a href={explorerTx(sig, cluster)} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1 text-[12px] font-medium text-[#111111] hover:underline ${className}`}>
       {label} <Icon name="arrowUpRight" size={12} />
     </a>
   )
@@ -306,7 +306,7 @@ export function TxLink({ sig, label = 'View transaction', cluster, className = '
 
 export function AccountLink({ address, label, cluster, className = '' }: { address: string; label?: string; cluster?: string; className?: string }) {
   return (
-    <a href={explorerAccount(address, cluster)} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1 num text-[12px] text-[#86868b] hover:text-[#1d1d1f] hover:underline ${className}`}>
+    <a href={explorerAccount(address, cluster)} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1 num text-[12px] text-[#4F5B5E] hover:text-[#111111] hover:underline ${className}`}>
       {label ?? `${address.slice(0, 4)}…${address.slice(-4)}`} <Icon name="arrowUpRight" size={11} />
     </a>
   )
@@ -320,8 +320,8 @@ export function SectionTitle({ title, sub, right, className = '' }: { title: Rea
   return (
     <div className={`flex items-end justify-between gap-4 mb-4 ${className}`}>
       <div className="min-w-0">
-        <h2 className="text-[20px] font-bold tracking-[-0.02em] text-[#1d1d1f]">{title}</h2>
-        {sub && <p className="text-[13.5px] text-[#86868b] mt-0.5">{sub}</p>}
+        <h2 className="text-[20px] font-bold tracking-[-0.02em] text-[#111111]">{title}</h2>
+        {sub && <p className="text-[13.5px] text-[#4F5B5E] mt-0.5">{sub}</p>}
       </div>
       {right && <div className="flex-shrink-0">{right}</div>}
     </div>

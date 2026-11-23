@@ -114,7 +114,7 @@ export default function TradePage() {
       <header className="pt-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">Trade</p>
         <h1 className="text-[28px] md:text-[34px] font-black tracking-[-0.035em] leading-[1.05] mt-1">Swaps that feed people</h1>
-        <p className="text-[14px] text-[#86868b] mt-2 max-w-xl [text-wrap:balance]">Jupiter&apos;s best route, with 0.5% when USDC is one side. Half of it fills the next drop.</p>
+        <p className="text-[14px] text-[#4F5B5E] mt-2 max-w-xl [text-wrap:balance]">Jupiter&apos;s best route, with 0.5% when USDC is one side. Half of it fills the next drop.</p>
       </header>
 
       <TokenCard token={token} market={market} tf={tf} onTf={setTf} onBuy={() => (setFrom('USDC'), setTo('UMANITY'), setPhase({ kind: 'idle' }))} onSell={() => (setFrom('UMANITY'), setTo('USDC'), setPhase({ kind: 'idle' }))} />
@@ -127,7 +127,7 @@ export default function TradePage() {
               <p className="text-[20px] font-bold counter">
                 You got {fmt(phase.got)} {phase.to.symbol}
               </p>
-              <p className="text-[13px] text-[#86868b] mt-1.5 max-w-xs mx-auto">
+              <p className="text-[13px] text-[#4F5B5E] mt-1.5 max-w-xs mx-auto">
                 {phase.feeUsd > 0 ? `Your ${usdText(phase.feeUsd, 2)} fee went to the program's fee inbox. Half of it will fill drops.` : 'No Umanity fee on this pair.'}
                 {phase.sponsored ? ' Umanity paid the network fee.' : ''}
               </p>
@@ -135,18 +135,18 @@ export default function TradePage() {
                 <a href={explorerTx(phase.signature)} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
                   View transaction ↗
                 </a>
-                <button onClick={() => setPhase({ kind: 'idle' })} className="text-[#86868b] hover:text-[#1d1d1f]">
+                <button onClick={() => setPhase({ kind: 'idle' })} className="text-[#4F5B5E] hover:text-[#111111]">
                   Swap again
                 </button>
               </div>
             </div>
           ) : (
             <>
-              <div className="rounded-2xl bg-[#f5f5f7] p-4">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-[#86868b]">
+              <div className="rounded-2xl bg-[#E8EDEE] p-4">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-[#4F5B5E]">
                   <span>You pay</span>
                   {bal != null && (
-                    <button onClick={() => setAmount(String(fromToken?.mint === NATIVE ? Math.max(0, Math.floor((bal - 0.01) * 1e4) / 1e4) : bal))} className="hover:text-[#1d1d1f]">
+                    <button onClick={() => setAmount(String(fromToken?.mint === NATIVE ? Math.max(0, Math.floor((bal - 0.01) * 1e4) / 1e4) : bal))} className="hover:text-[#111111]">
                       Balance {fmt(bal)} · Max
                     </button>
                   )}
@@ -157,31 +157,31 @@ export default function TradePage() {
                 </div>
               </div>
               <div className="flex justify-center -my-3 relative z-10">
-                <button onClick={flip} aria-label="Swap direction" className="w-9 h-9 rounded-full bg-white border border-black/[0.08] shadow-sm flex items-center justify-center text-[15px] hover:bg-[#f5f5f7]">
+                <button onClick={flip} aria-label="Swap direction" className="w-9 h-9 rounded-full bg-white border border-black/[0.08] shadow-sm flex items-center justify-center text-[15px] hover:bg-[#E8EDEE]">
                   ↓
                 </button>
               </div>
-              <div className="rounded-2xl bg-[#f5f5f7] p-4">
-                <div className="text-[11px] font-semibold text-[#86868b]">You get</div>
+              <div className="rounded-2xl bg-[#E8EDEE] p-4">
+                <div className="text-[11px] font-semibold text-[#4F5B5E]">You get</div>
                 <div className="flex items-center gap-3 mt-1">
                   <p className="flex-1 min-w-0 text-[28px] font-bold counter truncate">{quote && 'out' in quote ? fmt(quote.out) : '…'}</p>
                   <TokenSelect value={to} onChange={(v) => (setTo(v), setPhase({ kind: 'idle' }))} />
                 </div>
               </div>
 
-              <div className="mt-3 min-h-[52px] text-[12px] text-[#86868b] space-y-1">
+              <div className="mt-3 min-h-[52px] text-[12px] text-[#4F5B5E] space-y-1">
                 {quote && 'error' in quote && <p className="text-red-600">{quote.error}</p>}
                 {quote && 'out' in quote && (
                   <>
                     <p className="flex justify-between gap-3">
                       <span>Route</span>
-                      <span className="text-right text-[#525252]">
+                      <span className="text-right text-[#3A4548]">
                         {quote.route.slice(0, 3).join(', ') || 'Jupiter'} · impact {quote.priceImpactPct < 0.01 ? '<0.01' : quote.priceImpactPct.toFixed(2)}%
                       </span>
                     </p>
                     <p className="flex justify-between gap-3">
                       <span>Umanity fee</span>
-                      <span className="text-right text-[#525252]">
+                      <span className="text-right text-[#3A4548]">
                         {quote.feeBps ? (
                           <>
                             {usdText(quote.feeUsd, 2)} · <span className="text-emerald-600 font-semibold">{usdText(quote.feeUsd / 2, 2)} to drops</span>
@@ -206,13 +206,13 @@ export default function TradePage() {
                   <button disabled className="btn-primary w-full py-3.5 mt-3 !text-[14px]">
                     Swapping runs on Solana mainnet
                   </button>
-                  <p className="text-[11px] text-[#aeaeb2] text-center mt-2">This is the devnet preview. Prices are live mainnet quotes.</p>
+                  <p className="text-[11px] text-[#7D898C] text-center mt-2">This is the devnet preview. Prices are live mainnet quotes.</p>
                 </>
               )}
               {isMainnet && signer && (
-                <p className="text-[11px] text-[#aeaeb2] text-center mt-2">
+                <p className="text-[11px] text-[#7D898C] text-center mt-2">
                   No SOL for gas? Umanity pays the network fee for small wallets, a few swaps a day.
-                  <button onClick={() => navigator.clipboard.writeText(signer.publicKey.toBase58()).then(() => toast('Address copied', 'ok'))} className="ml-1 underline hover:text-[#86868b]">
+                  <button onClick={() => navigator.clipboard.writeText(signer.publicKey.toBase58()).then(() => toast('Address copied', 'ok'))} className="ml-1 underline hover:text-[#4F5B5E]">
                     Copy your address
                   </button>
                 </p>
@@ -226,21 +226,21 @@ export default function TradePage() {
 
       <section className="card p-5">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-600 mb-3">Where every fee goes</p>
-          <ol className="grid md:grid-cols-3 gap-4 text-[13px] text-[#525252]">
+          <ol className="grid md:grid-cols-3 gap-4 text-[13px] text-[#3A4548]">
             <li className="flex gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-[#1d1d1f] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">1</span>
+              <span className="w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">1</span>
               <span>Swaps pay 0.5% when USDC is one side, and $UMANITY trades pay its pool&apos;s 1%. Both go to the program, in the same transaction.</span>
             </li>
             <li className="flex gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-[#1d1d1f] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">2</span>
+              <span className="w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">2</span>
               <span>Only the program can move it, and only one way: half to the drops fund, half to Umanity.</span>
             </li>
             <li className="flex gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-[#1d1d1f] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">3</span>
+              <span className="w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">3</span>
               <span>The drops fund can only pay into drop pots, which unlock only after a filmed, checked delivery.</span>
             </li>
           </ol>
-          <Link href="/money" className="inline-block mt-4 text-[12.5px] font-semibold text-[#1d1d1f] hover:underline">
+          <Link href="/money" className="inline-block mt-4 text-[12.5px] font-semibold text-[#111111] hover:underline">
             Follow every dollar on Money →
           </Link>
       </section>
@@ -259,8 +259,8 @@ const FRAMES: [Timeframe, string][] = [
 function MintLine({ mint }: { mint: string }) {
   const { toast } = useUmanity()
   return (
-    <p className="flex items-center gap-2 mt-2 text-[11.5px] text-[#86868b]">
-      <button onClick={() => navigator.clipboard.writeText(mint).then(() => toast('Token address copied', 'ok'))} className="font-mono hover:text-[#1d1d1f]" title="Copy the token address">
+    <p className="flex items-center gap-2 mt-2 text-[11.5px] text-[#4F5B5E]">
+      <button onClick={() => navigator.clipboard.writeText(mint).then(() => toast('Token address copied', 'ok'))} className="font-mono hover:text-[#111111]" title="Copy the token address">
         {short(mint)} ⧉
       </button>
       <a href={`https://solscan.io/token/${mint}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
@@ -292,7 +292,7 @@ function TokenCard({ token, market, tf, onTf, onBuy, onSell }: { token: TokenSum
                 </span>
               )}
             </div>
-            <p className="text-[12.5px] text-[#86868b] mt-1.5 counter">
+            <p className="text-[12.5px] text-[#4F5B5E] mt-1.5 counter">
               {usdText(token.raisedUsd, 2)} in the curve · {usdText(token.marketCapUsd, 0)} fully diluted at the curve&apos;s price
               {market?.volume24hUsd != null && ` · 24h volume ${usdText(market.volume24hUsd, 0)}`}
             </p>
@@ -314,27 +314,27 @@ function TokenCard({ token, market, tf, onTf, onBuy, onSell }: { token: TokenSum
         <div className="flex items-center justify-between mt-3">
           <div className="flex gap-1">
             {FRAMES.map(([id, label]) => (
-              <button key={id} onClick={() => onTf(id)} className={`hit h-8 px-3 rounded-full text-[12px] font-semibold transition-colors ${tf === id ? 'bg-[#1d1d1f] text-white' : 'text-[#86868b] hover:bg-black/[0.04]'}`}>
+              <button key={id} onClick={() => onTf(id)} className={`hit h-8 px-3 rounded-full text-[12px] font-semibold transition-colors ${tf === id ? 'bg-[#111111] text-white' : 'text-[#4F5B5E] hover:bg-black/[0.04]'}`}>
                 {label}
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-[#aeaeb2]">{market?.source === 'chain' ? 'Price from the chain' : 'Chart by GeckoTerminal'}</p>
+          <p className="text-[11px] text-[#7D898C]">{market?.source === 'chain' ? 'Price from the chain' : 'Chart by GeckoTerminal'}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-3 mt-4">
-          <div className="rounded-2xl bg-[#f5f5f7] p-3.5">
+          <div className="rounded-2xl bg-[#E8EDEE] p-3.5">
             {token.graduated ? (
-              <p className="text-[12.5px] text-[#525252]">Graduated to a Meteora DAMM v2 pool. Its liquidity is locked for good to the program.</p>
+              <p className="text-[12.5px] text-[#3A4548]">Graduated to a Meteora DAMM v2 pool. Its liquidity is locked for good to the program.</p>
             ) : (
               <>
-                <p className="text-[12px] text-[#86868b] counter">
+                <p className="text-[12px] text-[#4F5B5E] counter">
                   {usdText(token.raisedUsd, 0)} of {usdText(token.graduateAtUsd, 0)} to graduation
                 </p>
                 <div className="progress emerald mt-2">
                   <span style={{ width: `${Math.max(1, Math.round(token.progress * 100))}%` }} />
                 </div>
-                <p className="text-[11px] text-[#aeaeb2] mt-1.5">Then its liquidity is locked for good.</p>
+                <p className="text-[11px] text-[#7D898C] mt-1.5">Then its liquidity is locked for good.</p>
               </>
             )}
           </div>
@@ -356,7 +356,7 @@ function TokenCard({ token, market, tf, onTf, onBuy, onSell }: { token: TokenSum
           </button>
         </div>
       </div>
-      <p className="px-5 md:px-6 pb-4 text-[10.5px] text-[#aeaeb2]">No team tokens, no presale. Not an investment, and no returns are promised.</p>
+      <p className="px-5 md:px-6 pb-4 text-[10.5px] text-[#7D898C]">No team tokens, no presale. Not an investment, and no returns are promised.</p>
     </section>
   )
 }
@@ -369,14 +369,14 @@ function TradesCard({ trades }: { trades: Market['trades'] | undefined }) {
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-600">Latest trades</p>
         {fresh && (
-          <span className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-[#86868b]">
+          <span className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-[#4F5B5E]">
             <span className="pulse-dot" />
             live
           </span>
         )}
       </div>
       {trades === null ? (
-        <p className="text-[12.5px] text-[#86868b] mt-3">The trade feed is catching up. Every trade is on Solscan meanwhile.</p>
+        <p className="text-[12.5px] text-[#4F5B5E] mt-3">The trade feed is catching up. Every trade is on Solscan meanwhile.</p>
       ) : !trades ? (
         <div className="space-y-2 mt-3">
           {[0, 1, 2, 3].map((i) => (
@@ -389,15 +389,15 @@ function TradesCard({ trades }: { trades: Market['trades'] | undefined }) {
             <li key={t.tx} className="flex items-center gap-2.5 py-2.5 text-[13px]">
               <span className={`w-11 text-center text-[10.5px] font-bold rounded-full py-0.5 flex-shrink-0 ${t.kind === 'buy' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{t.kind === 'buy' ? 'Buy' : 'Sell'}</span>
               <span className="font-semibold counter">{usdText(t.usd, t.usd < 10 ? 2 : 0)}</span>
-              <span className="text-[#aeaeb2] font-mono text-[11px] truncate">{short(t.wallet)}</span>
-              <a href={explorerTx(t.tx)} target="_blank" rel="noopener noreferrer" className="ml-auto text-[11.5px] text-[#86868b] hover:text-[#1d1d1f] whitespace-nowrap">
+              <span className="text-[#7D898C] font-mono text-[11px] truncate">{short(t.wallet)}</span>
+              <a href={explorerTx(t.tx)} target="_blank" rel="noopener noreferrer" className="ml-auto text-[11.5px] text-[#4F5B5E] hover:text-[#111111] whitespace-nowrap">
                 {timeAgo(new Date(t.at * 1000).toISOString())} ↗
               </a>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-[12.5px] text-[#86868b] mt-3">No trades yet. Every trade sends 0.4% of it to drops.</p>
+        <p className="text-[12.5px] text-[#4F5B5E] mt-3">No trades yet. Every trade sends 0.4% of it to drops.</p>
       )}
     </section>
   )

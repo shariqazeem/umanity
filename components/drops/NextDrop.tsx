@@ -40,13 +40,13 @@ export function NextDrop() {
               {drop.title}
             </h2>
           </Link>
-          <p className="text-[13.5px] text-[#86868b] mt-1.5">
+          <p className="text-[13.5px] text-[#4F5B5E] mt-1.5">
             {plural(Math.round(units), drop.unit.name)} in {drop.place}. Each covers {drop.unit.covers}. {daysLeft > 0 ? `${plural(daysLeft, 'day')} left.` : 'Closes today.'}
           </p>
           <div className="mt-5">
             <DropMeter drop={drop} />
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-[12px] text-[#525252]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-[12px] text-[#3A4548]">
             <span className="inline-flex items-center gap-1.5">
               <Icon name="camera" size={14} className="text-emerald-600" /> Pays on filmed proof
             </span>
@@ -54,15 +54,14 @@ export function NextDrop() {
               <Icon name="refresh" size={14} className="text-emerald-600" /> Refunded if it misses {dayText(drop.deadline)}
             </span>
             {delivered.length > 0 && (
-              <Link href={dropHref(delivered[0].id)} className="font-semibold text-[#1d1d1f] hover:underline">
+              <Link href={dropHref(delivered[0].id)} className="font-semibold text-[#111111] hover:underline">
                 Watch the last drop →
               </Link>
             )}
           </div>
         </div>
         <div className="flex justify-center">
-          <button onClick={() => openGive({ dropId: drop.id })} className="btn-primary w-44 h-44 md:w-48 md:h-48 !rounded-full flex flex-col items-center justify-center gap-1 hover:!shadow-2xl hover:!shadow-black/20">
-            <span className="text-2xl mb-1">♡</span>
+          <button onClick={() => openGive({ dropId: drop.id })} className="btn-primary give-cut w-44 h-44 md:w-48 md:h-48 !rounded-full flex flex-col items-center justify-center gap-1 hover:!shadow-2xl hover:!shadow-black/20">
             <span className="font-semibold text-[15px]">{signer ? 'Give' : 'Sign in & give'}</span>
             <span className="text-xs text-white/50">{usdText(drop.unit.usd)} = 1 {drop.unit.name}</span>
           </button>

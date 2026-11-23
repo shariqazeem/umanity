@@ -137,9 +137,9 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
   return (
     <div className="p-6">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-[14px] bg-[#f5f5f7] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</div>
+        <div className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#86868b]">Drop #{drop.id + 1} · {dayText(drop.deadline)}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#4F5B5E]">Drop #{drop.id + 1} · {dayText(drop.deadline)}</p>
           <p className="text-[16px] font-bold tracking-tight truncate">{drop.title}</p>
         </div>
         <button onClick={onClose} className="btn-ghost h-8 w-8 !p-0 !rounded-full" aria-label="Close">
@@ -173,10 +173,10 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
                 setCustom('')
                 setAmount(p.usd)
               }}
-              className={`rounded-2xl px-4 py-3 text-left transition-all border ${active ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white border-black/[0.06] hover:border-black/[0.15]'}`}
+              className={`rounded-2xl px-4 py-3 text-left transition-all border ${active ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-black/[0.06] hover:border-black/[0.15]'}`}
             >
               <span className="block text-[17px] font-bold counter">{usdText(p.usd)}</span>
-              <span className={`block text-[11.5px] ${active ? 'text-white/60' : 'text-[#86868b]'}`}>{p.label}</span>
+              <span className={`block text-[11.5px] ${active ? 'text-white/60' : 'text-[#4F5B5E]'}`}>{p.label}</span>
             </button>
           )
         })}
@@ -191,7 +191,7 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
         />
       </div>
 
-      <p className="text-[12.5px] text-[#525252] mt-3 min-h-[18px]">
+      <p className="text-[12.5px] text-[#3A4548] mt-3 min-h-[18px]">
         {valid
           ? units >= 1
             ? `= ${plural(Math.floor(units + 1e-9), drop.unit.name)}${helpedText(people, drop.unit.people)}`
@@ -201,7 +201,7 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
             : 'The smallest gift is $1'}
       </p>
 
-      <label className="flex items-center gap-2 mt-3 text-[12.5px] text-[#525252] cursor-pointer select-none">
+      <label className="flex items-center gap-2 mt-3 text-[12.5px] text-[#3A4548] cursor-pointer select-none">
         <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="accent-black" />
         Leave my name out of the credits
       </label>
@@ -209,9 +209,9 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
       {phase.kind === 'error' && <p className="mt-3 text-[12.5px] text-red-600">{phase.message}</p>}
 
       {short ? (
-        <div className="mt-5 rounded-2xl bg-[#f5f5f7] p-4">
+        <div className="mt-5 rounded-2xl bg-[#E8EDEE] p-4">
           <p className="text-[13.5px] font-semibold">You have {usdText(balance ?? 0, 2)} USDC on Solana</p>
-          <p className="text-[12.5px] text-[#86868b] mt-1">Send USDC on Solana to your wallet, then come back. Your address:</p>
+          <p className="text-[12.5px] text-[#4F5B5E] mt-1">Send USDC on Solana to your wallet, then come back. Your address:</p>
           <button onClick={() => navigator.clipboard.writeText(signer!.publicKey.toBase58()).then(() => toast('Address copied', 'ok'))} className="mt-2 w-full text-left font-mono text-[11.5px] bg-white rounded-xl px-3 py-2.5 border border-black/[0.06] hover:border-black/[0.15] break-all">
             {signer!.publicKey.toBase58()}
           </button>
@@ -228,11 +228,11 @@ function GiveToDrop({ dropId, presetUsd, onClose }: { dropId: number; presetUsd?
         </button>
       )}
       {!short && (
-        <button onClick={() => setAnyChain(true)} disabled={!valid} className="block w-full text-center text-[12.5px] font-semibold text-[#1d1d1f] mt-3 hover:underline disabled:opacity-40 disabled:no-underline">
+        <button onClick={() => setAnyChain(true)} disabled={!valid} className="block w-full text-center text-[12.5px] font-semibold text-[#111111] mt-3 hover:underline disabled:opacity-40 disabled:no-underline">
           Or pay from 30+ chains: ETH, BTC, USDC on Base…
         </button>
       )}
-      <p className="text-[11px] text-[#aeaeb2] text-center mt-3">Umanity pays the network fee. Comes back to you if the drop isn&apos;t proven by {dayText(drop.deadline)}.</p>
+      <p className="text-[11px] text-[#7D898C] text-center mt-3">Umanity pays the network fee. Comes back to you if the drop isn&apos;t proven by {dayText(drop.deadline)}.</p>
       </>
       )}
     </div>

@@ -9,7 +9,7 @@ export function orbColors(totalDonated: number) {
   if (totalDonated >= 1.0) return { primary: '#3b82f6', secondary: '#8b5cf6', glyph: '💎', tier: 'Diamond' }
   if (totalDonated >= 0.5) return { primary: '#eab308', secondary: '#f59e0b', glyph: '🥇', tier: 'Gold' }
   if (totalDonated >= 0.1) return { primary: '#9ca3af', secondary: '#d1d5db', glyph: '🥈', tier: 'Silver' }
-  return { primary: '#10b981', secondary: '#34d399', glyph: '✦', tier: 'Bronze' }
+  return { primary: '#111111', secondary: '#34d399', glyph: '✦', tier: 'Bronze' }
 }
 
 export function ProofOrb({ totalDonated, engagement = 0, size = 'md', className = '' }: { totalDonated: number; engagement?: number; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }) {

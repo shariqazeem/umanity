@@ -170,11 +170,11 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
 
   return (
     <div>
-      <button onClick={onBack} className="text-[12.5px] font-semibold text-[#86868b] hover:text-[#1d1d1f]">
+      <button onClick={onBack} className="text-[12.5px] font-semibold text-[#4F5B5E] hover:text-[#111111]">
         ← Pay from my Solana wallet
       </button>
       <p className="text-[18px] font-bold tracking-tight mt-2">Give {usdText(amountUsd, amountUsd % 1 ? 2 : 0)} from any chain</p>
-      <p className="text-[12.5px] text-[#525252] mt-1">Pay with what you already hold. Aurora Intents swaps it into USDC on Solana and the exact amount goes into the pot in your name.</p>
+      <p className="text-[12.5px] text-[#3A4548] mt-1">Pay with what you already hold. Aurora Intents swaps it into USDC on Solana and the exact amount goes into the pot in your name.</p>
 
       {!live ? (
         <>
@@ -183,9 +183,9 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
               const c = byId.get(t.assetId)?.chain
               const active = asset === t.assetId
               return (
-                <button key={t.assetId} onClick={() => setAsset(t.assetId)} className={`hit rounded-full h-9 px-3 text-[12px] font-semibold border transition-all ${active ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white border-black/[0.08] hover:border-black/[0.2]'}`}>
+                <button key={t.assetId} onClick={() => setAsset(t.assetId)} className={`hit rounded-full h-9 px-3 text-[12px] font-semibold border transition-all ${active ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-black/[0.08] hover:border-black/[0.2]'}`}>
                   {t.symbol}
-                  <span className={active ? 'text-white/60' : 'text-[#86868b]'}> · {c?.label}</span>
+                  <span className={active ? 'text-white/60' : 'text-[#4F5B5E]'}> · {c?.label}</span>
                 </button>
               )
             })}
@@ -203,15 +203,15 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
             ))}
           </select>
 
-          <div className="mt-3 rounded-2xl bg-[#f5f5f7] p-4 min-h-[72px]">
+          <div className="mt-3 rounded-2xl bg-[#E8EDEE] p-4 min-h-[72px]">
             {preview ? (
               <>
-                <p className="text-[13px] text-[#525252]">You send</p>
+                <p className="text-[13px] text-[#3A4548]">You send</p>
                 <p className="text-[18px] font-bold counter">
                   {preview.amountInFormatted} {preview.asset.symbol}
-                  <span className="text-[12.5px] font-semibold text-[#86868b]"> on {preview.asset.chainLabel}{preview.amountInUsd ? ` · about ${usdText(Number(preview.amountInUsd), 2)}` : ''}</span>
+                  <span className="text-[12.5px] font-semibold text-[#4F5B5E]"> on {preview.asset.chainLabel}{preview.amountInUsd ? ` · about ${usdText(Number(preview.amountInUsd), 2)}` : ''}</span>
                 </p>
-                <p className="text-[12.5px] text-[#525252] mt-1">
+                <p className="text-[12.5px] text-[#3A4548] mt-1">
                   {usdText(preview.amountUsd, preview.amountUsd % 1 ? 2 : 0)} lands in the pot{preview.timeEstimate ? `, usually in about ${Math.max(1, Math.round(preview.timeEstimate / 60))} min` : ''}.{' '}
                   {preview.feeBps > 0 ? `The price includes the swap and a ${(preview.feeBps / 100).toFixed(1)}% Umanity fee.` : 'The price includes the swap and network costs.'}
                 </p>
@@ -227,10 +227,10 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
             <>
               {(preview?.secretAvailable || secret) && (
                 <label className="mt-3 flex items-start gap-3 rounded-2xl border border-black/[0.08] p-3.5 cursor-pointer hover:border-black/[0.16] transition-colors">
-                  <input type="checkbox" checked={secret} onChange={(e) => setSecret(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[#1d1d1f] flex-shrink-0" />
+                  <input type="checkbox" checked={secret} onChange={(e) => setSecret(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[#111111] flex-shrink-0" />
                   <span className="min-w-0">
                     <span className="block text-[13px] font-semibold">Give in secret</span>
-                    <span className="block text-[12px] text-[#86868b] mt-0.5 leading-snug">
+                    <span className="block text-[12px] text-[#4F5B5E] mt-0.5 leading-snug">
                       Nobody can link the {picked?.chain.label ?? ''} wallet you pay from, or the route it takes, to this gift. The gift still lands in the pot in your Umanity name, so refunds work.
                     </span>
                   </span>
@@ -243,15 +243,15 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
               </button>
             </>
           ) : (
-            <p className="mt-3 text-[12.5px] text-[#86868b]">Cross-chain gifts settle on Solana mainnet, because NEAR Intents has no test network. Here on devnet you can see live prices.</p>
+            <p className="mt-3 text-[12.5px] text-[#4F5B5E]">Cross-chain gifts settle on Solana mainnet, because NEAR Intents has no test network. Here on devnet you can see live prices.</p>
           )}
         </>
       ) : (
         <>
           <div className="mt-4 rounded-2xl border border-black/[0.06] p-4">
-            <p className="text-[12.5px] text-[#525252]">
+            <p className="text-[12.5px] text-[#3A4548]">
               Send exactly{' '}
-              <button onClick={() => copy(live.amountInFormatted)} className="font-bold text-[#1d1d1f] underline decoration-dotted underline-offset-2 hover:decoration-solid" title="Copy the amount">
+              <button onClick={() => copy(live.amountInFormatted)} className="font-bold text-[#111111] underline decoration-dotted underline-offset-2 hover:decoration-solid" title="Copy the amount">
                 {live.amountInFormatted} {live.asset.symbol}
               </button>{' '}
               on {live.asset.chainLabel} to:
@@ -260,7 +260,7 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
               <div className="bg-white p-1.5 rounded-xl border border-black/[0.06] flex-shrink-0">
                 <QRCodeSVG value={live.depositAddress!} size={84} />
               </div>
-              <button onClick={() => copy(live.depositAddress!)} className="flex-1 text-left font-mono text-[11.5px] bg-[#f5f5f7] rounded-xl px-3 py-2.5 hover:bg-[#ececef] break-all" title="Copy">
+              <button onClick={() => copy(live.depositAddress!)} className="flex-1 text-left font-mono text-[11.5px] bg-[#E8EDEE] rounded-xl px-3 py-2.5 hover:bg-[#ececef] break-all" title="Copy">
                 {live.depositAddress}
               </button>
             </div>
@@ -269,11 +269,11 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
                 Include this memo, or the deposit can't be matched: <span className="font-mono font-semibold">{live.depositMemo}</span>
               </button>
             )}
-            {minutesLeft != null && <p className="text-[11.5px] text-[#86868b] mt-2">This address takes the deposit for about {minutesLeft} more min. Send from any wallet or exchange.</p>}
-            {live.confidential && <p className="text-[11.5px] text-[#86868b] mt-1">Given in secret: the route from your wallet to the pot stays private.</p>}
+            {minutesLeft != null && <p className="text-[11.5px] text-[#4F5B5E] mt-2">This address takes the deposit for about {minutesLeft} more min. Send from any wallet or exchange.</p>}
+            {live.confidential && <p className="text-[11.5px] text-[#4F5B5E] mt-1">Given in secret: the route from your wallet to the pot stays private.</p>}
           </div>
 
-          <div className={`mt-3 rounded-2xl p-4 text-[13px] ${status.tone === 'ok' ? 'bg-emerald-50 text-emerald-800' : status.tone === 'warn' ? 'bg-amber-50 text-amber-900' : 'bg-[#f5f5f7] text-[#1d1d1f]'}`}>
+          <div className={`mt-3 rounded-2xl p-4 text-[13px] ${status.tone === 'ok' ? 'bg-emerald-50 text-emerald-800' : status.tone === 'warn' ? 'bg-amber-50 text-amber-900' : 'bg-[#E8EDEE] text-[#111111]'}`}>
             <span className="inline-flex items-center gap-2">
               {status.tone === 'wait' && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
               {status.text}
@@ -291,7 +291,7 @@ export function AnyChainGive({ dropId, amountUsd, onBack, onDone }: { dropId: nu
         </>
       )}
 
-      <p className="text-[11px] text-[#aeaeb2] text-center mt-4">
+      <p className="text-[11px] text-[#7D898C] text-center mt-4">
         Powered by Aurora Intents on NEAR Intents. If the swap fails, NEAR Intents refunds you on your chain; if the drop isn&apos;t delivered, the program refunds you on Solana.
       </p>
     </div>

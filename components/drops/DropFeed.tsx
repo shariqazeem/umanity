@@ -74,7 +74,7 @@ export function DropFeed() {
     <div>
       <div className="mb-4 pt-2">
         <h2 className="text-2xl font-bold tracking-[-0.02em] mb-0.5">Feed</h2>
-        <p className="text-[#86868b] text-[13px]">Every gift, delivery and payout, as it happens on Solana.</p>
+        <p className="text-[#4F5B5E] text-[13px]">Every gift, delivery and payout, as it happens on Solana.</p>
       </div>
 
       {/* Guests read the feed; the header already offers Sign in. */}
@@ -87,7 +87,7 @@ export function DropFeed() {
       {/* Room inside the scroller for the chips' larger touch areas, so nothing clips or scrolls vertically. */}
       <div className="flex gap-1.5 mb-1.5 overflow-x-auto no-scrollbar py-1.5 -mt-1.5 px-0.5 -mx-0.5">
         {FILTERS.map((f) => (
-          <button key={f.key} onClick={() => setFilter(f.key)} className={`hit h-9 px-3.5 rounded-full text-[12.5px] font-medium whitespace-nowrap transition-colors ${filter === f.key ? 'bg-[#1d1d1f] text-white' : 'bg-white border border-black/[0.04] text-[#86868b] hover:text-[#1d1d1f]'}`}>
+          <button key={f.key} onClick={() => setFilter(f.key)} className={`hit h-9 px-3.5 rounded-full text-[12.5px] font-medium whitespace-nowrap transition-colors ${filter === f.key ? 'bg-[#111111] text-white' : 'bg-white border border-black/[0.04] text-[#4F5B5E] hover:text-[#111111]'}`}>
             {f.label}
           </button>
         ))}
@@ -101,13 +101,13 @@ export function DropFeed() {
         </div>
       ) : visible.length === 0 ? (
         <div className="card p-10 text-center">
-          <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-full bg-[#E8EDEE] flex items-center justify-center mx-auto mb-3">
             <span className="text-xl">✦</span>
           </div>
-          <p className="text-[#1d1d1f] font-semibold text-[15px] mb-1">{failed ? 'The feed could not load' : filter === 'all' ? 'Nothing has happened yet' : 'Nothing here yet'}</p>
-          <p className="text-[#86868b] text-[13px] mb-5 max-w-sm mx-auto">{failed ? 'It will retry on its own.' : 'Every gift, filmed delivery and payout lands here with its transaction.'}</p>
+          <p className="text-[#111111] font-semibold text-[15px] mb-1">{failed ? 'The feed could not load' : filter === 'all' ? 'Nothing has happened yet' : 'Nothing here yet'}</p>
+          <p className="text-[#4F5B5E] text-[13px] mb-5 max-w-sm mx-auto">{failed ? 'It will retry on its own.' : 'Every gift, filmed delivery and payout lands here with its transaction.'}</p>
           <Link href="/give" className="btn-primary px-5 py-2.5 text-[13px]">
-            ♡ {next ? 'Fill the next drop' : 'Give to the fund'}
+            {next ? 'Fill the next drop' : 'Give to the fund'}
           </Link>
         </div>
       ) : (
@@ -173,13 +173,13 @@ function GiftCard({ item }: { item: Extract<HomeItem, { type: 'gift' }> }) {
         {w.href ? <Link href={w.href}>{head}</Link> : head}
         <div className="flex-1 min-w-0">
           {w.href ? (
-            <Link href={w.href} className="text-[13px] font-semibold text-[#1d1d1f] hover:underline">
+            <Link href={w.href} className="text-[13px] font-semibold text-[#111111] hover:underline">
               {w.name}
             </Link>
           ) : (
-            <span className="text-[13px] font-semibold text-[#1d1d1f]">{w.name}</span>
+            <span className="text-[13px] font-semibold text-[#111111]">{w.name}</span>
           )}
-          <p className="text-[10px] text-[#aeaeb2]">
+          <p className="text-[10px] text-[#7D898C]">
             {w.handle ? `${w.handle} · ` : ''}
             <Ago at={item.at} />
           </p>
@@ -187,7 +187,7 @@ function GiftCard({ item }: { item: Extract<HomeItem, { type: 'gift' }> }) {
         <span className="pill bg-emerald-50 text-emerald-600 !text-[9px] font-semibold">{CHANNEL[item.channel] ?? 'Gift'}</span>
       </div>
 
-      {item.message && <p className="text-[14px] text-[#1d1d1f] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{item.message}</p>}
+      {item.message && <p className="text-[14px] text-[#111111] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{item.message}</p>}
 
       <div className="bg-emerald-50/60 rounded-xl p-3.5 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0">{item.drop.emoji}</div>
@@ -213,7 +213,7 @@ function GiftCard({ item }: { item: Extract<HomeItem, { type: 'gift' }> }) {
 
       <div className="flex items-center justify-end mt-3">
         <button onClick={() => openGive({ dropId: item.drop.id, amountUsd: item.amountUsd })} className="btn-secondary h-8 px-3 !text-[12px] !rounded-lg">
-          ♡ Match {usdText(item.amountUsd)}
+          Match {usdText(item.amountUsd)}
         </button>
       </div>
     </article>
@@ -231,7 +231,7 @@ function UpdateCard({ item }: { item: Extract<HomeItem, { type: 'update' }> }) {
       ) : photos.length > 0 ? (
         <div className={`grid gap-0.5 ${photos.length === 1 ? 'grid-cols-1 h-[280px] sm:h-[340px]' : 'grid-cols-2 h-[240px] sm:h-[300px]'}`}>
           {photos.map((m, i) => (
-            <div key={m.url} className={`relative overflow-hidden bg-[#f5f5f7] ${photos.length === 3 && i === 0 ? 'row-span-2' : ''}`}>
+            <div key={m.url} className={`relative overflow-hidden bg-[#E8EDEE] ${photos.length === 3 && i === 0 ? 'row-span-2' : ''}`}>
               <Img src={m.url} alt={m.note || item.title} />
             </div>
           ))}
@@ -239,13 +239,13 @@ function UpdateCard({ item }: { item: Extract<HomeItem, { type: 'update' }> }) {
       ) : null}
       <div className="p-4">
         <div className="flex items-center gap-2 mb-1.5">
-          <span className={`pill !text-[9px] font-semibold ${proof ? 'bg-[#1d1d1f] text-white' : 'bg-[#f5f5f7] text-[#525252]'}`}>{proof ? 'Proof' : 'Update'}</span>
-          <span className="text-[10px] text-[#aeaeb2] truncate">
+          <span className={`pill !text-[9px] font-semibold ${proof ? 'bg-[#111111] text-white' : 'bg-[#E8EDEE] text-[#3A4548]'}`}>{proof ? 'Proof' : 'Update'}</span>
+          <span className="text-[10px] text-[#7D898C] truncate">
             {item.drop.emoji} Drop #{item.drop.id + 1} · <Ago at={item.at} />
           </span>
         </div>
         <p className="text-[15px] font-bold tracking-tight">{item.title}</p>
-        {item.body && <p className="text-[13px] text-[#525252] mt-1 leading-relaxed whitespace-pre-wrap break-words">{item.body}</p>}
+        {item.body && <p className="text-[13px] text-[#3A4548] mt-1 leading-relaxed whitespace-pre-wrap break-words">{item.body}</p>}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11.5px]">
           {item.proofTx && (
             <a href={explorerTx(item.proofTx)} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
@@ -253,11 +253,11 @@ function UpdateCard({ item }: { item: Extract<HomeItem, { type: 'update' }> }) {
             </a>
           )}
           {item.xPostUrl && (
-            <a href={item.xPostUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#1d1d1f] hover:underline">
+            <a href={item.xPostUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#111111] hover:underline">
               Watch on X ↗
             </a>
           )}
-          <Link href={dropHref(item.drop.id)} className="text-[#86868b] hover:text-[#1d1d1f]">
+          <Link href={dropHref(item.drop.id)} className="text-[#4F5B5E] hover:text-[#111111]">
             Open the drop →
           </Link>
         </div>
@@ -300,7 +300,7 @@ function MissedCard({ item }: { item: Extract<HomeItem, { type: 'missed' }> }) {
       <p className="text-[15px] font-bold tracking-tight">
         {item.drop.emoji} Drop #{item.drop.id + 1}: every backer gets their money back
       </p>
-      <p className="text-[13px] text-[#525252] mt-1">
+      <p className="text-[13px] text-[#3A4548] mt-1">
         {item.drop.title} {item.cancelled ? 'was called off' : 'was not proven in time'}, so the program opened refunds{item.potUsd > 0 ? ` for the ${usdText(item.potUsd, 2)} still in the pot` : ''}. Each refund can only go back to the wallet that gave.
       </p>
       <Link href={dropHref(item.drop.id)} className="inline-block mt-3 text-[12px] font-semibold text-amber-800 hover:underline">
@@ -313,19 +313,19 @@ function MissedCard({ item }: { item: Extract<HomeItem, { type: 'missed' }> }) {
 function FeesCard({ item }: { item: Extract<HomeItem, { type: 'fees' }> }) {
   return (
     <article className="card p-4 flex items-start gap-3">
-      <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] flex items-center justify-center text-lg flex-shrink-0">⇄</div>
+      <div className="w-10 h-10 rounded-xl bg-[#E8EDEE] flex items-center justify-center text-lg flex-shrink-0">⇄</div>
       <div className="flex-1 min-w-0">
         <p className="text-[13.5px] font-semibold">
           {usdText(item.totalUsd, 2)} in fees, split by the program
         </p>
-        <p className="text-[12px] text-[#86868b] mt-0.5">
+        <p className="text-[12px] text-[#4F5B5E] mt-0.5">
           <span className="font-semibold text-emerald-600">{usdText(item.toDropsUsd, 2)} to drops</span> · {usdText(item.toOpsUsd, 2)} to Umanity · <Ago at={item.at} />
         </p>
         <div className="flex items-center gap-4 mt-2 text-[11.5px]">
           <a href={explorerTx(item.signature)} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
             Transaction ↗
           </a>
-          <Link href="/money" className="text-[#86868b] hover:text-[#1d1d1f]">
+          <Link href="/money" className="text-[#4F5B5E] hover:text-[#111111]">
             Where fees go →
           </Link>
         </div>
@@ -343,14 +343,14 @@ function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
         <p className="text-[13.5px] font-semibold">
           Trading fees put <span className="text-emerald-700">{usdText(item.amountUsd, 2)}</span> into Drop #{item.drop.id + 1}
         </p>
-        <p className="text-[12px] text-[#86868b] mt-0.5">
+        <p className="text-[12px] text-[#4F5B5E] mt-0.5">
           {item.drop.title} · <Ago at={item.at} />
         </p>
         <div className="flex items-center gap-4 mt-2 text-[11.5px]">
           <a href={explorerTx(item.signature)} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-600 hover:underline">
             Transaction ↗
           </a>
-          <Link href={dropHref(item.drop.id)} className="text-[#86868b] hover:text-[#1d1d1f]">
+          <Link href={dropHref(item.drop.id)} className="text-[#4F5B5E] hover:text-[#111111]">
             See the drop →
           </Link>
         </div>
@@ -363,10 +363,10 @@ function FundedCard({ item }: { item: Extract<HomeItem, { type: 'funded' }> }) {
 function TeamGiftsCard({ gifts, usd }: { gifts: number; usd: number }) {
   return (
     <article className="card p-4 flex items-start gap-3">
-      <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] flex items-center justify-center text-lg flex-shrink-0">🧪</div>
+      <div className="w-10 h-10 rounded-xl bg-[#E8EDEE] flex items-center justify-center text-lg flex-shrink-0">🧪</div>
       <div className="flex-1 min-w-0">
         <p className="text-[13.5px] font-semibold">The team tested every way to give</p>
-        <p className="text-[12px] text-[#86868b] mt-0.5">
+        <p className="text-[12px] text-[#4F5B5E] mt-0.5">
           {gifts} {gifts === 1 ? 'gift' : 'gifts'}, {usdText(usd, usd % 1 ? 2 : 0)} in all, from our own wallets. They never count as community.
         </p>
         <Link href="/money" className="inline-block text-[11.5px] font-semibold text-emerald-600 hover:underline mt-2">
@@ -388,13 +388,13 @@ function FundGiftCard({ item }: { item: Extract<HomeItem, { type: 'fundGift' }> 
         {w.href ? <Link href={w.href}>{head}</Link> : head}
         <div className="flex-1 min-w-0">
           {w.href ? (
-            <Link href={w.href} className="text-[13px] font-semibold text-[#1d1d1f] hover:underline">
+            <Link href={w.href} className="text-[13px] font-semibold text-[#111111] hover:underline">
               {w.name}
             </Link>
           ) : (
-            <span className="text-[13px] font-semibold text-[#1d1d1f]">{w.name}</span>
+            <span className="text-[13px] font-semibold text-[#111111]">{w.name}</span>
           )}
-          <p className="text-[10px] text-[#aeaeb2]">
+          <p className="text-[10px] text-[#7D898C]">
             {w.handle ? `${w.handle} · ` : ''}
             <Ago at={item.at} />
           </p>
@@ -402,7 +402,7 @@ function FundGiftCard({ item }: { item: Extract<HomeItem, { type: 'fundGift' }> 
         <span className="pill bg-emerald-50 text-emerald-600 !text-[9px] font-semibold">{item.channel === 'x402' ? 'Agent · x402' : item.channel === 'intents' ? 'Any chain' : 'Fund'}</span>
       </div>
 
-      {item.message && <p className="text-[14px] text-[#1d1d1f] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{item.message}</p>}
+      {item.message && <p className="text-[14px] text-[#111111] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{item.message}</p>}
 
       <div className="bg-emerald-50/60 rounded-xl p-3.5 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0 text-emerald-700">♡</div>
@@ -422,7 +422,7 @@ function FundGiftCard({ item }: { item: Extract<HomeItem, { type: 'fundGift' }> 
 
       <div className="flex items-center justify-end mt-3">
         <button onClick={() => openGive({ fund: true, amountUsd: item.amountUsd })} className="btn-secondary h-8 px-3 !text-[12px] !rounded-lg">
-          ♡ Match {usdText(item.amountUsd)}
+          Match {usdText(item.amountUsd)}
         </button>
       </div>
     </article>

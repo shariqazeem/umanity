@@ -28,7 +28,7 @@ export const whenText = (unixSecs: number) => timeFmt.format(new Date(unixSecs *
 
 export function StatePill({ drop }: { drop: Pick<DropView, 'state' | 'refundsOpen'> }) {
   const refunding = drop.state === 'cancelled' || drop.refundsOpen
-  const tone = refunding ? 'bg-amber-50 text-amber-700' : drop.state === 'unlocked' ? 'bg-emerald-50 text-emerald-700' : drop.state === 'proven' ? 'bg-blue-50 text-blue-700' : 'bg-black/[0.04] text-[#525252]'
+  const tone = refunding ? 'bg-amber-50 text-amber-700' : drop.state === 'unlocked' ? 'bg-emerald-50 text-emerald-700' : drop.state === 'proven' ? 'bg-blue-50 text-blue-700' : 'bg-black/[0.04] text-[#3A4548]'
   return (
     <span className={`pill ${tone} !text-[10px] font-semibold`}>
       {drop.state === 'open' && !refunding && <span className="pulse-dot !w-1.5 !h-1.5 mr-1" />}
@@ -42,7 +42,7 @@ export function RunnerBadge({ drop }: { drop: Pick<DropView, 'official' | 'payee
   return drop.official ? (
     <span className="pill bg-emerald-50 text-emerald-700 !text-[10px] font-semibold">✓ By Umanity</span>
   ) : (
-    <span className="pill bg-black/[0.04] text-[#525252] !text-[10px] font-semibold" title={`Runner ${drop.payee}`}>
+    <span className="pill bg-black/[0.04] text-[#3A4548] !text-[10px] font-semibold" title={`Runner ${drop.payee}`}>
       Community · {drop.payee.slice(0, 4)}…{drop.payee.slice(-4)}
     </span>
   )
@@ -61,17 +61,17 @@ export function DropMeter({ drop, size = 'lg' }: { drop: DropView; size?: 'sm' |
       <div className="flex items-end justify-between gap-3">
         <p className={`${big ? 'text-[34px] md:text-[40px]' : 'text-[22px]'} font-black tracking-[-0.03em] leading-none counter`}>
           {usdText(amount)}
-          <span className={`${big ? 'text-[15px]' : 'text-[12px]'} font-semibold text-[#86868b] tracking-normal ml-1.5`}>{delivered ? 'delivered' : `of ${usdText(drop.goalUsd)}`}</span>
+          <span className={`${big ? 'text-[15px]' : 'text-[12px]'} font-semibold text-[#4F5B5E] tracking-normal ml-1.5`}>{delivered ? 'delivered' : `of ${usdText(drop.goalUsd)}`}</span>
         </p>
-        <p className={`${big ? 'text-[13px]' : 'text-[11px]'} font-semibold text-[#86868b] counter`}>{pct}%</p>
+        <p className={`${big ? 'text-[13px]' : 'text-[11px]'} font-semibold text-[#4F5B5E] counter`}>{pct}%</p>
       </div>
       <div className={`progress emerald ${big ? 'mt-3' : 'mt-2'}`}>
         <span style={{ width: `${Math.max(pct, amount > 0 ? 2 : 0)}%` }} />
       </div>
-      <p className={`${big ? 'text-[13px]' : 'text-[11.5px]'} text-[#525252] mt-2`}>
+      <p className={`${big ? 'text-[13px]' : 'text-[11.5px]'} text-[#3A4548] mt-2`}>
         {whole > 0 ? (
           <>
-            <span className="font-semibold text-[#1d1d1f]">{plural(whole, drop.unit.name)}</span> {delivered ? 'delivered' : 'so far'}
+            <span className="font-semibold text-[#111111]">{plural(whole, drop.unit.name)}</span> {delivered ? 'delivered' : 'so far'}
             {drop.unit.people > 0 && <> · {plural(people, 'person', 'people')} helped</>}
             {!delivered && drop.fromFundUsd > 0 && <> · <span className="text-emerald-700">{usdText(drop.fromFundUsd, 2)} from trading fees</span></>}
           </>
@@ -82,7 +82,7 @@ export function DropMeter({ drop, size = 'lg' }: { drop: DropView; size?: 'sm' |
         ) : (
           <>Every {usdText(drop.unit.usd)} is one {drop.unit.name}: {drop.unit.covers}</>
         )}
-        {drop.backers > 0 && <span className="text-[#86868b]"> · {plural(drop.backers, 'backer')}</span>}
+        {drop.backers > 0 && <span className="text-[#4F5B5E]"> · {plural(drop.backers, 'backer')}</span>}
       </p>
     </div>
   )
@@ -141,14 +141,14 @@ export function DropSteps({ drop, reviewHours }: { drop: DropDetail; reviewHours
           {i < all.length - 1 && <span className={`absolute left-[11px] top-6 bottom-0 w-px ${s.state === 'done' ? 'bg-emerald-300' : 'bg-black/[0.08]'}`} />}
           <span
             className={`w-[23px] h-[23px] rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold ${
-              s.state === 'done' ? 'bg-emerald-500 text-white' : s.state === 'now' ? 'bg-[#1d1d1f] text-white' : 'bg-black/[0.05] text-[#aeaeb2]'
+              s.state === 'done' ? 'bg-emerald-500 text-white' : s.state === 'now' ? 'bg-[#111111] text-white' : 'bg-black/[0.05] text-[#7D898C]'
             }`}
           >
             {s.state === 'done' ? '✓' : i + 1}
           </span>
           <div className="min-w-0 -mt-0.5">
-            <p className={`text-[14px] font-semibold ${s.state === 'next' ? 'text-[#aeaeb2]' : ''}`}>{s.title}</p>
-            <p className="text-[12px] text-[#86868b]">
+            <p className={`text-[14px] font-semibold ${s.state === 'next' ? 'text-[#7D898C]' : ''}`}>{s.title}</p>
+            <p className="text-[12px] text-[#4F5B5E]">
               {s.sub}
               {s.tx && (
                 <a href={explorerTx(s.tx)} target="_blank" rel="noopener noreferrer" className="ml-1.5 text-emerald-700 font-semibold hover:underline">
@@ -166,10 +166,10 @@ export function DropSteps({ drop, reviewHours }: { drop: DropDetail; reviewHours
 export function DropCard({ drop }: { drop: DropView }) {
   return (
     <Link href={dropHref(drop.id)} className="card card-interactive p-4 flex gap-4 items-start">
-      <div className="w-12 h-12 rounded-[16px] bg-[#f5f5f7] flex items-center justify-center text-[24px] flex-shrink-0">{drop.emoji}</div>
+      <div className="w-12 h-12 rounded-[16px] bg-[#E8EDEE] flex items-center justify-center text-[24px] flex-shrink-0">{drop.emoji}</div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-[0.1em]">
+          <p className="text-[11px] font-semibold text-[#4F5B5E] uppercase tracking-[0.1em]">
             Drop #{drop.id + 1} · {dayText(drop.deadline)}
           </p>
           {!drop.official && <RunnerBadge drop={drop} />}
@@ -177,7 +177,7 @@ export function DropCard({ drop }: { drop: DropView }) {
         </div>
         <p className="text-[15px] font-bold tracking-tight mt-0.5 truncate">{drop.title}</p>
         {!(drop.refundsOpen || drop.state === 'cancelled') && (
-          <p className="text-[12px] text-[#86868b] truncate inline-flex items-center gap-1 max-w-full">
+          <p className="text-[12px] text-[#4F5B5E] truncate inline-flex items-center gap-1 max-w-full">
             <Icon name="pin" size={12} className="flex-shrink-0" /> <span className="truncate">{drop.place}</span>
           </p>
         )}
@@ -190,7 +190,7 @@ export function DropCard({ drop }: { drop: DropView }) {
 }
 
 export function Backers({ gifts }: { gifts: DropDetail['gifts'] }) {
-  if (!gifts.length) return <p className="text-[13px] text-[#86868b]">No gifts yet. Be the first name in this drop&apos;s video.</p>
+  if (!gifts.length) return <p className="text-[13px] text-[#4F5B5E]">No gifts yet. Be the first name in this drop&apos;s video.</p>
   return (
     <ul className="divide-y divide-black/[0.04]">
       {gifts.map((g) => {
@@ -203,18 +203,18 @@ export function Backers({ gifts }: { gifts: DropDetail['gifts'] }) {
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold truncate">
                 {name}
-                {g.channel !== 'wallet' && <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#86868b]">{channelLabel(g.channel, g.sourceChain)}</span>}
+                {g.channel !== 'wallet' && <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#4F5B5E]">{channelLabel(g.channel, g.sourceChain)}</span>}
               </p>
-              {g.message && <p className="text-[12px] text-[#525252] truncate">“{g.message}”</p>}
+              {g.message && <p className="text-[12px] text-[#3A4548] truncate">“{g.message}”</p>}
             </div>
             <div className="text-right">
               <p className="text-[13px] font-bold counter">{usdText(g.amountUsd)}</p>
               {g.signature ? (
-                <a href={explorerTx(g.signature)} target="_blank" rel="noopener noreferrer" className="text-[10.5px] text-[#86868b] hover:text-[#1d1d1f]">
+                <a href={explorerTx(g.signature)} target="_blank" rel="noopener noreferrer" className="text-[10.5px] text-[#4F5B5E] hover:text-[#111111]">
                   <Ago at={g.at} /> ↗
                 </a>
               ) : (
-                <p className="text-[10.5px] text-[#86868b]"><Ago at={g.at} /></p>
+                <p className="text-[10.5px] text-[#4F5B5E]"><Ago at={g.at} /></p>
               )}
             </div>
           </li>
@@ -252,14 +252,14 @@ export function MoneyRules({ drop, reviewHours }: { drop: DropView; reviewHours:
             key={r.key}
             onClick={() => setOpen((o) => (o === r.key ? '' : r.key))}
             aria-expanded={open === r.key}
-            className={`hit inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-[12.5px] font-medium border transition-colors ${open === r.key ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#1d1d1f] border-black/[0.08] hover:border-black/[0.2]'}`}
+            className={`hit inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-[12.5px] font-medium border transition-colors ${open === r.key ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white text-[#111111] border-black/[0.08] hover:border-black/[0.2]'}`}
           >
             <Icon name={r.icon} size={14} className={open === r.key ? 'text-emerald-400' : 'text-emerald-600'} />
             {r.label}
           </button>
         ))}
       </div>
-      {current && <p className="text-[13px] leading-relaxed text-[#525252] mt-3">{current.text}</p>}
+      {current && <p className="text-[13px] leading-relaxed text-[#3A4548] mt-3">{current.text}</p>}
     </div>
   )
 }
@@ -281,7 +281,7 @@ export function ChainFacts({ drop }: { drop: DropDetail }) {
     <dl className="divide-y divide-black/[0.04] text-[12.5px]">
       {rows.map(([k, v]) => (
         <div key={k} className="flex items-center justify-between gap-4 py-2">
-          <dt className="text-[#86868b]">{k}</dt>
+          <dt className="text-[#4F5B5E]">{k}</dt>
           <dd className="text-right">{v}</dd>
         </div>
       ))}
@@ -316,10 +316,10 @@ export function GiftTicket({ drop, amountUsd, refundedUsd = 0 }: { drop: TicketD
   return (
     <Link href={dropHref(drop.id)} className="card p-4 block hover:border-black/[0.1] transition-colors">
       <div className="flex items-center gap-3">
-        <span className="w-11 h-11 rounded-[14px] bg-[#f5f5f7] flex items-center justify-center text-[20px] flex-shrink-0">{drop.emoji}</span>
+        <span className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[20px] flex-shrink-0">{drop.emoji}</span>
         <span className="flex-1 min-w-0">
           <span className="block text-[14px] font-semibold truncate">{drop.title}</span>
-          <span className="block text-[12px] text-[#86868b] truncate">
+          <span className="block text-[12px] text-[#4F5B5E] truncate">
             {usdText(amountUsd, amountUsd % 1 ? 2 : 0)}
             {whole > 0 ? ` · ${plural(whole, drop.unit.name)}` : ''}
             {drop.refundsOpen || drop.state === 'cancelled' ? '' : ` · ${drop.place}`}
@@ -331,11 +331,11 @@ export function GiftTicket({ drop, amountUsd, refundedUsd = 0 }: { drop: TicketD
         {stage.steps.map((label, i) => (
           <div key={label} className="flex-1 min-w-0">
             <div className={`h-1 rounded-full ${i < stage.done ? (stage.refund && i > 0 ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-black/[0.06]'}`} />
-            <p className={`text-[11px] mt-1.5 truncate ${i < stage.done ? 'text-[#1d1d1f] font-semibold' : 'text-[#aeaeb2]'}`}>{label}</p>
+            <p className={`text-[11px] mt-1.5 truncate ${i < stage.done ? 'text-[#111111] font-semibold' : 'text-[#7D898C]'}`}>{label}</p>
           </div>
         ))}
       </div>
-      <p className="text-[12px] text-[#525252] mt-2">{line}</p>
+      <p className="text-[12px] text-[#3A4548] mt-2">{line}</p>
     </Link>
   )
 }

@@ -44,7 +44,7 @@ export default function AgentsPage() {
           <h2 className="text-2xl font-bold tracking-[-0.02em]">Agents</h2>
           <span className="pill bg-emerald-50 text-emerald-700 !text-[10px] font-bold">x402</span>
         </div>
-        <p className="text-[#86868b] text-sm max-w-xl">
+        <p className="text-[#4F5B5E] text-sm max-w-xl">
           Any app, bot or AI agent can fill a drop with one HTTP request. The server answers 402, the agent pays in USDC on Solana, and the money goes into the drop&apos;s pot with the agent&apos;s wallet as the backer. If the drop misses its date, the refund goes back to that wallet. No accounts, no keys, no checkout.
         </p>
       </section>
@@ -59,12 +59,12 @@ export default function AgentsPage() {
         ].map((e) => (
           <div key={e.title} className="card p-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-xl bg-[#f5f5f7] flex items-center justify-center text-base">{e.icon}</div>
+              <div className="w-9 h-9 rounded-xl bg-[#E8EDEE] flex items-center justify-center text-base">{e.icon}</div>
               <span className="text-[11px] font-bold counter text-emerald-600">{e.price}</span>
             </div>
             <p className="font-semibold text-[14px]">{e.title}</p>
-            <p className="text-[10.5px] font-mono text-[#86868b] mt-0.5">{e.path}</p>
-            <p className="text-[12px] text-[#86868b] leading-relaxed mt-2">{e.body}</p>
+            <p className="text-[10.5px] font-mono text-[#4F5B5E] mt-0.5">{e.path}</p>
+            <p className="text-[12px] text-[#4F5B5E] leading-relaxed mt-2">{e.body}</p>
           </div>
         ))}
       </section>
@@ -86,23 +86,23 @@ export default function AgentsPage() {
             ))}
           </div>
         ) : receipts.length === 0 ? (
-          <p className="text-[12px] text-[#aeaeb2] text-center py-6">No paid calls yet. Run the console above to make the first one.</p>
+          <p className="text-[12px] text-[#7D898C] text-center py-6">No paid calls yet. Run the console above to make the first one.</p>
         ) : (
           <ul className="divide-y divide-black/[0.04]">
             {receipts.slice(0, 10).map((r) => (
               <li key={r.id} className="py-2.5 flex items-center gap-3 text-[12px]">
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${r.status === 'settled' ? 'bg-emerald-500' : r.status === 'failed' ? 'bg-red-400' : 'bg-amber-400'}`} />
-                <span className="font-mono text-[#525252] truncate flex-1">{r.endpoint.replace('/api/x402/', '')}</span>
-                <span className="text-[#86868b] font-mono hidden sm:inline">{r.payer ? short(r.payer) : '—'}</span>
+                <span className="font-mono text-[#3A4548] truncate flex-1">{r.endpoint.replace('/api/x402/', '')}</span>
+                <span className="text-[#4F5B5E] font-mono hidden sm:inline">{r.payer ? short(r.payer) : '—'}</span>
                 <span className="font-semibold counter">${r.amount}</span>
                 {r.paymentSignature && r.status === 'settled' ? (
                   <a href={explorerTx(r.paymentSignature)} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
                     tx ↗
                   </a>
                 ) : (
-                  <span className="text-[#aeaeb2] capitalize w-8">{r.status === 'failed' ? 'void' : ''}</span>
+                  <span className="text-[#7D898C] capitalize w-8">{r.status === 'failed' ? 'void' : ''}</span>
                 )}
-                <span className="text-[#aeaeb2] w-8 text-right">{timeAgo(r.createdAt)}</span>
+                <span className="text-[#7D898C] w-8 text-right">{timeAgo(r.createdAt)}</span>
               </li>
             ))}
           </ul>
@@ -190,21 +190,21 @@ function Console({ onDone }: { onDone: () => void }) {
         <p className="text-xs font-medium text-emerald-600 uppercase tracking-widest mb-3">Live console</p>
         <div className="flex flex-col md:flex-row md:items-end gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-[#86868b] mb-1.5">Drop</p>
+            <p className="text-[11px] font-semibold text-[#4F5B5E] mb-1.5">Drop</p>
             <div className="flex flex-wrap gap-1.5">
-              {open.length === 0 && <p className="text-[12px] text-[#aeaeb2] h-8 flex items-center">No drop is filling right now.</p>}
+              {open.length === 0 && <p className="text-[12px] text-[#7D898C] h-8 flex items-center">No drop is filling right now.</p>}
               {open.map((d) => (
-                <button key={d.id} onClick={() => setPicked(d.id)} className={`h-8 px-2.5 rounded-full text-[12px] font-medium transition-all ${d.id === drop?.id ? 'bg-[#1d1d1f] text-white' : 'bg-black/[0.04] text-[#525252] hover:bg-black/[0.07]'}`}>
+                <button key={d.id} onClick={() => setPicked(d.id)} className={`h-8 px-2.5 rounded-full text-[12px] font-medium transition-all ${d.id === drop?.id ? 'bg-[#111111] text-white' : 'bg-black/[0.04] text-[#3A4548] hover:bg-black/[0.07]'}`}>
                   {d.emoji} #{d.id + 1} {d.title}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-semibold text-[#86868b] mb-1.5">Amount (USDC)</p>
+            <p className="text-[11px] font-semibold text-[#4F5B5E] mb-1.5">Amount (USDC)</p>
             <div className="flex gap-1.5">
               {AMOUNTS.map((a) => (
-                <button key={a} onClick={() => setAmount(a)} className={`h-8 px-3 rounded-lg text-[12px] font-semibold counter transition-all ${a === amount ? 'bg-[#1d1d1f] text-white' : 'bg-black/[0.04] hover:bg-black/[0.07]'}`}>
+                <button key={a} onClick={() => setAmount(a)} className={`h-8 px-3 rounded-lg text-[12px] font-semibold counter transition-all ${a === amount ? 'bg-[#111111] text-white' : 'bg-black/[0.04] hover:bg-black/[0.07]'}`}>
                   ${a}
                 </button>
               ))}
@@ -215,7 +215,7 @@ function Console({ onDone }: { onDone: () => void }) {
           <button onClick={run} disabled={running || !drop} className="btn-primary px-5 py-3 !text-[13px]">
             {running ? 'Running…' : drop ? `▶ Pay ${usdText(amount)} into Drop #${drop.id + 1} via x402` : 'No drop is filling'}
           </button>
-          <p className="text-[11px] text-[#aeaeb2]">{signer ? 'Your wallet plays the agent.' : 'Sign in; your wallet plays the agent.'}</p>
+          <p className="text-[11px] text-[#7D898C]">{signer ? 'Your wallet plays the agent.' : 'Sign in; your wallet plays the agent.'}</p>
         </div>
       </div>
 
@@ -312,7 +312,7 @@ payment-response: <base64 JSON: success · transaction · network · payer>`,
               ['curl', 'curl'],
             ] as const
           ).map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${tab === k ? 'bg-[#1d1d1f] text-white' : 'bg-black/[0.04] text-[#86868b] hover:text-[#1d1d1f]'}`}>
+            <button key={k} onClick={() => setTab(k)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${tab === k ? 'bg-[#111111] text-white' : 'bg-black/[0.04] text-[#4F5B5E] hover:text-[#111111]'}`}>
               {l}
             </button>
           ))}
@@ -320,7 +320,7 @@ payment-response: <base64 JSON: success · transaction · network · payer>`,
       </div>
       <pre className="terminal p-4 overflow-x-auto text-[11.5px] leading-relaxed whitespace-pre">{code}</pre>
       <div className="flex items-center justify-between mt-3">
-        <p className="text-[11px] text-[#86868b]">
+        <p className="text-[11px] text-[#4F5B5E]">
           A gift the drop can&apos;t take is refused before payment, so the agent is never charged for it. <Link href="/money" className="text-emerald-600 hover:underline">Every dollar is on Money →</Link>
         </p>
         <CopyButton text={code} />

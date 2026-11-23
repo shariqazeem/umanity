@@ -60,7 +60,7 @@ export function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
-      <button onClick={toggle} aria-label="Notifications" className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/[0.04] transition-colors">
+      <button onClick={toggle} aria-label="Notifications" className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#4F5B5E] hover:text-[#111111] hover:bg-black/[0.04] transition-colors">
         <Icon name="bell" size={19} />
         {unread > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center counter">{unread > 9 ? '9+' : unread}</span>}
       </button>
@@ -70,13 +70,13 @@ export function NotificationBell() {
             <p className="text-[14px] font-bold">Notifications</p>
           </div>
           {items.length === 0 ? (
-            <p className="px-4 py-8 text-center text-[13px] text-[#86868b]">Nothing yet. When your gift is delivered, you will hear it here first.</p>
+            <p className="px-4 py-8 text-center text-[13px] text-[#4F5B5E]">Nothing yet. When your gift is delivered, you will hear it here first.</p>
           ) : (
             <ul className="divide-y divide-black/[0.04]">
               {items.slice(0, 30).map((n) => (
-                <li key={n.id} className={`px-4 py-3 text-[13px] leading-snug ${n.read ? 'text-[#86868b]' : 'text-[#1d1d1f]'}`}>
+                <li key={n.id} className={`px-4 py-3 text-[13px] leading-snug ${n.read ? 'text-[#4F5B5E]' : 'text-[#111111]'}`}>
                   <p>{n.message}</p>
-                  <p className="text-[11px] text-[#aeaeb2] mt-1">{timeAgo(n.createdAt)}</p>
+                  <p className="text-[11px] text-[#7D898C] mt-1">{timeAgo(n.createdAt)}</p>
                 </li>
               ))}
             </ul>

@@ -32,7 +32,7 @@ export function DropsConsole({ signer }: { signer: Signer }) {
           <NewDrop signer={signer} onCreated={() => (setCreating(false), reload())} />
         </Card>
       )}
-      {drops && drops.length === 0 && !creating && <Card className="p-8 text-center text-[13px] text-[#86868b]">No drops on this cluster yet.</Card>}
+      {drops && drops.length === 0 && !creating && <Card className="p-8 text-center text-[13px] text-[#4F5B5E]">No drops on this cluster yet.</Card>}
       {drops?.map((d) => (
         <DropAdmin key={d.id} signer={signer} drop={d} onChange={reload} />
       ))}
@@ -77,7 +77,7 @@ function NewDrop({ signer, onCreated }: { signer: Signer; onCreated: () => void 
 
   return (
     <div className="space-y-3">
-      <p className="text-[12.5px] text-[#86868b]">The description below is hashed and the hash goes on-chain with the drop, so it can&apos;t be changed quietly later. Money can only ever go to the payee, and only after proof.</p>
+      <p className="text-[12.5px] text-[#4F5B5E]">The description below is hashed and the hash goes on-chain with the drop, so it can&apos;t be changed quietly later. Money can only ever go to the payee, and only after proof.</p>
       <div className="grid sm:grid-cols-[64px_1fr] gap-2">
         <input value={f.emoji} onChange={set('emoji')} className="input text-center !text-[20px]" aria-label="Emoji" />
         <input value={f.title} onChange={set('title')} placeholder="Ration packs for 25 families" className="input" />
@@ -90,19 +90,19 @@ function NewDrop({ signer, onCreated }: { signer: Signer; onCreated: () => void 
         <input value={f.people} onChange={set('people')} inputMode="numeric" placeholder="People per unit (0 if none)" title="0 hides the 'people helped' count, e.g. for animals or a demo" className="input" />
         <input value={f.covers} onChange={set('covers')} placeholder="What one covers" className="input" />
       </div>
-      <div className="rounded-2xl bg-[#f5f5f7] p-3 space-y-2">
-        <p className="text-[11px] font-semibold text-[#86868b]">Shopping list · total {usdText(total, 2)}</p>
+      <div className="rounded-2xl bg-[#E8EDEE] p-3 space-y-2">
+        <p className="text-[11px] font-semibold text-[#4F5B5E]">Shopping list · total {usdText(total, 2)}</p>
         {items.map((it, i) => (
           <div key={i} className="grid grid-cols-[1fr_70px_90px_32px] gap-2">
             <input value={it.name} onChange={(e) => setItems((x) => x.map((y, j) => (j === i ? { ...y, name: e.target.value } : y)))} placeholder="Flour, 10 kg" className="input !bg-white" />
             <input value={it.qty} onChange={(e) => setItems((x) => x.map((y, j) => (j === i ? { ...y, qty: Number(e.target.value) || 0 } : y)))} inputMode="numeric" className="input !bg-white" aria-label="Quantity" />
             <input value={it.unitUsd || ''} onChange={(e) => setItems((x) => x.map((y, j) => (j === i ? { ...y, unitUsd: Number(e.target.value) || 0 } : y)))} inputMode="decimal" placeholder="$ each" className="input !bg-white" />
-            <button onClick={() => setItems((x) => (x.length > 1 ? x.filter((_, j) => j !== i) : x))} className="text-[#aeaeb2] hover:text-[#1d1d1f]" aria-label="Remove">
+            <button onClick={() => setItems((x) => (x.length > 1 ? x.filter((_, j) => j !== i) : x))} className="text-[#7D898C] hover:text-[#111111]" aria-label="Remove">
               ✕
             </button>
           </div>
         ))}
-        <button onClick={() => setItems((x) => [...x, blankItem()])} className="text-[12px] font-semibold text-[#1d1d1f] hover:underline">
+        <button onClick={() => setItems((x) => [...x, blankItem()])} className="text-[12px] font-semibold text-[#111111] hover:underline">
           + Add item
         </button>
       </div>
@@ -111,11 +111,11 @@ function NewDrop({ signer, onCreated }: { signer: Signer; onCreated: () => void 
         <input value={f.cap} onChange={set('cap')} inputMode="decimal" placeholder={`Cap $ (${Math.ceil(goal * 1.2)})`} className="input" />
       </div>
       <div className="grid sm:grid-cols-2 gap-2">
-        <label className="text-[11px] font-semibold text-[#86868b]">
+        <label className="text-[11px] font-semibold text-[#4F5B5E]">
           Deliver and prove by
           <input type="datetime-local" value={f.deadline} onChange={set('deadline')} className="input w-full mt-1" />
         </label>
-        <label className="text-[11px] font-semibold text-[#86868b]">
+        <label className="text-[11px] font-semibold text-[#4F5B5E]">
           Payee (supplier or delivery wallet)
           <input value={f.payee} onChange={set('payee')} placeholder="Solana address" className="input w-full mt-1 font-mono !text-[12px]" />
         </label>
@@ -153,12 +153,12 @@ function DropAdmin({ signer, drop, onChange }: { signer: Signer; drop: DropView;
   return (
     <Card className="p-5">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-[14px] bg-[#f5f5f7] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</div>
+        <div className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</div>
         <div className="flex-1 min-w-0">
           <Link href={dropHref(drop.id)} className="text-[15px] font-bold tracking-tight hover:underline">
             #{drop.id + 1} {drop.title}
           </Link>
-          <p className="text-[12px] text-[#86868b]">
+          <p className="text-[12px] text-[#4F5B5E]">
             {usdText(drop.potUsd, 2)} of {usdText(drop.goalUsd, 0)} · {drop.backers} backers · by {dayText(drop.deadline)}
           </p>
         </div>
@@ -195,7 +195,7 @@ function DropAdmin({ signer, drop, onChange }: { signer: Signer; drop: DropView;
           </a>
         )}
       </div>
-      {drop.state === 'proven' && <p className="text-[11.5px] text-[#86868b] mt-2">Unlocking works once the review window after the proof has passed; the program refuses it before then.</p>}
+      {drop.state === 'proven' && <p className="text-[11.5px] text-[#4F5B5E] mt-2">Unlocking works once the review window after the proof has passed; the program refuses it before then.</p>}
       {mode && <PostForm signer={signer} kind={mode} busy={busy === mode} onSubmit={(body) => act(mode, body)} />}
     </Card>
   )
@@ -210,7 +210,7 @@ function PostForm({ signer, kind, busy, onSubmit }: { signer: Signer; kind: 'upd
   const media = items.filter((i) => i.status === 'done' && i.url).map((i) => ({ url: i.url!, kind: i.kind, sha256: i.sha256, note: i.note || undefined }))
   return (
     <div className="mt-4 pt-4 border-t border-black/[0.05] space-y-2.5">
-      <p className="text-[12px] text-[#86868b]">
+      <p className="text-[12px] text-[#4F5B5E]">
         {kind === 'proof'
           ? 'Proof starts the review window. The text, the X post and every file hash are bundled, hashed, and the hash is written on-chain.'
           : 'Updates show on the drop and in the feed. They move no money.'}

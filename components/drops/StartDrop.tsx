@@ -66,14 +66,14 @@ export function StartDrop() {
       <header className="pt-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">Start a drop</p>
         <h1 className="text-[28px] md:text-[34px] font-black tracking-[-0.035em] leading-[1.05] mt-1 [text-wrap:balance]">Run a drop where you live</h1>
-        <p className="text-[14px] text-[#86868b] mt-2 max-w-xl [text-wrap:balance]">Food, blankets, medicine, school kits: anything you can buy, hand over and film. People anywhere fill your pot.</p>
+        <p className="text-[14px] text-[#4F5B5E] mt-2 max-w-xl [text-wrap:balance]">Food, blankets, medicine, school kits: anything you can buy, hand over and film. People anywhere fill your pot.</p>
       </header>
 
       <section className="card p-5 grid sm:grid-cols-2 gap-3">
         {RULES.map(([icon, text]) => (
           <div key={text} className="flex gap-3">
-            <span className="w-8 h-8 rounded-xl bg-[#f5f5f7] flex items-center justify-center text-[15px] flex-shrink-0">{icon}</span>
-            <p className="text-[13px] text-[#525252] leading-snug">{text}</p>
+            <span className="w-8 h-8 rounded-xl bg-[#E8EDEE] flex items-center justify-center text-[15px] flex-shrink-0">{icon}</span>
+            <p className="text-[13px] text-[#3A4548] leading-snug">{text}</p>
           </div>
         ))}
       </section>
@@ -89,7 +89,7 @@ export function StartDrop() {
         <input value={f.place} onChange={set('place')} placeholder="Where: area, city, country" className="input w-full" />
         <textarea value={f.story} onChange={set('story')} rows={3} placeholder="Who it helps, how you found them, and how you'll deliver and film it" className="input w-full" />
 
-        <p className="text-[12px] font-semibold text-[#86868b] pt-1">What one unit is</p>
+        <p className="text-[12px] font-semibold text-[#4F5B5E] pt-1">What one unit is</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <input value={f.unitName} onChange={set('unitName')} placeholder="Unit (food pack)" className="input" />
           <input value={f.unitUsd} onChange={set('unitUsd')} inputMode="decimal" placeholder="$ per unit" className="input" />
@@ -97,33 +97,33 @@ export function StartDrop() {
           <input value={f.covers} onChange={set('covers')} placeholder="What one covers" className="input" />
         </div>
 
-        <p className="text-[12px] font-semibold text-[#86868b] pt-1">Shopping list, at local prices in USD</p>
+        <p className="text-[12px] font-semibold text-[#4F5B5E] pt-1">Shopping list, at local prices in USD</p>
         <div className="space-y-2">
           {items.map((it, i) => (
             <div key={i} className="grid grid-cols-[1fr_64px_88px_32px] gap-2 items-center">
               <input value={it.name} onChange={(e) => setItems((x) => x.map((y, j) => (j === i ? { ...y, name: e.target.value } : y)))} placeholder="Rice, 5 kg" className="input" />
               <input value={it.qty} onChange={(e) => setItems((x) => x.map((y, j) => (j === i ? { ...y, qty: Number(e.target.value) || 0 } : y)))} inputMode="numeric" className="input text-center" aria-label="Quantity" />
               <input value={it.unitUsd || ''} onChange={(e) => setItems((x) => x.map((y, j) => (j === i ? { ...y, unitUsd: Number(e.target.value) || 0 } : y)))} inputMode="decimal" placeholder="$ each" className="input" />
-              <button onClick={() => setItems((x) => (x.length > 1 ? x.filter((_, j) => j !== i) : x))} className="hit text-[#aeaeb2] hover:text-[#1d1d1f]" aria-label="Remove item">
+              <button onClick={() => setItems((x) => (x.length > 1 ? x.filter((_, j) => j !== i) : x))} className="hit text-[#7D898C] hover:text-[#111111]" aria-label="Remove item">
                 ✕
               </button>
             </div>
           ))}
-          <button onClick={() => setItems((x) => [...x, blank()])} className="text-[12.5px] font-semibold text-[#1d1d1f] hover:underline">
+          <button onClick={() => setItems((x) => [...x, blank()])} className="text-[12.5px] font-semibold text-[#111111] hover:underline">
             + Add an item
           </button>
         </div>
 
         <div className="grid sm:grid-cols-3 gap-2 pt-1">
-          <div className="rounded-2xl bg-[#f5f5f7] px-4 py-3">
-            <p className="text-[11px] text-[#86868b]">Goal (the list total)</p>
+          <div className="rounded-2xl bg-[#E8EDEE] px-4 py-3">
+            <p className="text-[11px] text-[#4F5B5E]">Goal (the list total)</p>
             <p className="text-[18px] font-black counter">{usdText(goal, 2)}</p>
           </div>
-          <label className="text-[11px] font-semibold text-[#86868b]">
+          <label className="text-[11px] font-semibold text-[#4F5B5E]">
             Most it can hold
             <input value={f.cap} onChange={set('cap')} inputMode="decimal" placeholder={goal ? `${Math.ceil(goal * 1.5)}` : '$'} className="input w-full mt-1" />
           </label>
-          <label className="text-[11px] font-semibold text-[#86868b]">
+          <label className="text-[11px] font-semibold text-[#4F5B5E]">
             Delivered by
             <input type="date" value={f.deadline} onChange={set('deadline')} min={inDays(3)} max={inDays(90)} className="input w-full mt-1" />
           </label>
@@ -132,7 +132,7 @@ export function StartDrop() {
         <button onClick={submit} disabled={busy || (signer != null && (!f.title.trim() || !f.place.trim() || goal < 10))} className="btn-primary w-full py-3.5 !text-[15px]">
           {!signer ? 'Sign in to send it' : busy ? 'Sending…' : `Send for review · ${usdText(goal, 2)}`}
         </button>
-        <p className="text-[11px] text-[#aeaeb2] text-center">The pot pays your wallet ({signer ? `${signer.publicKey.toBase58().slice(0, 4)}…${signer.publicKey.toBase58().slice(-4)}` : 'the one you sign in with'}) after proof. Umanity drops are listed first; community drops have their own section.</p>
+        <p className="text-[11px] text-[#7D898C] text-center">The pot pays your wallet ({signer ? `${signer.publicKey.toBase58().slice(0, 4)}…${signer.publicKey.toBase58().slice(-4)}` : 'the one you sign in with'}) after proof. Umanity drops are listed first; community drops have their own section.</p>
       </section>
     </div>
   )
@@ -141,7 +141,7 @@ export function StartDrop() {
 const STATUS: Record<string, { text: string; tone: string }> = {
   pending: { text: 'Waiting for review', tone: 'bg-amber-50 text-amber-800' },
   approved: { text: 'Live', tone: 'bg-emerald-50 text-emerald-700' },
-  rejected: { text: 'Not approved', tone: 'bg-[#f5f5f7] text-[#86868b]' },
+  rejected: { text: 'Not approved', tone: 'bg-[#E8EDEE] text-[#4F5B5E]' },
 }
 
 function MyProposals({ mine, onSent }: { mine: Proposal[]; onSent: () => void }) {
@@ -158,7 +158,7 @@ function MyProposals({ mine, onSent }: { mine: Proposal[]; onSent: () => void })
                 <span className="text-[20px]">{p.emoji}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[13.5px] font-semibold truncate">{p.title}</p>
-                  <p className="text-[11.5px] text-[#86868b]">
+                  <p className="text-[11.5px] text-[#4F5B5E]">
                     {p.place} · {usdText(p.goalUsd, 0)}
                     {p.reason && ` · ${p.reason}`}
                   </p>
@@ -170,7 +170,7 @@ function MyProposals({ mine, onSent }: { mine: Proposal[]; onSent: () => void })
                   <Link href={dropHref(p.dropId)} className="font-semibold text-emerald-600 hover:underline">
                     See the drop →
                   </Link>
-                  <button onClick={() => setProofFor(proofFor === p.dropId ? null : p.dropId)} className="font-semibold text-[#1d1d1f] hover:underline">
+                  <button onClick={() => setProofFor(proofFor === p.dropId ? null : p.dropId)} className="font-semibold text-[#111111] hover:underline">
                     Send proof
                   </button>
                 </div>

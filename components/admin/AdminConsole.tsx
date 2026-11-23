@@ -15,11 +15,11 @@ export function AdminConsole() {
     return (
       <div className="max-w-[520px] mx-auto pt-6 sm:pt-12">
         <Card className="p-8 text-center">
-          <span className="w-12 h-12 rounded-full bg-black/[0.05] text-[#86868b] flex items-center justify-center mx-auto">
+          <span className="w-12 h-12 rounded-full bg-black/[0.05] text-[#4F5B5E] flex items-center justify-center mx-auto">
             <Icon name="lock" size={20} />
           </span>
           <h1 className="text-[22px] font-bold tracking-[-0.02em] mt-5">Field team console</h1>
-          <p className="text-[14px] text-[#86868b] mt-2">Sign in with a team wallet to run drops.</p>
+          <p className="text-[14px] text-[#4F5B5E] mt-2">Sign in with a team wallet to run drops.</p>
           <Btn size="lg" className="mt-6" onClick={openAuth}>
             Sign in
           </Btn>
@@ -40,14 +40,14 @@ export function AdminConsole() {
     return (
       <div className="max-w-[520px] mx-auto pt-6 sm:pt-12">
         <Card className="p-8 text-center">
-          <span className="w-12 h-12 rounded-full bg-black/[0.05] text-[#86868b] flex items-center justify-center mx-auto">
+          <span className="w-12 h-12 rounded-full bg-black/[0.05] text-[#4F5B5E] flex items-center justify-center mx-auto">
             <Icon name="users" size={20} />
           </span>
           <h1 className="text-[22px] font-bold tracking-[-0.02em] mt-5">This console is for the Umanity field team</h1>
-          <p className="text-[14px] text-[#86868b] mt-2">
+          <p className="text-[14px] text-[#4F5B5E] mt-2">
             You are signed in as <span className="num">{short(signer.publicKey.toBase58())}</span>, which is not on the team list.
           </p>
-          {error && <p className="text-[12px] text-[#aeaeb2] mt-3">{error}</p>}
+          {error && <p className="text-[12px] text-[#7D898C] mt-3">{error}</p>}
         </Card>
       </div>
     )
@@ -59,7 +59,7 @@ export function AdminConsole() {
         <div>
           <p className="eyebrow mb-2">Team console</p>
           <h1 className="text-2xl font-bold tracking-[-0.02em]">Run the drops.</h1>
-          <p className="text-[14px] text-[#86868b] mt-3 max-w-[560px]">Open a drop, post updates while it fills, post the filmed proof when it is delivered, and unlock it after review. If a drop can&apos;t happen, call it off and everyone is refunded.</p>
+          <p className="text-[14px] text-[#4F5B5E] mt-3 max-w-[560px]">Open a drop, post updates while it fills, post the filmed proof when it is delivered, and unlock it after review. If a drop can&apos;t happen, call it off and everyone is refunded.</p>
         </div>
         <div className="flex items-center gap-2">
           <Pill tone="green" dot>

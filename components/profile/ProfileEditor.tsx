@@ -38,12 +38,12 @@ export function ProfileEditor() {
     <Sheet open={profileEditorOpen} onClose={closeProfileEditor} width="sm" title={user?.handleClaimed ? 'Edit profile' : 'Pick your name'}>
       <div className="flex items-center gap-3 mb-5">
         <Avatar username={username || user?.username || 'u'} url={user?.avatarUrl} size={48} />
-        <p className="text-[13px] text-[#86868b]">Shown next to your gifts and posts.</p>
+        <p className="text-[13px] text-[#4F5B5E]">Shown next to your gifts and posts.</p>
       </div>
       <div className="space-y-3">
         <Field label="Username">
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#aeaeb2]">@</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7D898C]">@</span>
             <input value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))} placeholder="yourname" className="input !pl-9" autoFocus />
           </div>
         </Field>

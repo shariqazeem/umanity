@@ -53,7 +53,7 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
     return (
       <div className="card p-10 text-center mt-4">
         <p className="font-semibold">{error ?? 'Profile not found'}</p>
-        <p className="text-[13px] text-[#86868b] mt-1">There is no one with that name yet.</p>
+        <p className="text-[13px] text-[#4F5B5E] mt-1">There is no one with that name yet.</p>
         <Link href="/home" className="btn-secondary px-4 py-2 mt-4 !text-[13px]">
           Back to the feed
         </Link>
@@ -94,19 +94,19 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
               <h2 className="text-[22px] font-bold tracking-[-0.02em] leading-tight truncate">{shownName(p.displayName, p.username) ?? `@${p.username}`}</h2>
               {p.foundingRank != null && p.foundingRank <= 100 && <span className="pill bg-emerald-50 text-emerald-700 !text-[10px] font-semibold">Founding giver #{p.foundingRank}</span>}
             </div>
-            <p className="text-[13px] text-[#86868b] mt-0.5">
+            <p className="text-[13px] text-[#4F5B5E] mt-0.5">
               @{p.username} · <span className="font-mono text-[11px]">{short(p.address)}</span>
             </p>
             {p.bio && <p className="text-[14px] mt-2 leading-relaxed">{p.bio}</p>}
             <div className="flex items-center gap-4 mt-3 text-[13px]">
               <span>
-                <span className="font-bold counter">{p.followers}</span> <span className="text-[#86868b]">followers</span>
+                <span className="font-bold counter">{p.followers}</span> <span className="text-[#4F5B5E]">followers</span>
               </span>
               <span>
-                <span className="font-bold counter">{p.following}</span> <span className="text-[#86868b]">following</span>
+                <span className="font-bold counter">{p.following}</span> <span className="text-[#4F5B5E]">following</span>
               </span>
               <span>
-                <span className="font-bold counter text-emerald-600">{p.rewardPoints.toLocaleString()}</span> <span className="text-[#86868b]">points</span>
+                <span className="font-bold counter text-emerald-600">{p.rewardPoints.toLocaleString()}</span> <span className="text-[#4F5B5E]">points</span>
               </span>
             </div>
           </div>
@@ -157,26 +157,26 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
             <h3 className="font-bold text-[15px]">Drops backed</h3>
             {own && next && (
               <button onClick={() => openGive({ dropId: next.id })} className="btn-primary h-8 px-3 !text-[12px]">
-                ♡ Give
+                Give
               </button>
             )}
           </div>
           {!backer || backer.drops.length === 0 ? (
-            <p className="text-[13px] text-[#86868b] leading-relaxed">{own ? 'Your first gift starts the streak and the points. A dollar is enough, and it comes back if the drop misses its date.' : 'No gifts yet.'}</p>
+            <p className="text-[13px] text-[#4F5B5E] leading-relaxed">{own ? 'Your first gift starts the streak and the points. A dollar is enough, and it comes back if the drop misses its date.' : 'No gifts yet.'}</p>
           ) : (
             <div className="space-y-2.5">
               {(showAllDrops ? backer.drops : backer.drops.slice(0, 3)).map((d) => (
                 <GiftTicket key={d.id} drop={d.drop} amountUsd={d.amountUsd} refundedUsd={d.refundedUsd} />
               ))}
               {backer.drops.length > 3 && (
-                <button onClick={() => setShowAllDrops((v) => !v)} className="w-full text-center text-[12.5px] font-semibold text-[#1d1d1f] py-2 rounded-xl hover:bg-black/[0.03]">
+                <button onClick={() => setShowAllDrops((v) => !v)} className="w-full text-center text-[12.5px] font-semibold text-[#111111] py-2 rounded-xl hover:bg-black/[0.03]">
                   {showAllDrops ? 'Show fewer' : `${backer.drops.length - 3} more ${backer.drops.length - 3 === 1 ? 'drop' : 'drops'}`}
                 </button>
               )}
             </div>
           )}
           {backer && backer.totals.trades > 0 && (
-            <p className="text-[11.5px] text-[#86868b] mt-3 pt-3 border-t border-black/[0.04]">
+            <p className="text-[11.5px] text-[#4F5B5E] mt-3 pt-3 border-t border-black/[0.04]">
               {backer.totals.trades} {backer.totals.trades === 1 ? 'swap' : 'swaps'} · your fees sent <span className="font-semibold text-emerald-600">{usdText(backer.totals.feesToDropsUsd, 2)}</span> to drops
             </p>
           )}
@@ -191,11 +191,11 @@ export function ProfileView({ username, mode }: { username: string; mode: 'own' 
             ['posts', 'Posts'],
           ] as const
         ).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={`px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors ${tab === k ? 'bg-[#1d1d1f] text-white' : 'bg-white border border-black/[0.04] text-[#86868b] hover:text-[#1d1d1f]'}`}>
+          <button key={k} onClick={() => setTab(k)} className={`px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors ${tab === k ? 'bg-[#111111] text-white' : 'bg-white border border-black/[0.04] text-[#4F5B5E] hover:text-[#111111]'}`}>
             {l}
           </button>
         ))}
-        <button onClick={reload} className="ml-auto text-[12px] text-[#aeaeb2] hover:text-[#1d1d1f]">
+        <button onClick={reload} className="ml-auto text-[12px] text-[#7D898C] hover:text-[#111111]">
           Refresh
         </button>
       </div>
@@ -212,7 +212,7 @@ function GuardianCard({ p, backer }: { p: PublicProfile; backer: BackerProfile |
   const g = p.guardian
   const idx = TIERS.findIndex((t) => t.tier === g.tier)
   return (
-    <section className="relative overflow-hidden rounded-[28px] p-6 md:p-7 text-white" style={{ background: 'linear-gradient(135deg, #111113 0%, #1d1d1f 55%, #0f2a22 100%)' }}>
+    <section className="relative overflow-hidden rounded-[28px] p-6 md:p-7 text-white" style={{ background: 'linear-gradient(135deg, #111113 0%, #111111 55%, #0f2a22 100%)' }}>
       <div className="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
       <div className="absolute -left-16 bottom-0 w-56 h-56 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
       <div className="relative flex items-start justify-between gap-4">
@@ -280,21 +280,21 @@ function StreakCard({ current, longest, days }: { current: number; longest: numb
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold counter">{current}</span>
-              <span className="text-xs text-[#86868b]">day streak</span>
+              <span className="text-xs text-[#4F5B5E]">day streak</span>
             </div>
             {onFire && <span className="inline-block pill !text-[10px] font-semibold text-orange-600 bg-orange-50 mt-0.5">On fire</span>}
           </div>
         </div>
         <div className="text-right">
-          <span className="text-xs text-[#86868b]">Best </span>
+          <span className="text-xs text-[#4F5B5E]">Best </span>
           <span className="text-sm font-semibold counter">{longest}d</span>
         </div>
       </div>
       <div className="pt-3 border-t border-black/[0.03] flex items-center justify-between">
         {last7.map((d) => (
           <div key={d.key} className="flex flex-col items-center gap-1.5">
-            <span className="text-[10px] text-[#d4d4d4] font-medium">{d.label}</span>
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${d.on ? 'bg-emerald-500 shadow-sm shadow-emerald-500/30' : 'bg-[#f5f5f7] border border-black/[0.05]'}`}>
+            <span className="text-[10px] text-[#B9C4C6] font-medium">{d.label}</span>
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${d.on ? 'bg-emerald-500 shadow-sm shadow-emerald-500/30' : 'bg-[#E8EDEE] border border-black/[0.05]'}`}>
               {d.on && (
                 <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -321,7 +321,7 @@ function Receipts({ gifts }: { gifts: BackerProfile['gifts'] }) {
             <p className="text-[13px] font-semibold truncate group-hover:underline">
               #{g.dropId + 1} {g.title}
             </p>
-            <p className="text-[11px] text-[#86868b]">
+            <p className="text-[11px] text-[#4F5B5E]">
               {VIA[g.channel] ?? 'Gift'} · {timeAgo(g.at)}
             </p>
           </Link>
@@ -338,7 +338,7 @@ function Receipts({ gifts }: { gifts: BackerProfile['gifts'] }) {
 }
 
 function EmptyLine({ text }: { text: string }) {
-  return <div className="card p-8 text-center text-[13px] text-[#86868b]">{text}</div>
+  return <div className="card p-8 text-center text-[13px] text-[#4F5B5E]">{text}</div>
 }
 
 function ProfileSkeleton() {

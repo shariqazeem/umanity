@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { Anek_Latin, Martian_Mono } from 'next/font/google'
 import './globals.css'
 import { WalletProvider } from '@/components/wallet/WalletProvider'
 import { UmanityProvider } from '@/components/providers/UmanityProvider'
@@ -12,8 +13,13 @@ import { UnlockSheet } from '@/components/wallet/UnlockSheet'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://umanity.xyz'
 
-const TAGLINE = 'Crypto giving, on camera.'
-const DESCRIPTION = 'Fill a drop: a real delivery with its own USDC pot on Solana. The pot pays out only after the delivery is filmed and checked, and refunds every backer if it misses its date. Trade in the app and half of every fee fills the next drop.'
+// The Tally's type: Anek Latin for words (it also has Devanagari, Bangla, Tamil and six more scripts in
+// the same design) and Martian Mono for records. Both OFL, self-hosted by next/font.
+const anek = Anek_Latin({ subsets: ['latin', 'latin-ext'], weight: 'variable', variable: '--font-anek', display: 'swap' })
+const martian = Martian_Mono({ subsets: ['latin', 'latin-ext'], weight: 'variable', variable: '--font-martian', display: 'swap' })
+
+const TAGLINE = 'Nothing given in the dark.'
+const DESCRIPTION = 'Giving with proof, on Solana. Every gift waits in the open until the delivery is filmed, or it goes home. The first hundred givers each hold a Circle, drawn by their own gift.'
 
 export const metadata: Metadata = {
   title: { default: `Umanity — ${TAGLINE}`, template: '%s · Umanity' },
@@ -32,12 +38,12 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.png', apple: '/apple-touch-icon.png' },
 }
 
-export const viewport: Viewport = { themeColor: '#f5f5f7', width: 'device-width', initialScale: 1, viewportFit: 'cover' }
+export const viewport: Viewport = { themeColor: '#D9E1E2', width: 'device-width', initialScale: 1, viewportFit: 'cover' }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="text-[#1d1d1f] bg-[#f5f5f7] overflow-x-hidden">
+    <html lang="en" className={`${anek.variable} ${martian.variable}`}>
+      <body className="text-[#111111] bg-[#D9E1E2] overflow-x-hidden">
         <WalletProvider>
           <UmanityProvider>
             {children}

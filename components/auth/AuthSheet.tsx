@@ -94,51 +94,51 @@ export function AuthSheet() {
     <Sheet open={authOpen} onClose={closeAuth} width="sm" hideClose={false}>
       {step === 'choose' && (
         <div className="pt-1">
-          <h3 className="text-[24px] font-bold tracking-[-0.02em] text-[#1d1d1f]">Start giving.</h3>
-          <p className="text-[14px] text-[#86868b] mt-2 leading-relaxed">A wallet is your account. Create one in a tap, or use one you already have.</p>
+          <h3 className="text-[24px] font-bold tracking-[-0.02em] text-[#111111]">Start giving.</h3>
+          <p className="text-[14px] text-[#4F5B5E] mt-2 leading-relaxed">A wallet is your account. Create one in a tap, or use one you already have.</p>
 
-          <button onClick={create} className="mt-6 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group disabled:opacity-60">
+          <button onClick={create} className="mt-6 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#111111] p-4 transition-colors group disabled:opacity-60">
             <div className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center">
+              <span className="w-11 h-11 rounded-full bg-[#111111] text-white flex items-center justify-center">
                 <Icon name="bolt" size={20} />
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[15px] font-semibold">Create a Umanity wallet</span>
-                <span className="block text-[12.5px] text-[#86868b]">Ready in a tap, locked with Face ID or a passcode. Yours alone.</span>
+                <span className="block text-[12.5px] text-[#4F5B5E]">Ready in a tap, locked with Face ID or a passcode. Yours alone.</span>
               </span>
-              <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
+              <Icon name="arrowRight" size={18} className="text-[#7D898C] group-hover:text-[#111111] transition-colors" />
             </div>
           </button>
 
-          <button onClick={connectWallet} className="mt-2.5 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group">
+          <button onClick={connectWallet} className="mt-2.5 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#111111] p-4 transition-colors group">
             <div className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full bg-black/[0.05] text-[#1d1d1f] flex items-center justify-center">
+              <span className="w-11 h-11 rounded-full bg-black/[0.05] text-[#111111] flex items-center justify-center">
                 <Icon name="wallet" size={20} />
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block text-[15px] font-semibold">Connect a wallet</span>
-                <span className="block text-[12.5px] text-[#86868b]">Phantom, Solflare, Backpack and any Wallet Standard wallet.</span>
+                <span className="block text-[12.5px] text-[#4F5B5E]">Phantom, Solflare, Backpack and any Wallet Standard wallet.</span>
               </span>
-              <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
+              <Icon name="arrowRight" size={18} className="text-[#7D898C] group-hover:text-[#111111] transition-colors" />
             </div>
           </button>
 
           {canUsePasskeys && (
-            <button onClick={passkeyIn} disabled={busy} className="mt-2.5 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#1d1d1f] p-4 transition-colors group disabled:opacity-60">
+            <button onClick={passkeyIn} disabled={busy} className="mt-2.5 w-full text-left rounded-2xl border border-black/[0.08] hover:border-[#111111] p-4 transition-colors group disabled:opacity-60">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-700 text-[18px]">◉</div>
                 <div className="flex-1 min-w-0">
                   <span className="block text-[15px] font-semibold">{busy ? 'Opening your wallet…' : 'I have a Umanity wallet'}</span>
-                  <span className="block text-[12.5px] text-[#86868b]">Sign in with Face ID or Touch ID, on any device your passkey syncs to.</span>
+                  <span className="block text-[12.5px] text-[#4F5B5E]">Sign in with Face ID or Touch ID, on any device your passkey syncs to.</span>
                 </div>
-                <Icon name="arrowRight" size={18} className="text-[#aeaeb2] group-hover:text-[#1d1d1f] transition-colors" />
+                <Icon name="arrowRight" size={18} className="text-[#7D898C] group-hover:text-[#111111] transition-colors" />
               </div>
             </button>
           )}
           {error && step === 'choose' && <p className="mt-3 text-[12.5px] text-red-600">{error}</p>}
 
           <div className="mt-5">
-            <button onClick={() => setStep('import')} className="text-[12.5px] text-[#86868b] hover:text-[#1d1d1f] underline underline-offset-2">
+            <button onClick={() => setStep('import')} className="text-[12.5px] text-[#4F5B5E] hover:text-[#111111] underline underline-offset-2">
               Import a secret key
             </button>
           </div>
@@ -147,11 +147,11 @@ export function AuthSheet() {
 
       {step === 'import' && (
         <div className="pt-1">
-          <button onClick={() => setStep('choose')} className="text-[12.5px] text-[#86868b] hover:text-[#1d1d1f] inline-flex items-center gap-1 mb-3">
+          <button onClick={() => setStep('choose')} className="text-[12.5px] text-[#4F5B5E] hover:text-[#111111] inline-flex items-center gap-1 mb-3">
             <Icon name="chevronLeft" size={14} /> Back
           </button>
           <h3 className="text-[22px] font-bold tracking-[-0.02em]">Import a wallet</h3>
-          <p className="text-[13px] text-[#86868b] mt-1">Paste a secret key exported from Phantom, or a Solana CLI key file. You lock it next; it never leaves this device unsealed.</p>
+          <p className="text-[13px] text-[#4F5B5E] mt-1">Paste a secret key exported from Phantom, or a Solana CLI key file. You lock it next; it never leaves this device unsealed.</p>
           <textarea value={secret} onChange={(e) => setSecret(e.target.value)} rows={3} placeholder="4xk…  or  [12, 84, …]" className="input mt-4 font-mono !text-[12px]" />
           {error && <p className="text-[12.5px] text-[#c53030] mt-2">{error}</p>}
           <Btn full size="lg" className="mt-4" onClick={doImport} disabled={secret.trim().length < 40}>
@@ -169,18 +169,18 @@ export function AuthSheet() {
       {step === 'name' && (profileLoading || (!!user && !!signer && user.address !== signer.publicKey.toBase58())) && (
         <div className="py-10 text-center">
           <div className="skeleton w-10 h-10 rounded-full mx-auto" />
-          <p className="text-[13px] text-[#86868b] mt-3">Opening your profile…</p>
+          <p className="text-[13px] text-[#4F5B5E] mt-3">Opening your profile…</p>
         </div>
       )}
 
       {step === 'name' && !profileLoading && !(!!user && !!signer && user.address !== signer.publicKey.toBase58()) && (
         <div className="pt-1">
           <h3 className="text-[24px] font-bold tracking-[-0.02em]">What should we call you?</h3>
-          <p className="text-[14px] text-[#86868b] mt-2">Your name appears next to your gifts. You can change it later.</p>
+          <p className="text-[14px] text-[#4F5B5E] mt-2">Your name appears next to your gifts. You can change it later.</p>
           <div className="space-y-3 mt-5">
             <Field label="Username">
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#aeaeb2]">@</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7D898C]">@</span>
                 <input value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))} placeholder="yourname" className="input !pl-9" autoFocus />
               </div>
             </Field>

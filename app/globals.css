@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +5,7 @@
 /* ============================================
    UMANITY DESIGN SYSTEM — Apple-Grade
    The original Umanity system (Superteam + Graveyard winner):
-   #f5f5f7 canvas, white cards on hairlines, #1d1d1f ink,
+   #E8EDEE canvas, white cards on hairlines, #111111 ink,
    black primary buttons, emerald as the only accent.
    ============================================ */
 
@@ -15,15 +13,17 @@
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
-  --bg: #f5f5f7;
+  --bg: #D9E1E2;
   --surface: #ffffff;
-  --text-primary: #1d1d1f;
-  --text-secondary: #86868b;
-  --text-tertiary: #aeaeb2;
-  --border: rgba(0,0,0,0.04);
-  --border-hover: rgba(0,0,0,0.08);
-  --accent: #10b981;
-  --accent-deep: #059669;
+  --text-primary: #111111;
+  --text-secondary: #4F5B5E;
+  --text-tertiary: #7D898C;
+  --border: rgba(17,17,17,0.08);
+  --border-hover: rgba(17,17,17,0.16);
+  --accent: #111111;
+  --accent-deep: #000000;
+  --mist: #D9E1E2;
+  --paper: #ffffff;
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
@@ -33,7 +33,7 @@
 }
 
 * {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: var(--font-anek), system-ui, -apple-system, 'Segoe UI', sans-serif;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -52,7 +52,7 @@ body {
 }
 
 ::selection {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(17,17,17, 0.15);
   color: inherit;
 }
 
@@ -171,9 +171,9 @@ body {
 }
 
 .btn-emerald:hover, .btn-accent:hover {
-  background: #059669;
+  background: #111111;
   transform: scale(1.02);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 16px rgba(17,17,17, 0.25);
 }
 
 .btn-emerald:active, .btn-accent:active {
@@ -293,7 +293,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 50%, #1d1d1f 100%);
+  background: linear-gradient(135deg, #111111 0%, #2d2d2f 50%, #111111 100%);
   background-size: 200% 200%;
   color: white;
   border: none;
@@ -482,12 +482,12 @@ input[type='number']::-webkit-outer-spin-button {
   border-radius: 50%;
   background: var(--accent);
   animation: pulse 2s ease-in-out infinite;
-  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 0 0 rgba(17,17,17, 0.4);
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { opacity: 0.7; transform: scale(0.9); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(17,17,17, 0.4); }
+  50% { opacity: 0.7; transform: scale(0.9); box-shadow: 0 0 0 4px rgba(17,17,17, 0); }
 }
 
 /* ===== SKELETON ===== */
@@ -573,7 +573,7 @@ input[type='number']::-webkit-outer-spin-button {
 
 /* ===== TEXT ===== */
 .text-gradient {
-  background: linear-gradient(135deg, #1d1d1f 0%, #4b5563 100%);
+  background: linear-gradient(135deg, #111111 0%, #4b5563 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -581,7 +581,7 @@ input[type='number']::-webkit-outer-spin-button {
 
 /* ===== GLOW ===== */
 .glow-ring {
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+  box-shadow: 0 0 0 3px rgba(17,17,17, 0.12);
 }
 
 /* ===== FLOAT ===== */
@@ -615,8 +615,8 @@ input[type='number']::-webkit-outer-spin-button {
 
 /* ===== WHALE ===== */
 .whale-gradient {
-  background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(59,130,246,0.04) 50%, rgba(168,85,247,0.04) 100%);
-  border: 1px solid rgba(16,185,129,0.12);
+  background: linear-gradient(135deg, rgba(17,17,17,0.06) 0%, rgba(59,130,246,0.04) 50%, rgba(168,85,247,0.04) 100%);
+  border: 1px solid rgba(17,17,17,0.12);
 }
 
 /* ===== TICKER ===== */
@@ -638,7 +638,7 @@ input[type='number']::-webkit-outer-spin-button {
 /* ===== PROOF ORB ===== */
 .orb-glow {
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(16,185,129,0.3) 0%, rgba(16,185,129,0.05) 60%, transparent 80%);
+  background: radial-gradient(circle, rgba(17,17,17,0.3) 0%, rgba(17,17,17,0.05) 60%, transparent 80%);
   animation: orbBreathe 3s ease-in-out infinite;
 }
 
@@ -652,7 +652,7 @@ input[type='number']::-webkit-outer-spin-button {
   position: relative;
   height: 56px;
   border-radius: 28px;
-  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(90deg, #111111 0%, #111111 100%);
   overflow: hidden;
   user-select: none;
   touch-action: none;
@@ -768,22 +768,22 @@ input[type='number']::-webkit-outer-spin-button {
 
 /* ===== X402 / AGENT CARD ===== */
 .agent-card {
-  background: linear-gradient(135deg, rgba(16,185,129,0.04) 0%, rgba(59,130,246,0.03) 100%);
-  border: 1px solid rgba(16,185,129,0.12);
+  background: linear-gradient(135deg, rgba(17,17,17,0.04) 0%, rgba(59,130,246,0.03) 100%);
+  border: 1px solid rgba(17,17,17,0.12);
   border-radius: var(--radius-lg);
 }
 
 .terminal {
   background: #0b0b0c;
-  color: #e5e5e5;
+  color: #D3DBDC;
   border-radius: var(--radius-md);
-  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-family: var(--font-martian), ui-monospace, Menlo, Consolas, monospace;
   font-size: 12px;
   line-height: 1.6;
 }
 
 .terminal * {
-  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-family: var(--font-martian), ui-monospace, Menlo, Consolas, monospace;
 }
 
 /* ===== FEED POST TRANSITIONS ===== */
@@ -828,7 +828,7 @@ input[type='number']::-webkit-outer-spin-button {
 
 /* Wallet adapter style overrides */
 .wallet-adapter-button {
-  font-family: 'Inter', -apple-system, sans-serif !important;
+  font-family: var(--font-anek), system-ui, sans-serif !important;
 }
 
 .wallet-adapter-modal-wrapper {
@@ -838,7 +838,7 @@ input[type='number']::-webkit-outer-spin-button {
 }
 
 .wallet-adapter-modal-wrapper * {
-  color: #1d1d1f;
+  color: #111111;
 }
 
 .wallet-adapter-modal-title {
@@ -873,3 +873,14 @@ input[type='number']::-webkit-outer-spin-button {
 .wallet-adapter-dropdown-list-item:hover {
   background: rgba(0,0,0,0.03) !important;
 }
+
+/* ===== THE GIVE BUTTON =====
+   The Give button is the whole black circle. Pressing it cuts it: one mist line across, at 30°. */
+.give-cut { position: relative; overflow: hidden; isolation: isolate; }
+.give-cut::after {
+  content: ''; position: absolute; left: -10%; right: -10%; top: 50%; height: 7px; margin-top: -3.5px;
+  background: var(--mist); transform: rotate(-30deg) scaleX(0); transition: transform .22s var(--ease-spring); z-index: -1;
+}
+.give-cut:hover::after { transform: rotate(-30deg) scaleX(.16); }
+.give-cut:active::after, .give-cut:focus-visible::after { transform: rotate(-30deg) scaleX(1); }
+@media (prefers-reduced-motion: reduce) { .give-cut::after { transition: none; } }

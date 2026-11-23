@@ -15,12 +15,12 @@ export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => v
   if (!address) {
     return (
       <div className="card p-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-[#f5f5f7] flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-[#E8EDEE] flex items-center justify-center flex-shrink-0">
           <span className="text-xs">✦</span>
         </div>
         <div className="flex-1">
           <p className="text-[13px] font-medium">Sign in to post, give and dare friends</p>
-          <p className="text-[11px] text-[#86868b]">Browsing is open to everyone. A wallet takes one tap.</p>
+          <p className="text-[11px] text-[#4F5B5E]">Browsing is open to everyone. A wallet takes one tap.</p>
         </div>
         <button onClick={() => ensureSigner()} className="btn-primary px-4 py-2 !text-[12px]">
           Sign in
@@ -60,7 +60,7 @@ export function Composer({ onPosted, onDare }: { onPosted: (post: FeedPost) => v
               <span />
             )}
             <div className="flex items-center gap-3">
-              <span className="text-[11px] text-[#aeaeb2] counter">{text.length}/500</span>
+              <span className="text-[11px] text-[#7D898C] counter">{text.length}/500</span>
               <button onClick={post} disabled={!text.trim() || busy} className="btn-primary px-5 py-2 !text-xs">
                 {busy ? 'Posting…' : 'Post'}
               </button>

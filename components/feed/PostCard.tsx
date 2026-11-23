@@ -19,13 +19,13 @@ export function PostCard({ post }: { post: FeedPost }) {
         <Link href={`/u/${post.username}`}>
           <Avatar username={post.username} url={post.avatarUrl} size={28} />
         </Link>
-        <p className="text-[12.5px] text-[#86868b] flex-1 min-w-0 truncate">
-          <Link href={`/u/${post.username}`} className="font-semibold text-[#1d1d1f] hover:underline">
+        <p className="text-[12.5px] text-[#4F5B5E] flex-1 min-w-0 truncate">
+          <Link href={`/u/${post.username}`} className="font-semibold text-[#111111] hover:underline">
             @{post.username}
           </Link>{' '}
           joined Umanity
         </p>
-        <span className="text-[10px] text-[#aeaeb2] flex-shrink-0"><Ago at={post.createdAt} /></span>
+        <span className="text-[10px] text-[#7D898C] flex-shrink-0"><Ago at={post.createdAt} /></span>
       </div>
     )
   }
@@ -37,17 +37,17 @@ export function PostCard({ post }: { post: FeedPost }) {
           <Avatar username={post.username} url={post.avatarUrl} size={40} />
         </Link>
         <div className="flex-1 min-w-0">
-          <Link href={`/u/${post.username}`} className="text-[13px] font-semibold text-[#1d1d1f] hover:underline">
+          <Link href={`/u/${post.username}`} className="text-[13px] font-semibold text-[#111111] hover:underline">
             {shownName(post.displayName, post.username) ?? `@${post.username}`}
           </Link>
-          <p className="text-[10px] text-[#aeaeb2]">
+          <p className="text-[10px] text-[#7D898C]">
             {shownName(post.displayName, post.username) ? `@${post.username} · ` : ''}
             <Ago at={post.createdAt} />
           </p>
         </div>
       </div>
 
-      {post.content && <p className="text-[14px] text-[#1d1d1f] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{post.content}</p>}
+      {post.content && <p className="text-[14px] text-[#111111] leading-[1.5] mb-3 whitespace-pre-wrap break-words">{post.content}</p>}
 
       <ActionBar postId={post.id} likeCount={post.likeCount} liked={post.liked} commentCount={post.commentCount} shareText={`${post.content.slice(0, 200)}\n\nvia @umanity_xyz`} shareUrl={origin()} />
     </article>
@@ -115,19 +115,19 @@ export function ActionBar({ postId, likeCount, liked: likedInit, commentCount, s
       <div className="flex items-center gap-1 pt-2 border-t border-black/[0.03]">
         <button
           onClick={like}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200 ${liked ? 'text-red-500 bg-red-50/50' : 'text-[#86868b] hover:text-red-500 hover:bg-red-50/30'}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200 ${liked ? 'text-red-500 bg-red-50/50' : 'text-[#4F5B5E] hover:text-red-500 hover:bg-red-50/30'}`}
           aria-pressed={liked}
         >
           <span className={`text-[14px] ${pop ? 'heart-pop' : ''}`}>{liked ? '❤️' : '♡'}</span>
           <span className="counter">{likes}</span>
         </button>
-        <button onClick={toggleComments} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/[0.03] transition-all duration-200">
+        <button onClick={toggleComments} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#4F5B5E] hover:text-[#111111] hover:bg-black/[0.03] transition-all duration-200">
           <Icon name="chat" size={14} strokeWidth={2} />
           <span className="counter">{count}</span>
         </button>
         <button
           onClick={() => window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`, '_blank', 'noopener')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/[0.03] transition-all duration-200"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#4F5B5E] hover:text-[#111111] hover:bg-black/[0.03] transition-all duration-200"
           aria-label="Share on X"
         >
           <XLogo />
@@ -142,9 +142,9 @@ export function ActionBar({ postId, likeCount, liked: likedInit, commentCount, s
               {comments.map((c) => (
                 <div key={c.id} className="flex items-start gap-2">
                   <Avatar username={c.username || 'u'} size={24} />
-                  <div className="bg-[#f5f5f7] rounded-xl px-3 py-2 flex-1">
-                    <span className="text-[11px] font-semibold text-[#1d1d1f]">@{c.username}</span>
-                    <p className="text-[12px] text-[#1d1d1f]/80 leading-relaxed">{c.text}</p>
+                  <div className="bg-[#E8EDEE] rounded-xl px-3 py-2 flex-1">
+                    <span className="text-[11px] font-semibold text-[#111111]">@{c.username}</span>
+                    <p className="text-[12px] text-[#111111]/80 leading-relaxed">{c.text}</p>
                   </div>
                 </div>
               ))}

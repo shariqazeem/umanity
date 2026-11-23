@@ -33,7 +33,7 @@ function Row({ dot, label, children }: { dot: keyof typeof DOT; label: string; c
     <li className="flex items-baseline gap-2.5">
       <span className={`w-2 h-2 rounded-full shrink-0 translate-y-[-1px] ${DOT[dot]}`} />
       <span className="min-w-0">
-        <span className="font-semibold">{label}</span> <span className="text-[#86868b]">{children}</span>
+        <span className="font-semibold">{label}</span> <span className="text-[#4F5B5E]">{children}</span>
       </span>
     </li>
   )
@@ -48,7 +48,7 @@ export function GuardCard({ guard, unlocked }: { guard: Guard; unlocked: boolean
   const reviewOpen = v ? (now ?? Date.parse(v.at)) < reviewEnds : false
 
   const head = !v
-    ? { text: 'Checking the proof', tone: 'text-[#1d1d1f]' }
+    ? { text: 'Checking the proof', tone: 'text-[#111111]' }
     : !v.approve
       ? { text: 'Not approved by the AI check', tone: 'text-red-600' }
       : v.vetoedBy
@@ -63,16 +63,16 @@ export function GuardCard({ guard, unlocked }: { guard: Guard; unlocked: boolean
             {v?.approve && !v.vetoedBy && '✓ '}
             {head.text}
           </p>
-          <p className="text-[11.5px] text-[#86868b] mt-0.5">
+          <p className="text-[11.5px] text-[#4F5B5E] mt-0.5">
             {v ? `${modelName(v.model)} compared the proof with the promise in a sealed machine; ${near} checked its signature.` : `An AI compares the proof with the promise in a sealed machine. Its signed verdict lands on ${near} in about a minute.`}
           </p>
         </div>
-        <a href={guard.contractUrl} target="_blank" rel="noopener noreferrer" className="hit shrink-0 text-[11.5px] font-semibold text-[#86868b] hover:text-[#1d1d1f]">
+        <a href={guard.contractUrl} target="_blank" rel="noopener noreferrer" className="hit shrink-0 text-[11.5px] font-semibold text-[#4F5B5E] hover:text-[#111111]">
           Guard ↗
         </a>
       </div>
 
-      {v?.reason && <p className="mt-3 rounded-2xl bg-[#f5f5f7] px-4 py-3 text-[13px] leading-snug">“{v.reason}”</p>}
+      {v?.reason && <p className="mt-3 rounded-2xl bg-[#E8EDEE] px-4 py-3 text-[13px] leading-snug">“{v.reason}”</p>}
 
       {v && (
         <ol className="mt-3 space-y-2 text-[12.5px]">

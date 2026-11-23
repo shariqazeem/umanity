@@ -43,7 +43,7 @@ export function WalletSheet() {
     <Sheet open={walletSheetOpen} onClose={close} width="sm" title="Wallet">
       {!signer ? (
         <div className="py-6 text-center">
-          <p className="text-[14px] text-[#86868b]">No wallet yet.</p>
+          <p className="text-[14px] text-[#4F5B5E]">No wallet yet.</p>
         </div>
       ) : (
         <div>
@@ -54,11 +54,11 @@ export function WalletSheet() {
             <div className="min-w-0 flex-1">
               <Pill tone={isLocal ? 'dark' : 'gray'}>{isLocal ? 'Umanity wallet' : 'Connected'}</Pill>
               <p className="num text-[26px] font-bold mt-1.5 leading-none">{usd == null ? '…' : usdText(usd, 2)}</p>
-              <p className="text-[12px] text-[#86868b] mt-1 num">USDC to give with{balance != null ? ` · ${fmtSol(balance, 3)} SOL` : ''}</p>
+              <p className="text-[12px] text-[#4F5B5E] mt-1 num">USDC to give with{balance != null ? ` · ${fmtSol(balance, 3)} SOL` : ''}</p>
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl bg-[#fafafa] border border-black/[0.06] p-3.5">
+          <div className="mt-4 rounded-2xl bg-[#F2F5F5] border border-black/[0.06] p-3.5">
             <p className="eyebrow mb-1">Address</p>
             <p className="num text-[12.5px] break-all">{address}</p>
             <div className="flex items-center gap-2 mt-2.5">
@@ -69,7 +69,7 @@ export function WalletSheet() {
                   refreshBalance()
                   refreshUsdc()
                 }}
-                className="ml-auto text-[#86868b] hover:text-[#1d1d1f] w-11 h-11 -m-2 flex items-center justify-center"
+                className="ml-auto text-[#4F5B5E] hover:text-[#111111] w-11 h-11 -m-2 flex items-center justify-center"
                 title="Refresh balance"
                 aria-label="Refresh balance"
               >
@@ -80,7 +80,7 @@ export function WalletSheet() {
 
           <div className="mt-4">
             <p className="eyebrow mb-2">Add money</p>
-            <p className="text-[13px] text-[#86868b] leading-relaxed">Send USDC on Solana to this address from any wallet or exchange. Holding it somewhere else? Give from another chain right in the give sheet. You never need SOL: Umanity pays the network fee.</p>
+            <p className="text-[13px] text-[#4F5B5E] leading-relaxed">Send USDC on Solana to this address from any wallet or exchange. Holding it somewhere else? Give from another chain right in the give sheet. You never need SOL: Umanity pays the network fee.</p>
             {!isMainnet && (
               <Btn tone="outline" size="md" className="mt-3" onClick={faucet} loading={busy} icon="bolt">
                 Get devnet SOL
@@ -97,7 +97,7 @@ export function WalletSheet() {
                 </span>
                 <span className="flex-1 min-w-0">
                   <span className="block text-[13.5px] font-semibold">{lockLabel}</span>
-                  <span className="block text-[12px] text-[#86868b]">{walletMethod === 'unprotected' ? 'Its key is not sealed on this device.' : walletLocked ? 'Asked for when you give.' : 'Unlocked for now; it locks itself after 15 idle minutes.'}</span>
+                  <span className="block text-[12px] text-[#4F5B5E]">{walletMethod === 'unprotected' ? 'Its key is not sealed on this device.' : walletLocked ? 'Asked for when you give.' : 'Unlocked for now; it locks itself after 15 idle minutes.'}</span>
                 </span>
                 {walletMethod === 'unprotected' ? (
                   <Btn size="sm" onClick={() => ensureUnlocked()}>
@@ -119,7 +119,7 @@ export function WalletSheet() {
                 )}
               </div>
 
-              <p className="text-[13px] text-[#86868b] leading-relaxed mt-4">Back up the secret key somewhere safe. It opens this wallet in Phantom, Solflare or Backpack if this device is lost.</p>
+              <p className="text-[13px] text-[#4F5B5E] leading-relaxed mt-4">Back up the secret key somewhere safe. It opens this wallet in Phantom, Solflare or Backpack if this device is lost.</p>
               {secret ? (
                 <div className="mt-3 rounded-2xl bg-[#fff1f1] border border-[#fecaca] p-3">
                   <p className="num text-[12px] break-all text-[#7f1d1d]">{secret}</p>

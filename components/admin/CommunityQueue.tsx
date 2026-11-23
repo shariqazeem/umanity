@@ -42,21 +42,21 @@ export function CommunityQueue({ signer }: { signer: Signer }) {
     <section className="card p-5 space-y-4">
       <div>
         <h2 className="font-bold text-[16px]">Community drops</h2>
-        <p className="text-[12.5px] text-[#86868b]">Check the prices, the place and the runner before opening a drop. A runner is paid only after proof.</p>
+        <p className="text-[12.5px] text-[#4F5B5E]">Check the prices, the place and the runner before opening a drop. A runner is paid only after proof.</p>
       </div>
 
-      {pending.length === 0 && waiting.length === 0 && <p className="text-[13px] text-[#86868b]">Nothing waiting.</p>}
+      {pending.length === 0 && waiting.length === 0 && <p className="text-[13px] text-[#4F5B5E]">Nothing waiting.</p>}
 
       {pending.map((p) => (
         <article key={p.id} className="rounded-2xl border border-black/[0.06] p-4">
           <p className="font-semibold text-[14px]">
-            {p.emoji} {p.title} <span className="text-[#86868b] font-normal">· {p.place}</span>
+            {p.emoji} {p.title} <span className="text-[#4F5B5E] font-normal">· {p.place}</span>
           </p>
-          <p className="text-[12px] text-[#86868b] mt-0.5">
+          <p className="text-[12px] text-[#4F5B5E] mt-0.5">
             {usdText(p.goalUsd, 2)} goal (list {usdText(listTotal(p.meta.items), 2)}) · cap {usdText(p.capUsd, 0)} · by {new Date(p.deadline).toLocaleDateString()} · runner {p.proposer.slice(0, 4)}…{p.proposer.slice(-4)} · {p.contact}
           </p>
-          <p className="text-[12.5px] text-[#525252] mt-2">{p.meta.story}</p>
-          <ul className="text-[12px] text-[#525252] mt-2 grid sm:grid-cols-2 gap-x-4">
+          <p className="text-[12.5px] text-[#3A4548] mt-2">{p.meta.story}</p>
+          <ul className="text-[12px] text-[#3A4548] mt-2 grid sm:grid-cols-2 gap-x-4">
             {p.meta.items.map((it, i) => (
               <li key={i}>
                 {it.qty} × {it.name} @ {usdText(it.unitUsd, 2)}
@@ -79,7 +79,7 @@ export function CommunityQueue({ signer }: { signer: Signer }) {
           <p className="font-semibold text-[14px]">
             Proof for <Link href={dropHref(s.dropId)} className="underline">Drop #{s.dropId + 1}</Link>: {s.title}
           </p>
-          {s.body && <p className="text-[12.5px] text-[#525252] mt-1">{s.body}</p>}
+          {s.body && <p className="text-[12.5px] text-[#3A4548] mt-1">{s.body}</p>}
           <ul className="text-[12px] mt-2 space-y-0.5">
             {[s.xPostUrl, ...s.links].filter(Boolean).map((l) => (
               <li key={l}>

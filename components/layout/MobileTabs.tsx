@@ -16,18 +16,18 @@ export function MobileTabs() {
           if (tab.href === '/give') {
             return (
               <Link key={tab.href} href={tab.href} aria-label="Give" className="flex items-center justify-center w-14 h-full">
-                <span className={`w-11 h-11 -mt-1 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center shadow-lg shadow-black/20 transition-transform duration-200 ${active ? 'scale-105' : 'active:scale-95'}`}>
-                  <Icon name="heart" size={20} strokeWidth={2.1} />
+                <span className={`w-11 h-11 -mt-1 rounded-full bg-[#111111] text-white flex items-center justify-center shadow-lg shadow-black/20 transition-transform duration-200 ${active ? 'scale-105' : 'active:scale-95'}`}>
+                  <span className="block w-6 h-[3px] rounded-full bg-[#D9E1E2] -rotate-[30deg]" aria-hidden="true" />
                 </span>
               </Link>
             )
           }
           return (
-            <Link key={tab.href} href={tab.href} className={`flex flex-col items-center justify-center w-14 h-full transition-all duration-200 ${active ? 'text-[#1d1d1f]' : 'text-[#aeaeb2]'}`}>
+            <Link key={tab.href} href={tab.href} className={`flex flex-col items-center justify-center w-14 h-full transition-all duration-200 ${active ? 'text-[#111111]' : 'text-[#7D898C]'}`}>
               <span className={`transition-transform duration-300 ${active ? 'scale-105' : ''}`}>
                 <Icon name={tab.icon} size={22} strokeWidth={active ? 2.1 : 1.8} />
               </span>
-              <span className={`text-[9px] font-medium mt-0.5 ${active ? 'text-[#1d1d1f]' : 'text-[#aeaeb2]'}`}>{tab.label}</span>
+              <span className={`text-[9px] font-medium mt-0.5 ${active ? 'text-[#111111]' : 'text-[#7D898C]'}`}>{tab.label}</span>
             </Link>
           )
         })}

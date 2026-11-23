@@ -5,12 +5,10 @@
  * closes when the film rolls"). After that it can be kept or sold; the collection's royalty sends a
  * share of every resale to the giving fund's royalty wallet.
  *
- * Each artwork stays encrypted in the deployment (circles-art/) and is decrypted only once its
- * Circle is minted, so it is revealed to its holder first. Server-only.
+ * Each Circle is drawn by its own gift (lib/umanity/tally.ts): the cut turns to the hour it was given,
+ * tally strokes count its number, and a notch marks every gift its giver has made. It is drawn once its
+ * Circle is minted, so its holder sees it first, and anyone can redraw it from the record. Server-only.
  */
-import { createDecipheriv } from 'crypto'
-import { readFile } from 'fs/promises'
-import path from 'path'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { and, asc, eq, inArray, sql } from 'drizzle-orm'
 import { createNoopSigner, publicKey, type Instruction } from '@metaplex-foundation/umi'
@@ -18,13 +16,12 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { fromWeb3JsKeypair, toWeb3JsInstruction } from '@metaplex-foundation/umi-web3js-adapters'
 import { createSignerFromKeypair } from '@metaplex-foundation/umi'
 import { approveCollectionPluginAuthority, create, fetchAssetV1, fetchCollection, mplCore, revokeCollectionPluginAuthority, updateCollectionPlugin } from '@metaplex-foundation/mpl-core'
-import { circles, drops, getDb, type Circle } from '@/lib/db'
+import { circles, drops, fundGifts, getDb, type Circle } from '@/lib/db'
 import { getConnection } from '@/lib/solana/chain'
 import { getAuthorityKeypair, getTreasuryKeypair } from '@/lib/solana/server-signer'
 import { signAndLand } from '@/lib/solana/send'
 import { SOLANA_CLUSTER } from '@/lib/solana/constants'
 import { isTeam } from './team'
-import manifest from '@/circles-art/manifest.json'
 
 export const CIRCLES_LIMIT = 100
 /** The Circles collection on this cluster. Circles are off until it is set. */
@@ -32,7 +29,8 @@ export const CIRCLES_COLLECTION = process.env.NEXT_PUBLIC_CIRCLES_COLLECTION || 
 const APP = process.env.NEXT_PUBLIC_APP_URL || 'https://umanity.gives'
 
 export const circleName = (n: number) => `Circle No. ${String(n).padStart(3, '0')}`
-export const circleScene = (n: number) => (manifest as Record<string, string>)[String(n)] ?? 'circle'
+/** Season 1's colour, sampled from a frame of the first delivery film and published with it. Until then, none. */
+export const SEASON_ONE_COLOUR = process.env.NEXT_PUBLIC_SEASON_ONE_COLOUR || null
 
 /**
  * Gives the wallet its Circle number, once: team wallets and wallets that already hold one get
@@ -186,18 +184,27 @@ export async function getCircle(n: number) {
   return (await db.select().from(circles).where(and(eq(circles.cluster, SOLANA_CLUSTER), eq(circles.number, n))))[0] ?? null
 }
 
-/** The decrypted artwork for a minted Circle (full size, or the 360px thumbnail). */
-export async function circleArt(n: number, size: 'full' | 'thumb' = 'full') {
-  const key = process.env.CIRCLES_ART_KEY || (process.env.CIRCLES_ART_KEY_FILE ? (await readFile(process.env.CIRCLES_ART_KEY_FILE, 'utf8').catch(() => '')).trim() : '')
-  if (!key || !Number.isInteger(n) || n < 1 || n > CIRCLES_LIMIT) return null
-  const file = path.join(process.cwd(), 'circles-art', `${n}${size === 'thumb' ? '.t' : ''}.bin`)
-  const buf = await readFile(file).catch(() => null)
-  if (!buf) return null
-  const iv = buf.subarray(0, 12)
-  const tag = buf.subarray(12, 28)
-  const decipher = createDecipheriv('aes-256-gcm', Buffer.from(key, 'hex'), iv)
-  decipher.setAuthTag(tag)
-  return Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()])
+/**
+ * What each Circle is drawn from: its number, the moment its gift was confirmed, how many gifts its
+ * giver has made to the fund (one notch each, up to nine; never the amount), and whether the first film
+ * has rolled (open while locked, closed once thawed).
+ */
+export async function circleRecords(rows: Circle[]) {
+  if (!rows.length) return new Map<number, { n: number; at: string; gifts: number; state: 'open' | 'closed' }>()
+  const db = await getDb()
+  const giver = sql<string>`coalesce(${fundGifts.userId}, ${fundGifts.giver})`
+  const counts = await db
+    .select({ owner: giver, k: sql<number>`count(*)::int` })
+    .from(fundGifts)
+    .where(and(eq(fundGifts.cluster, SOLANA_CLUSTER), eq(fundGifts.status, 'confirmed'), inArray(giver, rows.map((r) => r.owner))))
+    .groupBy(giver)
+  const byOwner = new Map(counts.map((c) => [c.owner, c.k]))
+  return new Map(
+    rows.map((r) => [
+      r.number,
+      { n: r.number, at: r.createdAt.toISOString(), gifts: Math.max(1, Math.min(byOwner.get(r.owner) ?? 1, 9)), state: (r.frozen ? 'open' : 'closed') as 'open' | 'closed' },
+    ])
+  )
 }
 
 export const isCirclesOn = () => !!CIRCLES_COLLECTION

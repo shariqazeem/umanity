@@ -20,7 +20,7 @@ export default function MoneyPage() {
       <header className="pt-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">Money</p>
         <h1 className="text-[28px] md:text-[34px] font-black tracking-[-0.035em] leading-[1.05] mt-1">Every dollar, in and out</h1>
-        <p className="text-[14px] text-[#86868b] mt-2 max-w-xl">Read from the Solana program, not typed in. Click any number&apos;s transaction to check it yourself.</p>
+        <p className="text-[14px] text-[#4F5B5E] mt-2 max-w-xl">Read from the Solana program, not typed in. Click any number&apos;s transaction to check it yourself.</p>
       </header>
 
       {error && !data && <div className="card p-6 text-[13px] text-red-600">The money trail could not be loaded: {error}</div>}
@@ -41,7 +41,7 @@ export default function MoneyPage() {
       {data && (
         <section className="card p-5">
           <h3 className="font-bold text-[15px] mb-1">Latest money moves</h3>
-          <p className="text-[11.5px] text-[#86868b] mb-2">Gifts, unlocks, refunds and fee splits, newest first.</p>
+          <p className="text-[11.5px] text-[#4F5B5E] mb-2">Gifts, unlocks, refunds and fee splits, newest first.</p>
           {data.recent.length ? (
             <ul className="divide-y divide-black/[0.04]">
               {data.recent.map((e) => (
@@ -50,21 +50,21 @@ export default function MoneyPage() {
                   <span className="flex-1 min-w-0 truncate">
                     {MOVE[e.kind]?.text(e) ?? e.kind}
                     {e.dropId != null && (
-                      <Link href={dropHref(e.dropId)} className="text-[#86868b] hover:text-[#1d1d1f]">
+                      <Link href={dropHref(e.dropId)} className="text-[#4F5B5E] hover:text-[#111111]">
                         {' '}
                         · Drop #{e.dropId + 1}
                       </Link>
                     )}
                   </span>
                   <span className="font-bold counter">{e.amountUsd != null ? money(e.amountUsd) : ''}</span>
-                  <a href={explorerTx(e.signature)} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#86868b] hover:text-[#1d1d1f] w-16 text-right">
+                  <a href={explorerTx(e.signature)} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#4F5B5E] hover:text-[#111111] w-16 text-right">
                     {e.at ? timeAgo(e.at) : 'tx'} ↗
                   </a>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-[13px] text-[#86868b]">Nothing has moved yet.</p>
+            <p className="text-[13px] text-[#4F5B5E]">Nothing has moved yet.</p>
           )}
         </section>
       )}
@@ -72,14 +72,14 @@ export default function MoneyPage() {
       {data && (
         <section className="card p-5">
           <h3 className="font-bold text-[15px] mb-1">What Umanity spends</h3>
-          <p className="text-[11.5px] text-[#86868b] mb-2">Our half of the fees pays for filming, travel, the team and running the app. Every spend is listed with its receipt.</p>
+          <p className="text-[11.5px] text-[#4F5B5E] mb-2">Our half of the fees pays for filming, travel, the team and running the app. Every spend is listed with its receipt.</p>
           {data.spending.length ? (
             <ul className="divide-y divide-black/[0.04]">
               {data.spending.map((s) => (
                 <li key={s.id} className="flex items-center gap-3 py-2.5 text-[13px]">
                   <span className="flex-1 min-w-0">
                     <span className="font-semibold">{s.description}</span>
-                    <span className="text-[#86868b]"> · {s.category}</span>
+                    <span className="text-[#4F5B5E]"> · {s.category}</span>
                   </span>
                   <span className="font-bold counter">{money(s.amountUsd)}</span>
                   {s.receiptUrl && (
@@ -91,7 +91,7 @@ export default function MoneyPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-[13px] text-[#86868b]">Nothing spent yet.</p>
+            <p className="text-[13px] text-[#4F5B5E]">Nothing spent yet.</p>
           )}
         </section>
       )}
@@ -126,9 +126,9 @@ function Totals({ d }: { d: MoneySummary }) {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-5">
         {items.map(([label, value, sub]) => (
           <div key={label}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#86868b]">{label}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#4F5B5E]">{label}</p>
             <p className="text-[24px] md:text-[26px] font-bold counter leading-tight mt-0.5">{money(value)}</p>
-            <p className="text-[10.5px] text-[#aeaeb2]">{sub}</p>
+            <p className="text-[10.5px] text-[#7D898C]">{sub}</p>
           </div>
         ))}
       </div>
@@ -137,18 +137,18 @@ function Totals({ d }: { d: MoneySummary }) {
 }
 
 function Node({ title, value, sub, tone = 'white' }: { title: string; value: string; sub: string; tone?: 'white' | 'dark' | 'green' }) {
-  const cls = tone === 'dark' ? 'bg-[#1d1d1f] text-white' : tone === 'green' ? 'bg-emerald-50 border border-emerald-100' : 'bg-white border border-black/[0.06]'
+  const cls = tone === 'dark' ? 'bg-[#111111] text-white' : tone === 'green' ? 'bg-emerald-50 border border-emerald-100' : 'bg-white border border-black/[0.06]'
   return (
     <div className={`rounded-2xl px-4 py-3 ${cls}`}>
-      <p className={`text-[11px] font-semibold ${tone === 'dark' ? 'text-white/60' : 'text-[#86868b]'}`}>{title}</p>
+      <p className={`text-[11px] font-semibold ${tone === 'dark' ? 'text-white/60' : 'text-[#4F5B5E]'}`}>{title}</p>
       <p className="text-[18px] font-bold counter leading-tight">{value}</p>
-      <p className={`text-[10.5px] ${tone === 'dark' ? 'text-white/50' : 'text-[#86868b]'}`}>{sub}</p>
+      <p className={`text-[10.5px] ${tone === 'dark' ? 'text-white/50' : 'text-[#4F5B5E]'}`}>{sub}</p>
     </div>
   )
 }
 
 const Arrow = ({ label }: { label?: string }) => (
-  <div className="flex flex-col items-center justify-center text-[#aeaeb2] text-[10.5px] py-1">
+  <div className="flex flex-col items-center justify-center text-[#7D898C] text-[10.5px] py-1">
     <span>↓</span>
     {label && <span>{label}</span>}
   </div>
@@ -160,9 +160,9 @@ function Flow({ d }: { d: MoneySummary }) {
   return (
     <section className="card p-5">
       <h3 className="font-bold text-[15px] mb-1">How it flows</h3>
-      <p className="text-[11.5px] text-[#86868b] mb-4">Gifts go 100% to their drop. Every fee is split by the program: half to drops, half to Umanity.</p>
+      <p className="text-[11.5px] text-[#4F5B5E] mb-4">Gifts go 100% to their drop. Every fee is split by the program: half to drops, half to Umanity.</p>
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-3xl bg-[#f5f5f7] p-3">
+        <div className="rounded-3xl bg-[#E8EDEE] p-3">
           <Node title="Gifts" value={money(d.totals.cameIn)} sub={d.fund.gifts > 0 ? `wallets, other chains, AI agents · ${money(d.fund.gifts)} into the drops fund` : 'wallets, other chains, AI agents'} />
           <Arrow label="100%" />
           <Node title="Drop pots" value={money(d.totals.inPots)} sub="locked until proof and the check" tone="dark" />
@@ -172,15 +172,15 @@ function Flow({ d }: { d: MoneySummary }) {
             <Node title="Refunded" value={money(d.totals.refunded)} sub="missed dates" />
           </div>
         </div>
-        <div className="rounded-3xl bg-[#f5f5f7] p-3">
+        <div className="rounded-3xl bg-[#E8EDEE] p-3">
           <Node title="Fees" value={money(f.split + f.inboxWaiting)} sub={`${UMANITY_MINT ? `${money(f.fromToken)} from $UMANITY trades · ` : ''}${d.swaps.count} ${d.swaps.count === 1 ? 'swap' : 'swaps'} worth ${money(d.swaps.volumeUsd)}`} />
           <Arrow label="split 50/50 by the program" />
           <div className="grid grid-cols-2 gap-2">
             <Node title="Drops fund" value={money(f.toDrops)} sub={`${money(f.fundIntoPots)} put into pots`} tone="green" />
             <Node title="Umanity" value={money(f.toOps)} sub="filming, team, app" />
           </div>
-          {f.inboxWaiting > 0 && <p className="text-[11px] text-[#86868b] mt-2 px-1">{money(f.inboxWaiting)} of fees waiting for the next split.</p>}
-          <p className="text-[11px] text-[#86868b] mt-2 px-1">
+          {f.inboxWaiting > 0 && <p className="text-[11px] text-[#4F5B5E] mt-2 px-1">{money(f.inboxWaiting)} of fees waiting for the next split.</p>}
+          <p className="text-[11px] text-[#4F5B5E] mt-2 px-1">
             The drops fund holds {money(d.fund.balance)} now{d.fund.gifts > 0 ? `, including ${money(d.fund.gifts)} given straight to it` : ''}. It only pays into drop pots.
           </p>
         </div>
@@ -213,11 +213,11 @@ function Rules({ d }: { d: MoneySummary }) {
   return (
     <section className="card p-5">
       <h3 className="font-bold text-[15px] mb-1">The rules, and where they live</h3>
-      <p className="text-[11.5px] text-[#86868b] mb-2">Gifts can leave a pot only to its delivery wallet after proof, or back to the backer. Fee money can only go into pots.</p>
+      <p className="text-[11.5px] text-[#4F5B5E] mb-2">Gifts can leave a pot only to its delivery wallet after proof, or back to the backer. Fee money can only go into pots.</p>
       <dl className="divide-y divide-black/[0.04] text-[12.5px]">
         {rows.map(([k, v]) => (
           <div key={k} className="flex items-center justify-between gap-4 py-2">
-            <dt className="text-[#86868b]">{k}</dt>
+            <dt className="text-[#4F5B5E]">{k}</dt>
             <dd className="text-right">{v}</dd>
           </div>
         ))}

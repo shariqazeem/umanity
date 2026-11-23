@@ -17,7 +17,6 @@ const nextConfig: NextConfig = {
     '/opengraph-image': ['./lib/og/fonts/**', './public/logo.png', './public/mark.png'],
     '/twitter-image': ['./lib/og/fonts/**', './public/logo.png', './public/mark.png'],
     // Each Circle's artwork ships encrypted and is decrypted at request time, once it is minted.
-    '/api/circles/[n]/image': ['./circles-art/**'],
   },
   turbopack: {},
   webpack: (config) => {

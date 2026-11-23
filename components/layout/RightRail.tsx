@@ -25,7 +25,7 @@ export function RightRail() {
       <LeaderboardWidget />
       <ActivityWidget />
       <div className="px-2 pt-2">
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#aeaeb2]">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#7D898C]">
           <span>Solana</span>
           <span>USDC</span>
           <span>Meteora</span>
@@ -33,12 +33,12 @@ export function RightRail() {
           <span>Aurora</span>
           <span>x402</span>
         </div>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#aeaeb2] mt-1.5">
-          <Link href="/money" className="hover:text-[#86868b]">Money</Link>
-          <Link href="/agents" className="hover:text-[#86868b]">Agents API</Link>
-          <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="hover:text-[#86868b]">@umanity_xyz</a>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#7D898C] mt-1.5">
+          <Link href="/money" className="hover:text-[#4F5B5E]">Money</Link>
+          <Link href="/agents" className="hover:text-[#4F5B5E]">Agents API</Link>
+          <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="hover:text-[#4F5B5E]">@umanity_xyz</a>
         </div>
-        <p className="text-[10px] text-[#d4d4d4] mt-2">&copy; 2026 Umanity</p>
+        <p className="text-[10px] text-[#B9C4C6] mt-2">&copy; 2026 Umanity</p>
       </div>
     </aside>
   )
@@ -65,10 +65,10 @@ function TokenWidget() {
       <p className="text-[22px] font-black tracking-[-0.03em] counter mt-1">{priceText(token.priceUsd)}</p>
       <div className="mt-2">{market ? <PriceChart points={market.points} height={44} /> : <div className="skeleton h-[44px]" />}</div>
       <div className="flex items-center justify-between mt-3">
-        <p className="text-[11.5px] text-[#86868b]">
+        <p className="text-[11.5px] text-[#4F5B5E]">
           Fees to drops <span className="font-semibold text-emerald-600 counter">{usdText((money?.fees.fromToken ?? 0) / 2, 2)}</span>
         </p>
-        <Link href="/trade" className="text-[12px] font-semibold text-[#1d1d1f] hover:underline">
+        <Link href="/trade" className="text-[12px] font-semibold text-[#111111] hover:underline">
           Trade →
         </Link>
       </div>
@@ -100,10 +100,10 @@ function StatsWidget() {
       <div className="space-y-3">
         {rows.map(([label, value, sub]) => (
           <div key={label} className="flex items-center justify-between">
-            <span className="text-[13px] text-[#86868b]">{label}</span>
+            <span className="text-[13px] text-[#4F5B5E]">{label}</span>
             <span className="text-right">
               <span className="text-[15px] font-bold counter">{value}</span>
-              {sub && <span className="block text-[10px] text-[#aeaeb2] counter">{sub}</span>}
+              {sub && <span className="block text-[10px] text-[#7D898C] counter">{sub}</span>}
             </span>
           </div>
         ))}
@@ -125,7 +125,7 @@ function GuardianWidget() {
         <div className="progress emerald mt-1.5">
           <span style={{ width: `${Math.round(g.progress * 100)}%` }} />
         </div>
-        <p className="text-[11px] text-[#86868b] mt-1 counter">
+        <p className="text-[11px] text-[#4F5B5E] mt-1 counter">
           {user.rewardPoints.toLocaleString()} pts{user.streakCurrent > 0 ? ` · 🔥 ${user.streakCurrent}-day streak` : ''}
         </p>
       </div>
@@ -156,7 +156,7 @@ function LeaderboardWidget() {
       <h3 className="font-bold text-[15px] mb-3">Top backers</h3>
       <div className="flex gap-1.5 mb-3">
         {LB_TABS.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${tab === t.key ? 'bg-[#1d1d1f] text-white' : 'bg-black/[0.04] text-[#86868b] hover:text-[#1d1d1f]'}`}>
+          <button key={t.key} onClick={() => setTab(t.key)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${tab === t.key ? 'bg-[#111111] text-white' : 'bg-black/[0.04] text-[#4F5B5E] hover:text-[#111111]'}`}>
             {t.label}
           </button>
         ))}
@@ -168,16 +168,16 @@ function LeaderboardWidget() {
           ))}
         </div>
       ) : sorted.length === 0 ? (
-        <p className="text-[12px] text-[#aeaeb2] text-center py-6">No one yet. The first gift takes the top spot.</p>
+        <p className="text-[12px] text-[#7D898C] text-center py-6">No one yet. The first gift takes the top spot.</p>
       ) : (
         <ol className="space-y-1">
           {sorted.map((r, i) => {
             const row = (
               <>
-                <span className={`w-4 text-[11px] font-bold counter ${i === 0 ? 'text-emerald-600' : 'text-[#aeaeb2]'}`}>{i + 1}</span>
+                <span className={`w-4 text-[11px] font-bold counter ${i === 0 ? 'text-emerald-600' : 'text-[#7D898C]'}`}>{i + 1}</span>
                 <Avatar username={r.username ?? r.address} url={r.avatarUrl} size={28} />
                 <span className="flex-1 min-w-0 text-[13px] font-medium truncate">{r.username ? `@${r.username}` : short(r.address)}</span>
-                <span className="text-[12px] font-semibold counter text-[#1d1d1f]">{tab === 'usd' ? usdText(r.totalUsd, r.totalUsd % 1 ? 2 : 0) : tab === 'gifts' ? r.gifts : r.drops}</span>
+                <span className="text-[12px] font-semibold counter text-[#111111]">{tab === 'usd' ? usdText(r.totalUsd, r.totalUsd % 1 ? 2 : 0) : tab === 'gifts' ? r.gifts : r.drops}</span>
               </>
             )
             return (
@@ -226,15 +226,15 @@ function ActivityWidget() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="text-[12px] text-[#aeaeb2] text-center py-6">No activity yet</p>
+        <p className="text-[12px] text-[#7D898C] text-center py-6">No activity yet</p>
       ) : (
         <ul className="space-y-2.5">
           {rows.slice(0, 6).map((a) => (
             <li key={a.id} className="flex items-start gap-2.5">
               <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-              <p className="text-[12px] leading-snug text-[#525252] min-w-0">
+              <p className="text-[12px] leading-snug text-[#3A4548] min-w-0">
                 {activityLine(a)}
-                <span className="text-[#aeaeb2]"> · <Ago at={a.at} /></span>
+                <span className="text-[#7D898C]"> · <Ago at={a.at} /></span>
               </p>
             </li>
           ))}

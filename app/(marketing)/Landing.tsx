@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { Lockup, Mark } from '@/components/brand/Logo'
+import { circleSvg, type TallyState } from '@/lib/umanity/tally'
 import { useRouter } from 'next/navigation'
 import { useUmanity } from '@/components/providers/UmanityProvider'
 import { apiGet, timeAgo } from '@/lib/client/api'
@@ -40,16 +41,16 @@ export function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-2xl border-b border-black/[0.04]">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/?stay=1">
-            <Image src="/logo.png" alt="Umanity" width={38} height={38} className="rounded-full" priority />
+            <Lockup size={26} />
           </Link>
           <div className="flex items-center gap-5">
-            <Link href="/home" className="hidden sm:block text-[13px] text-[#86868b] hover:text-[#1d1d1f] font-medium transition-colors">
+            <Link href="/home" className="hidden sm:block text-[13px] text-[#4F5B5E] hover:text-[#111111] font-medium transition-colors">
               Explore App
             </Link>
-            <Link href="/agents" className="hidden sm:block text-[13px] text-[#86868b] hover:text-[#1d1d1f] font-medium transition-colors">
+            <Link href="/agents" className="hidden sm:block text-[13px] text-[#4F5B5E] hover:text-[#111111] font-medium transition-colors">
               Agents
             </Link>
-            <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hidden sm:block text-[13px] text-[#86868b] hover:text-[#1d1d1f] font-medium transition-colors">
+            <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hidden sm:block text-[13px] text-[#4F5B5E] hover:text-[#111111] font-medium transition-colors">
               GitHub
             </a>
             {signer ? (
@@ -67,60 +68,46 @@ export function Landing() {
 
       <main>
         {/* ===== HERO ===== */}
-        <section className="relative min-h-[100dvh] flex items-center">
-          <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/40 via-white to-white" />
-          <div className="relative max-w-6xl mx-auto px-6 pt-20 sm:pt-24 pb-16 w-full lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-14 lg:items-center">
+        <section className="relative bg-[#D9E1E2] overflow-hidden">
+          <div className="relative max-w-6xl mx-auto px-6 pt-24 sm:pt-28 pb-10 w-full lg:grid lg:grid-cols-[minmax(0,1fr)_460px] lg:gap-10 lg:items-center">
             <div className="max-w-3xl animate-fade-up">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/40 text-[11px] font-semibold text-emerald-700 mb-8">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live on Solana {isMainnet ? 'Mainnet' : 'Devnet'} · USDC pots · refunds by code
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-black/[0.06] font-mono text-[10.5px] uppercase tracking-[0.06em] text-[#111111] mb-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
+                Live on Solana · filmed or refunded
               </div>
 
-              <h1 className="text-[clamp(2.8rem,8vw,6rem)] font-black tracking-[-0.04em] leading-[0.88] mb-6 sm:mb-8 text-[#1d1d1f]">
-                Crypto giving
+              <h1 className="text-[clamp(3rem,9vw,6.4rem)] font-extrabold tracking-[-0.035em] leading-[0.9] mb-6 sm:mb-8 text-[#111111] [text-wrap:balance]">
+                Nothing given
                 <br />
-                <span className="text-[#d4d4d4] line-through decoration-[#e5e5e5] decoration-[3px]">on trust.</span>
-                <br />
-                <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">On camera.</span>
+                in the dark.
               </h1>
 
-              <p className="text-lg md:text-[22px] text-[#86868b] max-w-xl leading-[1.45] mb-7 sm:mb-10 [text-wrap:balance]">
-                Your dollars wait in a pot on Solana until the delivery is filmed. Late? The program sends them back.
+              <p className="text-lg md:text-[22px] text-[#3A4548] max-w-xl leading-[1.4] mb-7 sm:mb-10 [text-wrap:pretty]">
+                Every gift waits in the open, in a pot on Solana, until the delivery is filmed. If it isn&apos;t, the code sends every dollar home.
               </p>
 
-              <div className="flex flex-row items-start gap-3 mb-6">
-                <Link href="/home" className="btn-primary px-5 sm:px-7 py-3.5 text-[14px]">
+              <div className="flex flex-row items-start gap-3 mb-2">
+                <Link href="/home" className="btn-primary px-5 sm:px-7 py-3.5 text-[15px]">
                   Open the app
                 </Link>
                 {next || !drops ? (
-                  <Link href="/give" className="btn-secondary px-5 sm:px-7 py-3.5 text-[14px] font-medium">
-                    ♡ Fill the next drop
+                  <Link href="/give" className="btn-secondary px-5 sm:px-7 py-3.5 text-[15px] font-medium">
+                    Fill the next drop
                   </Link>
                 ) : (
-                  <button onClick={() => openGive({ fund: true })} className="btn-secondary px-5 sm:px-7 py-3.5 text-[14px] font-medium">
-                    ♡ Give to the fund
+                  <button onClick={() => openGive({ fund: true })} className="btn-secondary px-5 sm:px-7 py-3.5 text-[15px] font-medium">
+                    Give to the fund
                   </button>
                 )}
               </div>
-
-              <div className="hidden sm:flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-[#aeaeb2]">
-                {[
-                  { label: 'USDC pots on Solana', icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z' },
-                  { label: 'Refunds by code', icon: 'M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3' },
-                  { label: 'Filmed deliveries', icon: 'M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z' },
-                  { label: 'Agents welcome', icon: 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z' },
-                ].map((item) => (
-                  <span key={item.label} className="flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                    </svg>
-                    {item.label}
-                  </span>
-                ))}
-              </div>
             </div>
 
-            <div className="mt-2 sm:mt-10 lg:mt-0">
+            {/* Wit keeps watch on top of the open circle: a gift, waiting for its film. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/art/watch.svg" alt="A small chick stands on top of a black-and-white circle cut in two, watching the gap" width={900} height={720} className="w-full max-w-[420px] lg:max-w-none mx-auto mt-6 lg:mt-0 h-auto" />
+          </div>
+          <div className="relative max-w-6xl mx-auto px-6 pb-16">
+            <div className="max-w-md">
               <HeroDrop />
             </div>
           </div>
@@ -132,24 +119,24 @@ export function Landing() {
         <section className="py-20 md:py-28 bg-white">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-14">
-              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">How a drop works</p>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">One delivery. One pot. Rules in code.</h2>
-              <p className="text-[#86868b] text-base max-w-lg mx-auto">A drop is one real delivery with a shopping list, a place and a date. Every step leaves a record you can open.</p>
+              <p className="text-[10px] font-bold text-[#7D898C] uppercase tracking-[0.2em] mb-3">How a drop works</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#111111] mb-3">One delivery. One pot. Rules in code.</h2>
+              <p className="text-[#4F5B5E] text-base max-w-lg mx-auto">A drop is one real delivery with a shopping list, a place and a date. Every step leaves a record you can open.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
-                { n: '01', icon: '♡', title: 'Fill', body: 'Give USDC in one tap, from any chain, or from an AI agent over x402. Umanity pays the network fee.' },
-                { n: '02', icon: '🔐', title: 'Pot', body: "The money sits in the drop's own USDC pot, owned by the program. It can pay the drop's supplier or its backers, nobody else." },
-                { n: '03', icon: '🎥', title: 'Deliver and film', body: 'The team buys the goods, hands them over and films it. The proof is hashed onto Solana, then a review window runs.' },
-                { n: '04', icon: '🔓', title: 'Unlock or refund', body: 'After review the pot pays the supplier. If the drop misses its date, every backer gets their money back.' },
+                { n: '01', icon: 'give', title: 'Fill', body: 'Give USDC in one tap, from any chain, or from an AI agent over x402. Umanity pays the network fee.' },
+                { n: '02', icon: 'open', title: 'Pot', body: "The money sits in the drop's own USDC pot, owned by the program. It can pay the drop's supplier or its backers, nobody else." },
+                { n: '03', icon: 'closed', title: 'Deliver and film', body: 'The team buys the goods, hands them over and films it. The proof is hashed onto Solana, then a review window runs.' },
+                { n: '04', icon: 'home', title: 'Unlock or refund', body: 'After review the pot pays the supplier. If the drop misses its date, every backer gets their money back.' },
               ].map((s) => (
                 <div key={s.n} className="relative bg-white rounded-2xl p-6 border border-black/[0.05] hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-5">
-                    <div className="w-11 h-11 rounded-2xl bg-[#f5f5f7] flex items-center justify-center text-lg">{s.icon}</div>
-                    <span className="text-[11px] font-bold text-[#d4d4d4] counter">{s.n}</span>
+                    <StepMark state={s.icon} />
+                    <span className="text-[11px] font-bold text-[#B9C4C6] counter">{s.n}</span>
                   </div>
-                  <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-1.5">{s.title}</h3>
-                  <p className="text-[13px] text-[#86868b] leading-relaxed">{s.body}</p>
+                  <h3 className="text-[16px] font-bold text-[#111111] mb-1.5">{s.title}</h3>
+                  <p className="text-[13px] text-[#4F5B5E] leading-relaxed">{s.body}</p>
                 </div>
               ))}
             </div>
@@ -160,31 +147,30 @@ export function Landing() {
         <LoopSection />
 
         {/* ===== WHAT CRYPTO GIVING GOT WRONG ===== */}
-        <section className="py-20 md:py-28 bg-[#fafafa]">
+        <section className="py-20 md:py-28 bg-[#F2F5F5]">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-14">
-              <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">What crypto giving got wrong &rarr; What Umanity does</p>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Six fixes. One app.</h2>
-              <p className="text-[#86868b] text-base max-w-lg mx-auto">Built on the version that placed 3rd in a Superteam bounty and 3rd of 74 at the Solana Graveyard Hackathon, rebuilt around real deliveries and real money flows.</p>
+              <p className="text-[10px] font-bold text-[#7D898C] uppercase tracking-[0.2em] mb-3">What crypto giving got wrong &rarr; What Umanity does</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#111111] mb-3">Six fixes. One app.</h2>
+              <p className="text-[#4F5B5E] text-base max-w-lg mx-auto">Built on the version that placed 3rd in a Superteam bounty and 3rd of 74 at the Solana Graveyard Hackathon, rebuilt around real deliveries and real money flows.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {FIXES.map((r) => (
                 <div key={r.dead} className="group bg-white rounded-2xl p-6 border border-black/[0.05] hover:border-emerald-200/60 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm">🪦</span>
-                    <span className="text-[13px] font-bold text-[#aeaeb2] line-through">{r.dead}</span>
+                    <span className="text-[13px] font-bold text-[#7D898C] line-through">{r.dead}</span>
                   </div>
-                  <p className="text-[11px] text-[#aeaeb2] leading-relaxed mb-4">{r.why}</p>
+                  <p className="text-[11px] text-[#7D898C] leading-relaxed mb-4">{r.why}</p>
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex-1 h-px bg-black/[0.06]" />
                     <span className="text-[10px] font-bold text-emerald-600">FIXED</span>
                     <div className="flex-1 h-px bg-black/[0.06]" />
                   </div>
                   <div className="flex items-center justify-between mb-2 gap-2">
-                    <h3 className="text-[15px] font-bold text-[#1d1d1f]">{r.alive}</h3>
+                    <h3 className="text-[15px] font-bold text-[#111111]">{r.alive}</h3>
                     <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">{r.tag}</span>
                   </div>
-                  <p className="text-[12px] text-[#86868b] leading-relaxed mb-3">{r.how}</p>
+                  <p className="text-[12px] text-[#4F5B5E] leading-relaxed mb-3">{r.how}</p>
                   <div className="inline-flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-full">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     <span className="text-[10px] font-semibold text-emerald-700">{r.stat}</span>
@@ -199,7 +185,7 @@ export function Landing() {
         <FieldSection />
 
         {/* ===== TECH DEPTH ===== */}
-        <section className="py-16 md:py-20 bg-[#1d1d1f] text-white">
+        <section className="py-16 md:py-20 bg-[#111111] text-white">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-bold tracking-[-0.02em] mb-2">The rules live in code</h2>
@@ -225,8 +211,8 @@ export function Landing() {
         {/* ===== CTA ===== */}
         <section className="py-20 md:py-28 bg-white">
           <div className="max-w-2xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Back the first filmed drop.</h2>
-            <p className="text-[#86868b] text-base mb-8 max-w-md mx-auto [text-wrap:balance]">Browse without a wallet. Give $1 in one tap. Every dollar stays on-chain until a delivery is filmed.</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#111111] mb-4">Back the first filmed drop.</h2>
+            <p className="text-[#4F5B5E] text-base mb-8 max-w-md mx-auto [text-wrap:balance]">Browse without a wallet. Give $1 in one tap. Every dollar stays on-chain until a delivery is filmed.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/home" className="btn-primary px-7 py-3.5 text-[14px]">
                 Open the app
@@ -238,29 +224,29 @@ export function Landing() {
           </div>
         </section>
 
-        <footer className="border-t border-black/[0.04] py-8 px-6 bg-[#fafafa]">
+        <footer className="border-t border-black/[0.04] py-8 px-6 bg-[#F2F5F5]">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Umanity" width={28} height={28} className="rounded-full" />
-              <span className="text-[11px] text-[#aeaeb2]">Crypto giving, on camera.</span>
+              <Mark size={26} />
+              <span className="text-[11px] text-[#7D898C]">Nothing given in the dark.</span>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-5 text-[11px] text-[#aeaeb2]">
-              <Link href="/money" className="hover:text-[#86868b]">
+            <div className="flex flex-wrap items-center justify-center gap-5 text-[11px] text-[#7D898C]">
+              <Link href="/money" className="hover:text-[#4F5B5E]">
                 Money
               </Link>
-              <Link href="/agents" className="hover:text-[#86868b]">
+              <Link href="/agents" className="hover:text-[#4F5B5E]">
                 Agents API
               </Link>
-              <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="hover:text-[#86868b]">
+              <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="hover:text-[#4F5B5E]">
                 @umanity_xyz
               </a>
-              <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-[#86868b]">
+              <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-[#4F5B5E]">
                 GitHub
               </a>
               <span>&copy; 2026</span>
             </div>
           </div>
-          <p className="max-w-5xl mx-auto text-[10.5px] text-[#c7c7cc] mt-4 text-center sm:text-left">
+          <p className="max-w-5xl mx-auto text-[10.5px] text-[#9AA6A9] mt-4 text-center sm:text-left">
             Umanity is a crypto app, not a registered charity, and gifts are not tax-deductible.
             {UMANITY_MINT && ' $UMANITY is not an investment and comes with no promise of returns.'}
           </p>
@@ -348,22 +334,22 @@ function HeroFund() {
           <div className="skeleton h-[34px] w-28" />
         ) : FUND_GOAL ? (
           <p className="text-[34px] font-black tracking-[-0.03em] counter leading-none">
-            {money.outside.fundGivers.toLocaleString('en-US')} <span className="text-[#c7c7cc]">of {FUND_GOAL}</span>
+            {money.outside.fundGivers.toLocaleString('en-US')} <span className="text-[#9AA6A9]">of {FUND_GOAL}</span>
           </p>
         ) : (
           <p className="text-[34px] font-black tracking-[-0.03em] counter leading-none">{usdText(money.fund.balance, 2)}</p>
         )}
-        <p className="text-[10.5px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1.5">{FUND_GOAL ? 'Givers so far, team not counted' : 'In the fund now'}</p>
+        <p className="text-[10.5px] text-[#4F5B5E] uppercase tracking-[0.12em] font-medium mt-1.5">{FUND_GOAL ? 'Givers so far, team not counted' : 'In the fund now'}</p>
         {process.env.NEXT_PUBLIC_CIRCLES_COLLECTION && (
-          <Link href="/circles" className="inline-block text-[12.5px] font-semibold text-[#1d1d1f] hover:underline mt-3">
+          <Link href="/circles" className="inline-block text-[12.5px] font-semibold text-[#111111] hover:underline mt-3">
             The first hundred each hold a Circle →
           </Link>
         )}
       </div>
       <button onClick={() => openGive({ fund: true })} className="btn-primary w-full py-3.5 mt-5 !text-[15px]">
-        ♡ Give to the fund
+        Give to the fund
       </button>
-      <p className="text-[11.5px] text-[#86868b] text-center mt-2.5 [text-wrap:balance]">
+      <p className="text-[11.5px] text-[#4F5B5E] text-center mt-2.5 [text-wrap:balance]">
         {FUND_GOAL ? 'From $1, with no refunds: the fund only pays into drops, and drops pay out on filmed proof.' : 'It only pays into drop pots, and drops pay out on filmed proof.'}
       </p>
     </div>
@@ -384,19 +370,19 @@ function HeroDrop() {
         <StatePill drop={drop} />
       </div>
       <Link href={dropHref(drop.id)} className="flex items-start gap-3 mt-3 group">
-        <span className="w-11 h-11 rounded-[14px] bg-[#f5f5f7] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</span>
+        <span className="w-11 h-11 rounded-[14px] bg-[#E8EDEE] flex items-center justify-center text-[22px] flex-shrink-0">{drop.emoji}</span>
         <span className="min-w-0">
           <span className="block text-[18px] font-bold tracking-tight leading-snug group-hover:underline [text-wrap:balance]">{drop.title}</span>
-          <span className="block text-[12.5px] text-[#86868b] mt-0.5 truncate">{drop.place}</span>
+          <span className="block text-[12.5px] text-[#4F5B5E] mt-0.5 truncate">{drop.place}</span>
         </span>
       </Link>
       <div className="mt-5">
         <DropMeter drop={drop} size="sm" />
       </div>
       <button onClick={() => openGive({ dropId: drop.id })} className="btn-primary w-full py-3.5 mt-5 !text-[15px]">
-        ♡ Give to this drop
+        Give to this drop
       </button>
-      <p className="text-[11.5px] text-[#86868b] text-center mt-2.5">
+      <p className="text-[11.5px] text-[#4F5B5E] text-center mt-2.5">
         Pays on filmed proof. Refunded if it misses <span className="whitespace-nowrap">{dayText(drop.deadline)}</span>.
       </p>
     </div>
@@ -417,7 +403,7 @@ function StatsRow() {
       ].map(([v, l]) => (
         <div key={l} className="text-center">
           <p className="text-2xl font-bold counter tracking-tight">{v}</p>
-          <p className="text-[10px] text-[#86868b] uppercase tracking-[0.12em] font-medium mt-1">{l}</p>
+          <p className="text-[10px] text-[#4F5B5E] uppercase tracking-[0.12em] font-medium mt-1">{l}</p>
         </div>
       ))}
     </div>
@@ -425,35 +411,41 @@ function StatsRow() {
 }
 
 const LOOP = [
-  { icon: '⇄', title: 'Trade', body: UMANITY_MINT ? 'Swaps in the app pay 0.5%. $UMANITY trades pay its pool fee.' : 'Swaps in the app pay 0.5% when USDC is one side.' },
-  { icon: '⚖️', title: 'Split by code', body: 'The program sends half of every fee to the drops fund.' },
-  { icon: '🍲', title: 'Fill drops', body: 'The fund and your gifts fill pots for real deliveries.' },
-  { icon: '🎥', title: 'On camera', body: 'Every delivery is filmed and posted, here and on X.' },
+  { title: 'Trade', body: UMANITY_MINT ? 'Swaps in the app pay 0.5%. $UMANITY trades pay its pool fee.' : 'Swaps in the app pay 0.5% when USDC is one side.' },
+  { title: 'Split by code', body: 'The program sends half of every fee to the drops fund.' },
+  { title: 'Fill drops', body: 'The fund and your gifts fill pots for real deliveries.' },
+  { title: 'On camera', body: 'Every delivery is filmed and posted, here and on X.' },
 ]
+
+/** A drop's four steps drawn as the Tally's states: the whole circle (give), open (it waits), closed (filmed), home (refunded). */
+function StepMark({ state }: { state: string }) {
+  const svg = state === 'give' ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-112 -112 224 224" width="44" height="44"><circle r="80" fill="#111111"/></svg>' : circleSvg({ n: 0, gifts: 0 }, { state: state as TallyState, turn: -30, held: 'plain', gap: 16, slide: 10, rim: 9 }, 44, 112)
+  return <span className="w-11 h-11 block" aria-hidden="true" dangerouslySetInnerHTML={{ __html: svg }} />
+}
 
 /** Why using Umanity feeds people even when you are not giving. */
 function LoopSection() {
   return (
-    <section className="py-20 md:py-28 bg-[#f5f5f7]">
+    <section className="py-20 md:py-28 bg-[#E8EDEE]">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
-          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mb-3">The loop</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-3">Your trades feed people too.</h2>
-          <p className="text-[#86868b] text-base max-w-lg mx-auto">Gifts go 100% to drops. Everything else that earns a fee sends half of it there, and the program does the splitting.</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.08em] mb-3">The loop</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#111111] mb-3">Your trades feed people too.</h2>
+          <p className="text-[#4F5B5E] text-base max-w-lg mx-auto">Gifts go 100% to drops. Everything else that earns a fee sends half of it there, and the program does the splitting.</p>
         </div>
         <div className="card p-6 md:p-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {LOOP.map((s, i) => (
               <div key={s.title} className="flex flex-col gap-3">
-                <div className={`h-1.5 rounded-full ${i === 0 ? 'bg-[#1d1d1f]' : 'bg-emerald-500'}`} />
-                <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] flex items-center justify-center">{s.icon}</div>
+                <div className={`h-1.5 rounded-full ${i === 0 ? 'bg-[#111111]' : 'bg-emerald-500'}`} />
+                <span className="font-mono text-[11px] tracking-[0.06em]">{String(i + 1).padStart(2, '0')}</span>
                 <p className="text-[14px] font-bold">{s.title}</p>
-                <p className="text-[12px] text-[#86868b] leading-snug">{s.body}</p>
+                <p className="text-[12px] text-[#4F5B5E] leading-snug">{s.body}</p>
               </div>
             ))}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-black/[0.04]">
-            <p className="text-[12px] text-[#86868b]">Every split is a transaction you can open. So is every refund.</p>
+            <p className="text-[12px] text-[#4F5B5E]">Every split is a transaction you can open. So is every refund.</p>
             <div className="flex gap-2">
               <Link href="/trade" className="btn-secondary px-5 py-2.5 !text-[13px]">
                 Trade
@@ -484,18 +476,18 @@ function FieldSection() {
           <div>
             {proofs && proofs.length > 0 ? (
               <>
-                <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">Real world, real hands</p>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Real deliveries. On camera.</h2>
-                <p className="text-[#86868b] text-base leading-relaxed mb-6">Every delivery is filmed and posted, here and on X, before a single dollar leaves its pot.</p>
+                <p className="text-[10px] font-bold text-[#7D898C] uppercase tracking-[0.2em] mb-3">Real world, real hands</p>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#111111] mb-4">Real deliveries. On camera.</h2>
+                <p className="text-[#4F5B5E] text-base leading-relaxed mb-6">Every delivery is filmed and posted, here and on X, before a single dollar leaves its pot.</p>
                 <a href="https://x.com/umanity_xyz" target="_blank" rel="noopener noreferrer" className="inline-block text-[13px] font-semibold text-emerald-600 hover:underline">
                   Follow the deliveries on X →
                 </a>
               </>
             ) : (
               <>
-                <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-[0.2em] mb-3">The rule, already tested</p>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#1d1d1f] mb-4">Filmed or refunded.</h2>
-                <p className="text-[#86868b] text-base leading-relaxed mb-6">
+                <p className="text-[10px] font-bold text-[#7D898C] uppercase tracking-[0.2em] mb-3">The rule, already tested</p>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-[#111111] mb-4">Filmed or refunded.</h2>
+                <p className="text-[#4F5B5E] text-base leading-relaxed mb-6">
                   Our first drop missed its date on 20 November. Nobody pressed a button: the code sent back the $6 our own team gave, and the fee money goes back to the fund. From the next drop on, every delivery is filmed before a dollar leaves its pot.
                 </p>
                 <a href={REFUND_TX} target="_blank" rel="noopener noreferrer" className="inline-block text-[13px] font-semibold text-emerald-600 hover:underline">
@@ -515,7 +507,7 @@ function FieldSection() {
                         <Img src={photo.url} alt={u.title} />
                       </div>
                       <div className="p-3">
-                        <p className="text-[10px] text-[#86868b]">
+                        <p className="text-[10px] text-[#4F5B5E]">
                           {u.drop.emoji} Drop #{u.drop.id + 1} · {timeAgo(u.at)}
                         </p>
                         <p className="text-[12px] font-semibold leading-snug mt-0.5 line-clamp-2">{u.title}</p>
@@ -525,17 +517,17 @@ function FieldSection() {
                 })}
               </div>
             ) : (
-              <div className="rounded-3xl bg-[#1d1d1f] text-white p-8 md:p-10">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4">The proof standard</p>
+              <div className="rounded-3xl bg-[#111111] text-white p-8 md:p-10">
+                <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-white/60 mb-4">The proof standard</p>
                 <ul className="space-y-4">
                   {[
-                    ['🛒', 'What it bought', "The drop's shopping list, hashed on-chain when it opens"],
-                    ['🎥', 'Who received it', 'Video and photos of the hand-over itself'],
-                    ['🧾', 'What it cost', 'Receipts, each file hashed on upload'],
-                    ['⏱️', 'A review window', 'Proof goes on-chain first; the pot unlocks only after the window'],
+                    ['01', 'What it bought', "The drop's shopping list, hashed on-chain when it opens"],
+                    ['02', 'Who received it', 'Video and photos of the hand-over itself'],
+                    ['03', 'What it cost', 'Receipts, each file hashed on upload'],
+                    ['04', 'A review window', 'Proof goes on-chain first; the pot unlocks only after the window'],
                   ].map(([i, t, s]) => (
                     <li key={t} className="flex items-start gap-3">
-                      <span className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">{i}</span>
+                      <span className="w-9 h-9 rounded-full border border-white/25 flex items-center justify-center flex-shrink-0 font-mono text-[11px]">{i}</span>
                       <span>
                         <span className="block text-[14px] font-semibold">{t}</span>
                         <span className="block text-[12px] text-white/50">{s}</span>

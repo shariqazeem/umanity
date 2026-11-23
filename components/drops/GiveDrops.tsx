@@ -19,7 +19,7 @@ export function GiveDrops() {
     <div className="space-y-6">
       <section className="pt-2">
         <h2 className="text-2xl font-bold tracking-[-0.02em] mb-1">{next || loading ? 'Fill a drop' : 'Give'}</h2>
-        <p className="text-[#86868b] text-sm">
+        <p className="text-[#4F5B5E] text-sm">
           {next || loading ? 'Each drop is one real delivery. It pays out only on filmed proof.' : 'Every dollar is on-chain from the moment you give.'}
         </p>
       </section>
@@ -29,9 +29,9 @@ export function GiveDrops() {
 
       {!loading && drops && drops.length === 0 && (
         <div className="card p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center mx-auto mb-3 text-xl">🍲</div>
+          <div className="w-12 h-12 rounded-full bg-[#E8EDEE] flex items-center justify-center mx-auto mb-3 text-xl">🍲</div>
           <p className="font-semibold text-[15px]">The first drop opens soon</p>
-          <p className="text-[13px] text-[#86868b] mt-1 max-w-sm mx-auto">Each drop lists what it buys, where it goes and the date it must be delivered by.</p>
+          <p className="text-[13px] text-[#4F5B5E] mt-1 max-w-sm mx-auto">Each drop lists what it buys, where it goes and the date it must be delivered by.</p>
         </div>
       )}
 
@@ -50,7 +50,7 @@ export function GiveDrops() {
         <div className="flex items-end justify-between gap-3 mb-3">
           <div>
             <h3 className="text-[17px] font-bold tracking-tight">Community drops</h3>
-            <p className="text-[12.5px] text-[#86868b]">Run by people where they live. Same rules: paid only after filmed proof, refunded if late.</p>
+            <p className="text-[12.5px] text-[#4F5B5E]">Run by people where they live. Same rules: paid only after filmed proof, refunded if late.</p>
           </div>
         </div>
         <div className="space-y-2.5">
@@ -61,9 +61,9 @@ export function GiveDrops() {
             <span className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-lg flex-shrink-0">＋</span>
             <span className="min-w-0 flex-1">
               <span className="block text-[14px] font-semibold">Run a drop where you live</span>
-              <span className="block text-[12px] text-[#86868b]">Propose it, deliver it, film it. You&apos;re paid from its pot after the proof.</span>
+              <span className="block text-[12px] text-[#4F5B5E]">Propose it, deliver it, film it. You&apos;re paid from its pot after the proof.</span>
             </span>
-            <span className="text-[12.5px] font-semibold text-[#1d1d1f]">Start →</span>
+            <span className="text-[12.5px] font-semibold text-[#111111]">Start →</span>
           </Link>
         </div>
       </section>
