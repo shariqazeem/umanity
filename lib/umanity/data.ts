@@ -84,11 +84,25 @@ export function dropView(d: Drop) {
   }
 }
 
+/** True once a drop missed its date or was called off. */
+export function dropClosed(d: { state: string; deadline: number }) {
+  return d.state === 'cancelled' || refundsOpen({ state: d.state as 'open', deadline: d.deadline })
+}
+
+/**
+ * How a drop appears in lists, feeds and the money summary. A drop that closed without a film keeps its
+ * original promise (place, story, items and the text hashed on-chain) on its own page only, where anyone can
+ * re-hash it. Lists stop repeating where it was.
+ */
+export function listed(v: DropView): DropView {
+  return dropClosed(v) ? { ...v, place: '', story: '', items: [], meta: '' } : v
+}
+
 export async function listDrops() {
   await freshen()
   const db = await getDb()
   const rows = await db.select().from(drops).where(eq(drops.cluster, SOLANA_CLUSTER)).orderBy(desc(drops.id))
-  return rows.map(dropView)
+  return rows.map((r) => listed(dropView(r)))
 }
 
 /** The drop the Give button fills: Umanity's own drops first, then community drops, each closest to its date. */

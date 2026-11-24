@@ -34,7 +34,9 @@ export async function homeFeed(opts: { viewer?: string | null; limit?: number } 
   const dropById = new Map(
     dropRows.map((d) => {
       const meta = JSON.parse(d.meta) as DropMeta
-      return [d.id, { id: d.id, title: d.title, emoji: d.emoji, place: d.place, unitName: meta.unit.name, unitUsd: meta.unit.usd, people: meta.unit.people } satisfies FeedDrop]
+      // A drop that closed without a film keeps its place on its own page only (see `listed` in data.ts).
+      const closed = d.state === 'cancelled' || refundsOpen({ state: d.state as 'open', deadline: Math.floor(d.deadline.getTime() / 1000) })
+      return [d.id, { id: d.id, title: d.title, emoji: d.emoji, place: closed ? '' : d.place, unitName: meta.unit.name, unitUsd: meta.unit.usd, people: meta.unit.people } satisfies FeedDrop]
     })
   )
 
